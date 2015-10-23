@@ -1,0 +1,12 @@
+OpenCV modules {#mainpage}
+==============
+
+- @ref intro
+- @ref tutorial_root
+- @ref tutorial_py_root
+- @ref faq
+- @ref citelist
+
+@CMAKE_DOXYGEN_MAIN_REFERENCE@
+
+@CMAKE_DOXYGEN_EXTRA_REFERENCE@
