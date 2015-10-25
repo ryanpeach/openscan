@@ -5,24 +5,24 @@ import cv2
 import numpy as np
 
 def plot(imgs,titles = []):
-    num = len(imgs)
-    for i in range(num):
-        plt.figure(i)
-        plt.imshow(imgs[i])
-        if len(titles)>0:
-            plt.title(titles[i])
-    plt.show()
+	num = len(imgs)
+	for i in range(num):
+		plt.figure(i)
+		plt.imshow(imgs[i])
+		if len(titles)>0:
+			plt.title(titles[i])
+	plt.show()
 
 def importImage(filepath):
 	"""Imports the img at the filepath to an RGB ndarray."""
 	return cv2.imread(fileName,0)
 
 def saveImage(img, filepath, name):
-    """Saves the img at the filepath as the given name + filetype."""
-    raise IOError
+	"""Saves the img at the filepath as the given name + filetype."""
+	raise IOError
 
 def filterImage(img):
-    """Filters the img that the border is easily and uniquely visible."""
+	"""Filters the img that the border is easily and uniquely visible."""
 	img = img.copy()
 	gray = cv2.cvtColor(img,cv2.CV_RGB2GRAY);		#Convert Image captured from Image Input to GrayScale
 	edges = cv2.Canny(gray, 100 , 200, 3);			#Apply Canny edge detection on the gray image
@@ -32,23 +32,14 @@ def filterImage(img):
 	#Return approximate polygons
 	polys = []
 	for c in contours:
-		temp = cv2.approxPolyDP(c,0.02,True):
+		temp = cv2.approxPolyDP(c,0.02,True)
 		polys.append(temp[:,0])
 	return polys, heirarchy
 
-#Code copied from https://github.com/bharathp666/opencv_qr
-def findCorners(img):
+#Code copied and modified from https://github.com/bharathp666/opencv_qr
+def findFocusPoints(polys, heirarchy, poly1 = 4, poly2 = 4, num = 4):
 	"""Returns Border Poly. Checks that the QR info matches the border found."""
 	img = img.copy()
-	mark = 0;	#Reset all detected marker count for this frame
-
-	# Get Moments for all Contours and the mass centers
-	mu = np.zeros(len(contours))
-  	mc = np.zeros(len(contours))
-
-	for i in range(len(contours)):
-		mu[i] = cv2.moments( contours[i], false );
-		mc[i] = cv2.Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 )
 
 	# Start processing the contour data
 
@@ -57,25 +48,23 @@ def findCorners(img):
 	# 2. Alternately, the Ratio of areas of the "concentric" squares can also be used for identifying base Alignment markers.
 	# The below demonstrates the first method
 
-	A, B, C = 0, 0, 0
+	focus = []
 	for i in range(len(contours)):
-		k, c = i, 0;
+		k, obj = i, []
 
+		#Add all k indexes to obj
 		while hierarchy[k][2] != -1:
-			k = hierarchy[k][2] ;
-			c = c+1;
+			k = hierarchy[k][2]
+			obj.append(k)
+		if hierarchy[k][2] != -1: obj.append(k)
 
-		if hierarchy[k][2] != -1: c = c+1;
+		#Check if the polys are of the right shape if there are enough of them
+		if c >= 5 and checkConvex(obj[-1]) and checkConvex(obj[-3]) and len(obj[-1])==poly2 and len(obj[-3])==poly1:
+			focus.append(obj)
 
-		if c >= 5:
-			if (mark == 0):			A = i;
-			else if  (mark == 1)	B = i;		# i.e., A is already found, assign current contour to B
-			else if  (mark == 2)	C = i;		# i.e., A and B are already found, assign current contour to C
-			mark = mark + 1
-
-	ax = 1
-	if mark == 3: return [np.mean(contours[A], axis = ax),np.mean(contours[B], axis = ax),np.mean(contours[C], axis = ax)]
-	elif mark > 3: raise Exception("Too many found!")
+	#if mark == num: return [np.mean(i, axis = 1) for i in icnts]
+	if len(focus) == num: return focus
+	elif len(focus) > num: raise Exception("Too many found!")
 	else: raise Exception("Not enough markers found!")
 
 def dist(a,b):
@@ -102,27 +91,33 @@ def fixPerspective(img, border):
 def drawBorder(img, border):
 	"""Returns img with the border drawn overlay."""
 	out = img.copy()
-	cv2.drawContours(out, border, color=, thickness=, lineType=)
+	cv2.drawContours(out, border)
 	return out
 
 def cropImage(img, border):
 	pass
-	
-#User Input
-filename = raw_input("Where is the file? ")
-savedir = raw_input("Save Directory? ")
-name = raw_input("Name (no type)? ")
 
-#Import Image
-IMG = importImage(filename)
+# -------------------- Working Methods -----------------------
+def webcamTest():
+	cap = cv2.VideoCapture(0) #Setup webcam
 
-#Crop and Skew
-filtered = filterImage(IMG)
-skew, skewBorder = fixPerspective(Filtered,Border)
-crop = cropImage(skew,skewBorder)
+	while(True):
+		ret, frame = cap.read() #Capture frame by frame
+		out = detect(frame) #Detection method
+		cv2.imshow('frame',out) #Display
+		if cv2.waitKey(1) & 0xFF == ord('q'): #Exit
+			break
 
-#Output Information
-plot(drawBorder(IMG,Border))
-plot(crop)
-#saveImage(Crop,savedir,name)
-#saveImage(drawBorder(IMG,Border),savedir,name+"(Border)")
+	#When everything done, release the capture
+	cap.release()
+	cv2.destroyAllWindows()
+
+def detect(img):
+	polys, heir = findContours(img)
+	fp = findFocusPoints(polys, heir)
+	for f in fp:
+		out = drawBorder(out,f[-3])
+	return out
+
+if __name__ == "__main__":
+	webcamTest()
