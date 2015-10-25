@@ -59,7 +59,7 @@ def findFocusPoints(polys, heirarchy, poly1 = 4, poly2 = 4, num = 4):
 		if hierarchy[k][2] != -1: obj.append(k)
 
 		#Check if the polys are of the right shape if there are enough of them
-		if c >= 5 and checkConvex(obj[-1]) and checkConvex(obj[-3]) and len(obj[-1])==poly2 and len(obj[-3])==poly1:
+		if c >= 5 and checkConvex(obj[-1]) and checkConvex(obj[-3]) and len(obj[-1])==poly2 and len(obj[-3])==poly1 and all([allSameLength(-x) for x in range(3)]):
 			focus.append(obj)
 
 	#if mark == num: return [np.mean(i, axis = 1) for i in icnts]
@@ -70,6 +70,12 @@ def findFocusPoints(polys, heirarchy, poly1 = 4, poly2 = 4, num = 4):
 def dist(a,b):
 	"""Simple 2D Distance Formula"""
 	return np.sqrt((a[0]-b[0])**2+(a[1]-b[1])**2)
+
+def allSameLength(poly):
+	lengths = map(lambda (a,b): dist(a,b),zip(poly,poly))
+	mean = np.mean(lengths)
+	lengths = map(lambda z: np.absolute(z-mean),lengths)
+	return all(map(lambda z: z<5,lengths))
 
 def fixPerspective(img, border):
 	"""Returns img skewed to the border."""
