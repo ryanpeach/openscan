@@ -59,7 +59,7 @@ def findFocusPoints(polys, heirarchy, poly1 = 4, poly2 = 4, num = 4):
 		if hierarchy[k][2] != -1: obj.append(k)
 
 		#Check if the polys are of the right shape if there are enough of them
-		if c >= 5 and checkConvex(obj[-1]) and checkConvex(obj[-3]) and len(obj[-1])==poly2 and len(obj[-3])==poly1 and all([allSameLength(-x) for x in range(3)]):
+		if c >= 5 and checkConvex(obj[-5]) all([allSameLength(-x) for x in range(3)]):
 			focus.append(obj)
 
 	#if mark == num: return [np.mean(i, axis = 1) for i in icnts]
