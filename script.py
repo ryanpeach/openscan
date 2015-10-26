@@ -108,7 +108,7 @@ def fixPerspective(img, border,ratio=8.5/11.0):
 	rY, rX = sizeY, ratio*sizeY
 	#Set dst order to match the length ratios of previous (assume 8.5x11 page)
 	src = np.array(border)
-	dst = np.array([[0,rY],[0,0],[rX,0],[rX,rY]])
+	dst = np.array([[0,0],[rX,0],[rX,rY],[0,rY]])
 
 	#Return Affine Transform
 	M = cv2.getPerspectiveTransform(src, dst)
@@ -127,8 +127,16 @@ def filterOut(img):
 def findCorners(fp):
         """Classifies squares and selects the four most likely to be corners"""
 	fours = filter(lambda z: len(z)==4, fp)
-	pairs = [(x,y) for x in fours for y in fours if x is not y]
-	angles = map(lambda (x,y): angle(x,y), pairs)
+	sets = (frozenset((x,y,z)) for x in fours for y in fours for z in fours if x!=y and y!=z)
+
+        #Removes Duplicates
+        found = []
+	for p in sets:
+                if p not in found:
+                        found.append(p)
+                        
+        #Map angles onto found          
+	angles = map(lambda p: angle(*tuple(p), found)
 
 	#Corners have 2 right angles
 	rightangles = [x for x in fours for i in range(len(pairs)) if x in pairs[i] and np.absolute(angles[i]-90)<ATOL]
@@ -145,7 +153,13 @@ def sortCorners(corners):
         centroid = np.mean(corners,axis=1) #Get the centroid of the four corners
         polar = map(lambda z: angle(z,centroid),corners) #Get the polar angle from centroid
 	sort = sorted(zip(corners,polar), key=1) #Sort by the polar coords
-	return [x for x,y in sort] #Return just the keys
+	keys = [x for x,y in sort] #Return just the keys
+
+        #Sort the keys with the longest edge pair first
+        pairs = [(keys[i-1],keys[i]) for i in range(len(keys))]
+        dists = map(lambda z: dist(*z),pairs)
+        if dists[0]>dists[1]: return keys
+        else: return keys[-1:len(keys)-1]
 
 
 # -------------------- Working Methods -----------------------
