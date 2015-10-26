@@ -146,11 +146,11 @@ def findCorners(fp):
                         found.add(c)
                 else:
                         corners.append(c)
-        return corners
+        return np.array([centroid(x) for x in corners])
         
 def sortCorners(corners):
         """Sort edges by distance. Not done"""
-        centroid = np.mean(corners,axis=1) #Get the centroid of the four corners
+        centroid = centroid(corners) #Get the centroid of the four corners
         polar = map(lambda z: angle(z,centroid),corners) #Get the polar angle from centroid
 	sort = sorted(zip(corners,polar), key=1) #Sort by the polar coords
 	keys = [x for x,y in sort] #Return just the keys
@@ -161,6 +161,11 @@ def sortCorners(corners):
         if dists[0]>dists[1]: return keys
         else: return keys[-1:len(keys)-1]
 
+def centroid(a):
+        pass
+
+def angles(origin,l1,l2):
+        pass
 
 # -------------------- Working Methods -----------------------
 def webcamTest():
