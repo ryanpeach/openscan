@@ -6,6 +6,9 @@ import cv2
 import numpy as np
 import random
 
+ATOL = 10 #Degrees
+DTOL = 10 #Pixels
+
 def plot(imgs,titles = []):
 	num = len(imgs)
 	for i in range(num):
@@ -39,8 +42,9 @@ def findPolys(img):
 
 	#Return approximate polygons
 	polys = []
+	global DTOL
 	for c in contours:
-		temp = cv2.approxPolyDP(np.array(c),5,True)
+		temp = cv2.approxPolyDP(np.array(c),DTOL,True)
 		polys.append(temp[:,0])
 	return polys, heirarchy
 
@@ -79,13 +83,14 @@ def dist(a,b):
 	"""Simple 2D Distance Formula"""
 	return np.sqrt((a[0]-b[0])**2+(a[1]-b[1])**2)
 
-def allSameLength(poly, tol=5):
+def allSameLength(poly):
 	"""Checks that all lines are the same length"""
+        global DTOL
 	pairs = [(poly[i-1],poly[i]) for i in range(len(poly))] 	#Get a list of all lines in poly
 	lengths = map(lambda (a,b): dist(a,b), pairs)				#Get a list of the length of all pairs in poly
 	mean = np.mean(lengths)										#Get the mean of all lengths in poly
 	lengths = map(lambda z: np.absolute(z-mean), lengths)		#Get the error from the mean of each length
-	return all(iter(map(lambda z: z<tol,lengths)))						#Return if all are within the error tolerance
+	return all(iter(map(lambda z: z<DTOL,lengths)))						#Return if all are within the error tolerance
 
 def findInnerBorder(cnts):
 	"""Checks shape of each contour from last to -5 and finds the first 'square.' Returns 0 if none exists."""
@@ -96,21 +101,18 @@ def findInnerBorder(cnts):
 	else: return 0
 
 # --------------- Image Modification ----------------------
-def fixPerspective(img, border):
+def fixPerspective(img, border,ratio=8.5/11.0):
 	"""Returns img skewed to the border."""
 	out = img.copy()
-	#Get order of corners
-	B = border[1]
-	if dst(border[1],border[0])>dst(border[1],border[2]): A,C = border[0],border[1]
-	else: A,C = border[2],border[0]
-
+	sizeX, sizeY = img.shape()
+	rY, rX = sizeY, ratio*sizeY
 	#Set dst order to match the length ratios of previous (assume 8.5x11 page)
-	src = np.array([A,B,C])
-	dst = np.array([[0,1100],[0,0],[850,0]])
+	src = np.array(border)
+	dst = np.array([[0,rY],[0,0],[rX,0],[rX,rY]])
 
 	#Return Affine Transform
-	M = cv2.getAffineTransform(src, dst)
-	out = cv2.warpAffine(out, M)
+	M = cv2.getPerspectiveTransform(src, dst)
+	out = cv2.warpPespective(out, M)
 	return out, dst
 
 def drawBorder(img, border, c=(255,0,0)):
@@ -119,8 +121,32 @@ def drawBorder(img, border, c=(255,0,0)):
 	out = cv2.drawContours(temp, [border], 0, color = c,thickness = 4)
 	return out
 
-def cropImage(img, border):
-	pass
+def filterOut(img):
+	return img
+
+def findCorners(fp):
+        """Classifies squares and selects the four most likely to be corners"""
+	fours = filter(lambda z: len(z)==4, fp)
+	pairs = [(x,y) for x in fours for y in fours if x is not y]
+	angles = map(lambda (x,y): angle(x,y), pairs)
+
+	#Corners have 2 right angles
+	rightangles = [x for x in fours for i in range(len(pairs)) if x in pairs[i] and np.absolute(angles[i]-90)<ATOL]
+        corners,found = [],set()
+        for c in rightangles:
+                if c not in found:
+                        found.add(c)
+                else:
+                        corners.append(c)
+        return corners
+        
+def sortCorners(corners):
+        """Sort edges by distance. Not done"""
+        centroid = np.mean(corners,axis=1) #Get the centroid of the four corners
+        polar = map(lambda z: angle(z,centroid),corners) #Get the polar angle from centroid
+	sort = sorted(zip(corners,polar), key=1) #Sort by the polar coords
+	return [x for x,y in sort] #Return just the keys
+
 
 # -------------------- Working Methods -----------------------
 def webcamTest():
@@ -144,7 +170,10 @@ def imageTest(img, video = False):
 	"""Runs a detection test on an image and displays the result"""
 	fp, shapes = detect(img)
 	out = drawOutlines(img,fp,shapes)
-	cv2.imshow('img',out)
+	corners = findCorners(fp)
+	sort = sortCorners(corners)
+	warp = fixPerspective(sort)
+	cv2.imshow('img',warp)
 	if not video: cv2.waitKey(0)
 
 def detect(img):
