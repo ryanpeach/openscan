@@ -7,7 +7,7 @@ import numpy as np
 import random
 
 ATOL = 10 #Degrees
-DTOL = 10 #Pixels
+DTOL = 5 #Pixels
 
 def plot(imgs,titles = []):
 	num = len(imgs)
@@ -74,14 +74,11 @@ def findFocusPoints(polys, heirarchy):
 	for f in focus:
 		i = findInnerBorder(f) #Checks the shapes and looks for a square, returns innermost border
 		if i>0:					#If found, append to out
-			out.append(f[i])
+			out.append(f[i-2])
 
 	#Return the borders
 	return out
 
-def dist(a,b):
-	"""Simple 2D Distance Formula"""
-	return np.sqrt((a[0]-b[0])**2+(a[1]-b[1])**2)
 
 def allSameLength(poly):
 	"""Checks that all lines are the same length"""
@@ -118,6 +115,7 @@ def fixPerspective(img, border,ratio=8.5/11.0):
 def drawBorder(img, border, c=(255,0,0)):
 	"""Returns img with the border drawn overlay."""
 	temp = img.copy()
+	border = np.array(np.round(border), dtype=np.int32)
 	out = cv2.drawContours(temp, [border], 0, color = c,thickness = 4)
 	return out
 
@@ -125,48 +123,49 @@ def filterOut(img):
 	return img
 
 def findCorners(fp):
-        """Classifies squares and selects the four most likely to be corners"""
-	fours = filter(lambda z: len(z)==4, fp)
-	sets = (frozenset((x,y,z)) for x in fours for y in fours for z in fours if x!=y and y!=z)
+	"""Classifies squares and selects the four most likely to be corners"""
+	#Find all focus points of length four and calculate all of their angles to other fours
+	fours = list(filter(lambda z: len(z)==4, fp))
+	cents = map(lambda z: tuple(centroid(z)), fours)
+	angles = lambda x: [angle(x,y,z) for y in cents for z in cents if x != y and y != z and x != z]
 
-        #Removes Duplicates
-        found = []
-	for p in sets:
-                if p not in found:
-                        found.append(p)
-                        
-        #Map angles onto found          
-	angles = map(lambda p: angle(*tuple(p), found)
+	#Classify corners as having 2 right angles
+	out = []
+	for c in cents:
+		if len(filter(lambda z: np.absolute(z-90.0)<ATOL, angles(c)))>=2 and c not in out:
+			out.append(c)
 
-	#Corners have 2 right angles
-	rightangles = [x for x in fours for i in range(len(pairs)) if x in pairs[i] and np.absolute(angles[i]-90)<ATOL]
-        corners,found = [],set()
-        for c in rightangles:
-                if c not in found:
-                        found.add(c)
-                else:
-                        corners.append(c)
-        return np.array([centroid(x) for x in corners])
-        
+	#Return their centroids
+	if len(out)!=4: raise Exception("Corners not Detected!")
+	return out
+
 def sortCorners(corners):
-        """Sort edges by distance. Not done"""
-        centroid = centroid(corners) #Get the centroid of the four corners
-        polar = map(lambda z: angle(z,centroid),corners) #Get the polar angle from centroid
-	sort = sorted(zip(corners,polar), key=1) #Sort by the polar coords
+	"""Sort edges by distance. Not done"""
+	cent = centroid(corners) #Get the centroid of the four corners
+	polar = map(lambda z: np.angle(complex(*tuple(np.array(z)-np.array(cent))),deg=True),corners) #Get the polar angle from centroid
+	sort = sorted(zip(corners,polar), key=lambda x: x[1]) #Sort by the polar coords
 	keys = [x for x,y in sort] #Return just the keys
 
-        #Sort the keys with the longest edge pair first
-        pairs = [(keys[i-1],keys[i]) for i in range(len(keys))]
-        dists = map(lambda z: dist(*z),pairs)
-        if dists[0]>dists[1]: return keys
-        else: return keys[-1:len(keys)-1]
+	#Sort the keys with the longest edge pair first
+	pairs = [(keys[i-1],keys[i]) for i in range(len(keys))]
+	dists = map(lambda z: dist(*z),pairs)
+	if dists[0]>dists[1]: return keys
+	else: return keys[-1:len(keys)-1]
 
+# ----------------- Geometric Methods ---------------
 def centroid(a):
-        pass
+	return np.mean(a, axis=0)
 
-def angles(origin,l1,l2):
-        pass
+def angle(origin, c2, c3):
+	a1 = np.array(list(origin))
+	a2 = np.array(list(c2))
+	a3 = np.array(list(origin))
+	a4 = np.array(list(c3))
+	return np.rad2deg(np.arccos(np.dot((a2-a1),(a4-a3))/(np.linalg.norm(a2-a1)*np.linalg.norm(a4-a3))))
 
+def dist(a,b):
+	"""Simple 2D Distance Formula"""
+	return np.sqrt((a[0]-b[0])**2+(a[1]-b[1])**2)
 # -------------------- Working Methods -----------------------
 def webcamTest():
 	"""Runs a detection test on an image and displays the result"""
@@ -174,10 +173,10 @@ def webcamTest():
 
 	while(True):
 		ret, frame = cap.read() #Capture frame by frame
-		try:
-			imageTest(frame,video=True)
-		except:
-			pass
+		#try:
+		imageTest(frame,video=True)
+		#except:
+			#pass
 		if cv2.waitKey(1) & 0xFF == ord('q'): #Exit
 			break
 
@@ -188,11 +187,13 @@ def webcamTest():
 def imageTest(img, video = False):
 	"""Runs a detection test on an image and displays the result"""
 	fp, shapes = detect(img)
-	out = drawOutlines(img,fp,shapes)
-	corners = findCorners(fp)
-	sort = sortCorners(corners)
-	warp = fixPerspective(sort)
-	cv2.imshow('img',warp)
+	try:
+		corners = findCorners(fp)
+		sort = sortCorners(corners)
+		out = drawOutlines(img,np.array([sort]),[4])
+	except:
+		out = img
+	cv2.imshow('img',out)
 	if not video: cv2.waitKey(0)
 
 def detect(img):
@@ -207,7 +208,7 @@ def drawOutlines(img,fp,shapes):
 	out = img.copy()
 
 	#Converts to color if grayscale
-	if len(out[0,0])!=3:
+	if isinstance(out[0,0],list) and len(out[0,0])!=3:
 		out = cv2.cvtColor(out,cv2.COLOR_GRAY2RGB)
 
 	for i in range(len(fp)):
@@ -218,6 +219,4 @@ def drawOutlines(img,fp,shapes):
 	return out
 
 if __name__ == "__main__":
-	#img = importImage("C:/Users/Ryan/Documents/Workspace/openscan/assets/ScanTemplate(small).jpg")
-	#imageTest(img)
 	webcamTest()
