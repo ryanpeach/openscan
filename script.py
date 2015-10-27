@@ -1,7 +1,5 @@
 ## This script contains the main logic of the code implementing OpenCV
 ## It is simple and to the point, outlining all the essential features of the application
-import sys
-sys.path.append("C:/Users/Ryan/Documents/Workspace/openscan/.lib/OpenCV/x86")
 import cv2
 import numpy as np
 import random
@@ -212,10 +210,7 @@ def webcamTest():
 
 	while(True):
 		ret, frame = cap.read() #Capture frame by frame
-		#try:
 		imageTest(frame,video=True)
-		#except:
-			#pass
 		if cv2.waitKey(1) & 0xFF == ord('q'): #Exit
 			break
 
