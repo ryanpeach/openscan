@@ -13,6 +13,7 @@ class IMGProcessor {
         }
 
         //A Focus Point
+        //Null-Condition: this.depth == -1
         class Fp {
             public:
                 vector<cnt> contours;
@@ -36,7 +37,7 @@ class IMGProcessor {
                         else {return -1;}
                     }
                 }
-                int findInnerBorder(Cnts cnts) throws Exception {return findInnerBorder(cnts.contours);}
+                int findInnerBorder(Cnts cnts) {return findInnerBorder(cnts.contours);}
         }
 
 
@@ -93,7 +94,8 @@ class IMGProcessor {
         }
 
         //Classifies squares and selects the four most likely to be corners
-        vector<Fp> getCorners(vector<Fp> focusPoints) throws Exception {
+        //Null-Condition: Returns null
+        vector<Fp> getCorners(vector<Fp> focusPoints) {
             list<Fp> fpList = list<Fp>(focusPoints);
             list<Fp> fours = fpList.remove_if([](Fp z){return z.shape == 4;});
             double angles (Point x) {
@@ -109,12 +111,13 @@ class IMGProcessor {
             out.append(f);
 
             //Return their centroids
-            if (!isRectangle(out)) {throw Exception e;}
+            if (!isRectangle(out)) {return null;}
             return vector<Fp>(out);
         }
 
         //Sort edges by distance.
         //Corners must be a rectangle
+        //Null-Condition: Returns corners
         vector<Fp> sortCorners(vector<Fp> corners) {
             Point cent = centroid(corners); list<double> polar; int n; vector<Fp> out;
             for (Fp z : corners) {polar.push_back(angle(z.center,cent));} //Calculate all the angles from the centroid, maintaining index
@@ -128,43 +131,27 @@ class IMGProcessor {
             return out;
         }
 
-        //Runs the polygon rules of this application, that all valid shapes are convex, all size 4 shapes have all right angles within tolerance, and optionally all sides are the same length
-        bool isPoly(cnt poly, int size, int regular) {
-            if (sizeOf(poly)==size && isContourConvex(poly)) {
-                if (size == 4) {
-                    auto angles = angles(r);
-                    for (a : angles) {if (abs(a-90.0)>angleTol) {return false;}}    //Test that all angles are within tolerance of 90
+        //Null-Condition: Returns fps[0]
+        Fp getRef(vector<Fp> fps) {
+            Fp maxFp = fps[0]; int max = maxFp.depth;
+            for (fp : fps) {
+                if (fp.depth > max) {
+                    maxFp = fp;
+                    max = fp.depth;
                 }
-                if (regular) {return allSameLength(poly);}
-                else {return true;}
             }
-            else {return false;}
-        }
-        bool isRectangle(cnt poly, bool square) {return isPoly(poly,4,square);}
-        bool isSquare(cnt poly) {return isPoly(poly,4,true);}
-
-        //Returns a vector of angles for the polygon
-        vector<double> angles(cnt poly) {
-            int a = 0; int b = sizeOf(poly)-1; int c = 1;
-            vector<double> out;
-            while (a < sizeOf(poly)) {
-                out.push_back(angle(poly[a],poly[b],poly[c]));
-                a++;b++;c++;
-                if (c==sizeOf(poly)) {c=0;}
-                if (b==sizeOf(poly)) {b=0;}
-            }
-            return out;
+            return maxFp;
         }
 
-        //Returns a vector of distances for the polygon
-        vector<double> dists(cnt poly) {
-            int a = 0; int b = 1;
-            vector<double> out;
-            while (a < sizeOf(poly)) {
-                out.push_back(dist(poly[a],poly[b]));
+        //Null-Condition: Returns contour[0]
+        Point getRef(cnt contour) {
+            auto D = dists(contour); int a = 0; int b = 1;
+            while (D[a]<=D[b]){
                 a++; b++;
-                if (b==sizeOf(poly)) {b=0;}
+                if (b>=sizeOf(contour)){b=0;}
+                if (a==sizeOf(contour)){return contour[0];}
             }
+            return contour[a];
         }
 
         // ------------ Image Manipulation --------------
@@ -188,15 +175,12 @@ class IMGProcessor {
             return out;
         }
 
-        Mat cropImage(Mat img, int R){
+        Mat cropImage(Mat img){
             int sizeX = img.cols; int sizeY = img.rows;
             return img[R:sizeY-R][R:sizeX-R];
         }
 
-        Mat fixPerspective (Mat img, vector<cnt> border, Fp ref) throws Exception {
-            //Check initial factors
-            if (sizeOf(border)!=4) {throw Exception e;}
-
+        Mat fixPerspective (Mat img, vector<cnt> border, Fp ref) {
             //Declare variables
             cnt t1, tr, br, b1;
             Mat M, out;
@@ -242,6 +226,7 @@ class IMGProcessor {
             if (sizeOf(img[0][0])==3) {return true;}
             else {return false}
         }
+
         // -------------- Geometric ------------------
         bool allSameLength(cnt poly){
             vector<vector<Point>> pairs; vector<double> lengths, error; vector<bool> test; int i;
@@ -300,82 +285,115 @@ class IMGProcessor {
             return acos(dot((*a2-*a1),(*a4-*a3))/(norm(*a2-*a1)*norm(*a4-*a3)))) * 180 / PI;
         }
 
-        Fp getRef(vector<Fp> fps) {
-            Fp maxFp; int max = 0;
-            for (fp : fps) {
-                if (fp.depth > max) {
-                    maxFp = fp;
-                    max = fp.depth;
+        //Runs the polygon rules of this application, that all valid shapes are convex, all size 4 shapes have all right angles within tolerance, and optionally all sides are the same length
+        bool isPoly(cnt poly, int size, int regular) {
+            if (sizeOf(poly)==size && isContourConvex(poly)) {
+                if (size == 4) {
+                    auto angles = angles(r);
+                    for (a : angles) {if (abs(a-90.0)>angleTol) {return false;}}    //Test that all angles are within tolerance of 90
                 }
+                if (regular) {return allSameLength(poly);}
+                else {return true;}
             }
-            return maxFp;
+            else {return false;}
+        }
+        bool isRectangle(cnt poly, bool square) {return isPoly(poly,4,square);}
+        bool isSquare(cnt poly) {return isPoly(poly,4,true);}
+
+        //Finds if there is a rectangle within poly
+        bool hasRectangle(vector<Fp> poly) {
+            if (sizeOf(poly)!=4) {return false;}
+            //check all combinations of poly
+            for (a1 : poly)
+                for (a2 : poly)
+                    for (a3 : poly)
+                        for (a4 : poly)
+                            if (isRectangle({a1.center,a2.center,a3.center,a4.center},false))
+                                return true;
+            return false;
         }
 
-        Fp getRef(cnt contour) {
-            auto D = dists(contour); int n = 0; cnt out = contour;
-            while (D[0]<=D[1]){
-                if (n>=sizeOf(contour)){throw Exception e;}
-                out = rotateCnt(out);
+        //Returns a vector of angles for the polygon
+        vector<double> angles(cnt poly) {
+            int a = 0; int b = sizeOf(poly)-1; int c = 1;
+            vector<double> out;
+            while (a < sizeOf(poly)) {
+                out.push_back(angle(poly[a],poly[b],poly[c]));
+                a++;b++;c++;
+                if (c==sizeOf(poly)) {c=0;}
+                if (b==sizeOf(poly)) {b=0;}
             }
             return out;
         }
 
+        //Returns a vector of distances for the polygon
+        vector<double> dists(cnt poly) {
+            int a = 0; int b = 1;
+            vector<double> out;
+            while (a < sizeOf(poly)) {
+                out.push_back(dist(poly[a],poly[b]));
+                a++; b++;
+                if (b==sizeOf(poly)) {b=0;}
+            }
+        }
+
         //Variable Declaration
-        Mat img; Cnts polys; vector<Fp> fps;
+        Cnts polys; vector<Fp> fps;
         int angleTol, distTol, polyTol, wSize, C, etol1, etol2, eSize, R;
         double aspectRatio;
 
-    public:
-        // -------------- Main Methods ----------------------
-        Mat[] process1(Mat img) throws Exception {
-            //Intial Processing
-            polys = findPolys(img,polyTol)
-            fps = findFocusPoints(polys)
-
-
-            //Get border from focus points
-            try {
-                vector<Fp> corners = getCorners(fps,angleTol);
-                Fp ref = getRef(corners);
-                vector<Fp> sort = sortCorners(corners,ref);
-                Mat warp = fixPerspective(img,sort,ref,aspectRatio);
-                Mat crop = cropImage(warp,R*warp.cols);
-                Mat out = outputFilter(crop,wSize,C);
-            } catch (...) {return process2(img);}
-
-            Mat drawing = drawContour(img, sort, color = {255,0,0}, thickness = 1);
-            return {cvtColor(out,out,COLOR_GRAY2RGB), drawing};
-        }
-
-        Mat[] process2(Mat img) {
-            //Get border from polys
+        //Processes the image without the help of corner focus points
+        //Null-Condition: Returns {null,img}
+        vector<Mat> process2(Mat img) {
+            //Get the largest rectangular border from polys which contains all focus points.
+            //If no focus points exist, then simply return the largest border.
             cnt largest; int size=0;
             for (int i = 0; i < sizeOf(polys); i++) {
-                if (sizeOf(fps)!=0) {
-                    if (isRectangle(polys[i]) && allInside(polys[i],fps) && contourArea(polys[i])>size) {
-                        largest = polys[i]; size = contourArea(polys[i]);
-                    }
-                } else {
-                    if (isRectangle(polys[i]) && contourArea(polys[i])>size) {
+                if (isRectangle(polys[i]) && contourArea(polys[i])>size) {
+                    if ((sizeOf(fps)!=0 && allInside(polys[i],fps)) || sizeOf(fps)==0) {
                         largest = polys[i]; size = contourArea(polys[i]);
                     }
                 }
             }
 
-            //If one is found, return the processed image
+            //If one is found, return the processed image. If exception or none found, return null.
             if (size>0) {
-                try {
-                    Fp ref = getRef(largest);
-                    vector<Fp> sort = sortCorners(largest,ref);
-                    Mat warp = fixPerspective(img,sort,ref,aspectRatio);
-                    Mat crop = cropImage(warp,R*warp.cols);
-                    Mat out = outputFilter(crop,wSize,C);
-                } catch (...) {return process2(img);}
+                Point ref = getRef(largest);
+                vector<Fp> sort = sortCorners(largest,ref);
+                Mat warp = fixPerspective(img,sort,ref,aspectRatio);
+                Mat crop = cropImage(warp,R*warp.cols);
+                Mat out = outputFilter(crop,wSize,C);
 
+                //Draw and return
                 Mat drawing = drawContour(img, largest, color = {255,0,0}, thickness = 1);
                 return {cvtColor(out,out,COLOR_GRAY2RGB), drawing};
             }
-            else {return img;}
+            else {return {null,img};}
+        }
+
+    public:
+        // -------------- Main Methods ----------------------
+        //Null-Condition: Returns process2(img)
+        vector<Mat> process(Mat img) {
+            //Define Variables
+            vector<Fp> corners, sort; Fp ref; Mat warp, crop, out;
+
+            //Intial Processing
+            polys = findPolys(img,polyTol)
+            fps = findFocusPoints(polys)
+
+            //Get border from focus points
+            vector<Fp> corners = getCorners(fps,angleTol);
+            if (sizeOf(corners)==4) {
+                Fp ref = getRef(corners);
+                vector<Fp> sort = sortCorners(corners,ref);
+                warp = fixPerspective(img,sort,ref);
+                crop = cropImage(warp,R*warp.cols);
+                out = outputFilter(crop,wSize,C);
+            } else {return process2(img);}
+
+            Mat drawing = drawContour(img, sort, color = {255,0,0}, thickness = 1);
+            return {cvtColor(out,out,COLOR_GRAY2RGB), drawing};
         }
 
         //Reset Global variables
@@ -385,11 +403,11 @@ class IMGProcessor {
         }
 
         //Sets Global variables
-        Mat IMGProcessor (Mat img, int angleTol, int distTol, int polyTol, int wSize, int C, double aspectRatio, int etol1, int etol2, int eSize, int R) {
-            this.img = img; this.angleTol = angleTol; this.distTol = distTol; this.polyTol = polyTol; this.wSize = wSize; this.C = C;
+        Mat IMGProcessor (int angleTol, int distTol, int polyTol, int wSize, int C, double aspectRatio, int etol1, int etol2, int eSize, int R) {
+            this.angleTol = angleTol; this.distTol = distTol; this.polyTol = polyTol; this.wSize = wSize; this.C = C;
             this.aspectRatio = aspectRatio; this.etol1 = etol1; this.etol2 = etol2; this.eSize = eSize; this.R = R;
         }
 
         //Sets default variables
-        Mat IMGProcessor(Mat img) throws Exception {return IMGProcessor(img,10,5,5,11,2,8.5/11.0,100,200,3,.04);}
+        Mat IMGProcessor() {return IMGProcessor(img,10,5,5,11,2,8.5/11.0,100,200,3,.04);}
 }
