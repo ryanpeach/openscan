@@ -3,6 +3,7 @@
 #include <cv2.h>
 
 typedef vector<Point> cnt;
+template <typename T>
 
 class IMGProcessor {
     private:
@@ -43,14 +44,16 @@ class IMGProcessor {
 
         // -------------- Feature Detection ----------------
         //Filters the img, finds the contours, and returns the Cnts.
+        //Uses: polyTol
         Cnts findPolys (Mat img) {
             //Find contours and heirarchy
-            vector<cnt> contours, polys; vector<Vec4i> heirarchy;
+            vector<cnt> contours, polys; vector<Vec4i> heirarchy; cnt temp;
             findContours(img, contours, heirarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
 
             //Return approximate polygons
-            for(int i=0; i<sizeOf(contours); i++) {
-                approxPolyDP(contours[i],polys[i],polyTol,true);
+            for (int i = 0; i < contours.size(); i++) {
+                approxPolyDP(contours[i], temp, polyTol, true);
+                polys.push_back(temp);
             }
 
             //Return Cnts
@@ -63,30 +66,28 @@ class IMGProcessor {
             vector<FP> out; FP tempFp; vector<vector<cnt>> cntV;
             vector<int> done; vector<cnt> contours; int k;
 
-            for(int i=0;i<sizeOf(polys.contours);i++){
+            for(int i = 0; i < polys.contours.size(); i++) {
                 k=i; poly.clear();
                 if(!done.contains(i)){        //Check that through navigation you haven't been here before
                     done.push_back(i);
 
                     //Navigate the heirarchy
-                    while(heirarchy[k][2]!=-1){
+                    while (heirarchy[k][2] != -1) {
                         k=heirarchy[k][2];
                         done.push_back(k);
                         contours.push_back(polys.contours[k]);
                     }
-                    if(heirarchy[k][2]!=-1){contours.push_back(polys.contours[k]);} //Add the last element
+                    if (heirarchy[k][2] != -1) {contours.push_back(polys.contours[k]);} //Add the last element
 
                     //Check if there are enough polys to count as a potential focus point, append them to fp
-                    if(sizeOf(poly)>=5){cntV.push_back(contours);}
+                    if (poly.size() >= 5) {cntV.push_back(contours);}
                 }
             }
 
             //Filter the focus points for their innermost border
-            for(int x=0;x<sizeOf(cntV);x++){
-                try {
-                    tempFp = Fp(cntV[x]);
-                    out.push_back(tempFp);
-                } catch (Exception e) {}
+            for (int x = 0; x < cntV.size()); x++) {
+                tempFp = Fp(cntV[x]);
+                if (tempFp.depth >= 0) {out.push_back(tempFp);}
             }
 
             //Return the focus points
@@ -95,23 +96,26 @@ class IMGProcessor {
 
         //Classifies squares and selects the four most likely to be corners
         //Null-Condition: Returns null
+        //Uses: angleTol
         vector<Fp> getCorners(vector<Fp> focusPoints) {
             list<Fp> fpList = list<Fp>(focusPoints);
             list<Fp> fours = fpList.remove_if([](Fp z){return z.shape == 4;});
             double angles (Point x) {
                 vector<double> out;
-                for (Fp y : fours) for (Fp z : fours) if (x != y && y != z && x != z) {out.push_back(angle(x,y,z));}
+                for (Fp y : fours) {for (Fp z : fours) {if (x != y && y != z && x != z) {out.push_back(angle(x,y,z));}}}
                 return out;
             }
 
             //Classify corners as having 2 right angles
             list<Fp> out;
-            for (f : fours)
-            if (sizeOf(angles(f.contours).remove_if([](double z){return math.abs(z-90.0)<angleTol;}))>=2 && !out.contains(f))
-            out.append(f);
+            for (f : fours) {
+                if (angles(f.contours).remove_if([](double z){return math.abs(z-90.0)<angleTol;}).size()>=2 && !find(out.begin(),out.end(),f)) {
+                    out.push_back(f);
+                }
+            }
 
             //Return their centroids
-            if (!isRectangle(out)) {return null;}
+            if (!hasRectangle(out)) {return null;}
             return vector<Fp>(out);
         }
 
@@ -120,11 +124,11 @@ class IMGProcessor {
         //Null-Condition: Returns corners
         vector<Fp> sortCorners(vector<Fp> corners) {
             Point cent = centroid(corners); list<double> polar; int n; vector<Fp> out;
-            for (Fp z : corners) {polar.push_back(angle(z.center,cent));} //Calculate all the angles from the centroid, maintaining index
+            for (Fp f : corners) {polar.push_back(angle(f.center,cent));} //Calculate all the angles from the centroid, maintaining index
             //Sort "corners" by the order of sorted "polar"
             vector<Point> sorted = polar.sort();
-            for (int i = 0; i<sizeOf(polar); i++) {
-                n = polar.index(sorted[i]);
+            for (int i = 0; i<polar.size()); i++) {
+                n = find(polar.begin(), polar.end(), sorted[i]) - polar.begin(); //Gets the index of sorted[i]
                 out.push_back(corners[n]); //Return sorted corners
             }
 
@@ -133,8 +137,8 @@ class IMGProcessor {
 
         //Null-Condition: Returns fps[0]
         Fp getRef(vector<Fp> fps) {
-            Fp maxFp = fps[0]; int max = maxFp.depth;
-            for (fp : fps) {
+            Fp maxFp = fps[0]; int max = maxFp.depth; //sets default values
+            for (Fp fp : fps) {
                 if (fp.depth > max) {
                     maxFp = fp;
                     max = fp.depth;
@@ -148,16 +152,17 @@ class IMGProcessor {
             auto D = dists(contour); int a = 0; int b = 1;
             while (D[a]<=D[b]){
                 a++; b++;
-                if (b>=sizeOf(contour)){b=0;}
-                if (a==sizeOf(contour)){return contour[0];}
+                if (b>=contour.size()){b=0;}
+                if (a==contour.size()){return contour[0];}
             }
             return contour[a];
         }
 
         // ------------ Image Manipulation --------------
+        //Uses: etol1, etol2, eSize
         Mat importFilter(Mat img){
             //Declarations
-            Mat gray,edges;
+            Mat gray, edges;
 
             //Convert to gray if not already
             if (isColor(img)) {cvtColor(img,gray,COLOR_RGB2GRAY);}
@@ -168,6 +173,7 @@ class IMGProcessor {
             return edges
         }
 
+        //Uses: wSize, C
         Mat outputFilter(Mat img){
             Mat gray, out;
             cvtColor(img, gray, COLOR_RGB2GRAY);
@@ -175,21 +181,23 @@ class IMGProcessor {
             return out;
         }
 
+        //Uses: R
         Mat cropImage(Mat img){
             int sizeX = img.cols; int sizeY = img.rows;
             return img[R:sizeY-R][R:sizeX-R];
         }
 
-        Mat fixPerspective (Mat img, vector<cnt> border, Fp ref) {
+        //Uses: aspectRatio
+        //Reference: Modified from http://www.pyimagesearch.com/2014/08/25/4-point-opencv-getperspective-transform-example/
+        Mat fixPerspective (Mat img, vector<cnt> border, Point ref) {
             //Declare variables
             cnt t1, tr, br, b1;
             Mat M, out;
 
             //Rotate the array until the reference is first
-            while (centroid(border[0]) != ref.center)
+            while (centroid(border[0]) != ref)
             border = rotateList(border,1);
 
-            //Copied from http://www.pyimagesearch.com/2014/08/25/4-point-opencv-getperspective-transform-example/
             tl = border[0]; tr = border[1]; br = border[2]; bl = border[3];
 
             // compute the width of the new image, which will be the
@@ -233,19 +241,21 @@ class IMGProcessor {
 
             //Get a list of all lines in poly
             pairs.push_back({poly[poly.size()-1],poly[0]}) 											//Add the first pair to the list
-            for (i = 1; i < sizeOf(poly); i++) {pairs.push_back({poly[i-1],poly[i]});} 				//Add the rest
-            for (i = 0; i < sizeOf(poly); i++) {lengths.push_back(dist(pairs[i][0],pairs[i][1]));} 	//Get a list of the length of all pairs in poly
-            double = mean(lengths);
-            for (i = 0; i < sizeOf(poly); i++) {error.push_back(abs(lengths[i]-mean));} 			//Get the error from the mean of each length
-            for (i = 0; i < sizeOf(poly); i++) {test.push_back(error[i] < distTol);}				//Check if the error is within tolerance
+            for (i = 1; i < poly.size(); i++) {pairs.push_back({poly[i-1],poly[i]});} 				//Add the rest
+            for (i = 0; i < poly.size(); i++) {lengths.push_back(dist(pairs[i][0],pairs[i][1]));} 	//Get a list of the length of all pairs in poly
+            double mean = accumulate(lengths.begin(), lengths.end(), 0.0) / lengths.size();
+            for (i = 0; i < poly.size(); i++) {error.push_back(abs(lengths[i]-mean));} 			//Get the error from the mean of each length
+            for (i = 0; i < poly.size(); i++) {test.push_back(error[i] < distTol);}				//Check if the error is within tolerance
             return find(test.begin(), test.end(), false)!=v.end();									//Test and return to see if there is a false within the test vector
         }
 
         //Test that all focus points are inside the poly
         bool allInside(cnt poly, vector<FP> fps) {
-            for (f : fps)
-                if (!pointPolygonTest(polys[i], f.center, false)
+            for (Fp f : fps) {
+                if (!pointPolygonTest(polys[i], f.center, false) {
                     return false;
+                }
+            }
             return true;
         }
 
@@ -257,19 +267,25 @@ class IMGProcessor {
         }
         cnt rotateCnt(cnt contour) {return rotateCnt(contour,1);}
 
+        //Returns the center of a contour, or of a bunch of contours, or of a bunch of points
         Point centroid(cnt contour) {
             Point sum = Point(0,0);
-            for (Point p : contour)
-            sum += p;
-            return sum / sizeOf(contour);
+            for (Point p : contour) {sum += p;}
+            return sum / contour.size();
         }
         Point centroid(vector<cnt> contours) {
             Point sum = Point(0,0);
-            for (cnt c : contours)
-            sum += centroid(c);
-            return sum / sizeOf(contours);
+            for (cnt c : contours) {sum += centroid(c);}
+            return sum / contours.size();
         }
         Point centroid(Cnts contours) {return centroid(contours.contours);}
+        Point centroid(vector<Fp> fps) {
+            vector<cnt> contours;
+            for (Fp f : fps) {
+                contours.push_back(f.contour);
+            }
+            return centroid(contours);
+        }
 
         double dist(Point a, Point b){
             return sqrt((a[0]-b[0])**2+(a[1]-b[1])**2);
@@ -287,7 +303,7 @@ class IMGProcessor {
 
         //Runs the polygon rules of this application, that all valid shapes are convex, all size 4 shapes have all right angles within tolerance, and optionally all sides are the same length
         bool isPoly(cnt poly, int size, int regular) {
-            if (sizeOf(poly)==size && isContourConvex(poly)) {
+            if (poly.size()==size && isContourConvex(poly)) {
                 if (size == 4) {
                     auto angles = angles(r);
                     for (a : angles) {if (abs(a-90.0)>angleTol) {return false;}}    //Test that all angles are within tolerance of 90
@@ -304,24 +320,25 @@ class IMGProcessor {
         bool hasRectangle(vector<Fp> poly) {
             if (sizeOf(poly)!=4) {return false;}
             //check all combinations of poly
-            for (a1 : poly)
-                for (a2 : poly)
-                    for (a3 : poly)
-                        for (a4 : poly)
-                            if (isRectangle({a1.center,a2.center,a3.center,a4.center},false))
+            for (a1 : poly) {
+                for (a2 : poly) {
+                    for (a3 : poly) {
+                        for (a4 : poly) {
+                            if (isRectangle({a1.center,a2.center,a3.center,a4.center},false)) {
                                 return true;
+            }}}}}
             return false;
         }
 
         //Returns a vector of angles for the polygon
         vector<double> angles(cnt poly) {
-            int a = 0; int b = sizeOf(poly)-1; int c = 1;
+            int a = 0; int b = poly.size()-1; int c = 1;
             vector<double> out;
-            while (a < sizeOf(poly)) {
+            while (a < poly.size()) {
                 out.push_back(angle(poly[a],poly[b],poly[c]));
                 a++;b++;c++;
-                if (c==sizeOf(poly)) {c=0;}
-                if (b==sizeOf(poly)) {b=0;}
+                if (c==poly.size()) {c=0;}
+                if (b==poly.size()) {b=0;}
             }
             return out;
         }
@@ -330,12 +347,13 @@ class IMGProcessor {
         vector<double> dists(cnt poly) {
             int a = 0; int b = 1;
             vector<double> out;
-            while (a < sizeOf(poly)) {
+            while (a < poly.size()) {
                 out.push_back(dist(poly[a],poly[b]));
                 a++; b++;
-                if (b==sizeOf(poly)) {b=0;}
+                if (b==poly.size()) {b=0;}
             }
         }
+
 
         //Variable Declaration
         Cnts polys; vector<Fp> fps;
@@ -348,9 +366,9 @@ class IMGProcessor {
             //Get the largest rectangular border from polys which contains all focus points.
             //If no focus points exist, then simply return the largest border.
             cnt largest; int size=0;
-            for (int i = 0; i < sizeOf(polys); i++) {
+            for (int i = 0; i < polys.size(); i++) {
                 if (isRectangle(polys[i]) && contourArea(polys[i])>size) {
-                    if ((sizeOf(fps)!=0 && allInside(polys[i],fps)) || sizeOf(fps)==0) {
+                    if ((fps.size()!=0 && allInside(polys[i],fps)) || fps.size()==0) {
                         largest = polys[i]; size = contourArea(polys[i]);
                     }
                 }
@@ -379,12 +397,12 @@ class IMGProcessor {
             vector<Fp> corners, sort; Fp ref; Mat warp, crop, out;
 
             //Intial Processing
-            polys = findPolys(img,polyTol)
-            fps = findFocusPoints(polys)
+            polys = findPolys(img);
+            fps = findFocusPoints(polys);
 
             //Get border from focus points
             vector<Fp> corners = getCorners(fps,angleTol);
-            if (sizeOf(corners)==4) {
+            if (corners.size()==4) {
                 Fp ref = getRef(corners);
                 vector<Fp> sort = sortCorners(corners,ref);
                 warp = fixPerspective(img,sort,ref);
