@@ -2,46 +2,63 @@
  * geometry.cpp
  *
  *  Created on: Oct 31, 2015
- *      Author: ryanp
+ *      Author: Ryan Peach
  */
 
-using namespace std;
-
+#include <opencv2/opencv.hpp>
 #include <vector>
-#include "geometry.h"
+#include <cmath>
+#include <geometry.hpp>
+#include <capture.hpp>
+
+using namespace std;
+using namespace cv;
 
 typedef vector<Point> cnt;
 
-bool allSameLength(cnt poly){
-    vector<vector<Point>> pairs; vector<double> lengths, error; vector<bool> test; int i;
+#define PI 3.14159265
+
+bool allSameLength(cnt poly, int tol){
+    vector<vector<Point>> pairs; vector<double> lengths, error; vector<bool> test; int i; int mean = 0;
 
     //Get a list of all lines in poly
-    pairs.push_back({poly[poly.size()-1],poly[0]}) 											//Add the first pair to the list
-    for (i = 1; i < poly.size(); i++) {pairs.push_back({poly[i-1],poly[i]});} 				//Add the rest
-    for (i = 0; i < poly.size(); i++) {lengths.push_back(dist(pairs[i][0],pairs[i][1]));} 	//Get a list of the length of all pairs in poly
-    double mean = accumulate(lengths.begin(), lengths.end(), 0.0) / lengths.size();
-    for (i = 0; i < poly.size(); i++) {error.push_back(abs(lengths[i]-mean));} 			//Get the error from the mean of each length
-    for (i = 0; i < poly.size(); i++) {test.push_back(error[i] < distTol);}				//Check if the error is within tolerance
-    return find(test.begin(), test.end(), false)!=v.end();									//Test and return to see if there is a false within the test vector
+    pairs.push_back({poly[poly.size()-1],poly[0]});                                          //Add the first pair to the list
+    for (i = 1; i < poly.size(); i++) {pairs.push_back({poly[i-1],poly[i]});}                //Add the rest
+    for (i = 0; i < poly.size(); i++) {lengths.push_back(dist(pairs[i][0],pairs[i][1]));}    //Get a list of the length of all pairs in poly
+
+    //Calculate Mean
+    for (i = 0; i<lengths.size(); i++) {mean += lengths[i];}
+    mean = mean / lengths.size();
+
+    //Get error from mean and test if it is within tolerance
+    for (i = 0; i < poly.size(); i++) {error.push_back(abs(lengths[i]-mean));}               //Get the error from the mean of each length
+    for (i = 0; i < poly.size(); i++) {test.push_back(error[i] < tol);}                      //Check if the error is within tolerance
+    return find(test.begin(), test.end(), false)!=test.end();                                //Test and return to see if there is a false within the test vector
 }
 
 //Test that all focus points are inside the poly
-bool allInside(cnt poly, vector<FP> fps) {
+bool allInside(cnt poly, vector<Fp> fps) {
     for (Fp f : fps) {
-        if (!pointPolygonTest(polys[i], f.center, false) {
+        if (pointPolygonTest(poly, f.center, false) < 0) {
             return false;
         }
     }
     return true;
 }
 
-cnt rotateCnt(cnt contour, int n) {
-    cnt AB = cnt().reserve(contour.size());
-    AB.insert( AB.end(), contour[n:].begin(), contour[n:].end() );
-    AB.insert( AB.end(), contour[:n].begin(), contour[:n].end() );
-    return AB;
+cnt rotateCnt(cnt contour) {
+    cnt out = cnt().reserve(contour.size());
+    for (int i = 1; i < contour.size(); i++) {
+    	out.push_back(contour[i]);
+    }
+    out.push_back(contour[0]);
+    return out;
 }
-cnt rotateCnt(cnt contour) {return rotateCnt(contour,1);}
+cnt rotateCnt(cnt contour, int n) {
+	cnt out = contour;
+	for (;n>0;n--){out = rotateCnt(out);}
+	return out;
+}
 
 //Returns the center of a contour, or of a bunch of contours, or of a bunch of points
 Point centroid(cnt contour) {
@@ -64,43 +81,48 @@ Point centroid(vector<Fp> fps) {
 }
 
 double dist(Point a, Point b){
-    return sqrt((a[0]-b[0])**2+(a[1]-b[1])**2);
+	Point diff = a-b;
+	double pow1 = pow((double)diff[0],2.0);
+	double pow2 = pow((double)diff[1],2.0);
+    return sqrt(pow1+pow2);
 }
 
 double angle(Point origin, Point a){
     Point v = a - origin;
-    return atan2(v[0],v[1]) * 180 / PI;
+    return atan2((float)v[0],(float)v[1]) * 180.0 / PI;
 }
 
 double angle(Point origin, Point c2, Point c3) {
-    Point *a1 = origin; Point *a2 = c2; Point *a3 = origin; Point *a4 = c3;
-    return acos(dot((*a2-*a1),(*a4-*a3))/(norm(*a2-*a1)*norm(*a4-*a3)))) * 180 / PI;
+    Point a1 = origin; Point a2 = c2; Point a3 = origin; Point a4 = c3;
+    Point diff1 = a2-a1; Point diff2 = a4-a3;
+    double norm1 = norm(diff1); double norm2 = norm(diff2);
+    return acos(diff1.dot(diff2)/(norm1*norm2)) * 180.0 / PI;
 }
 
 //Runs the polygon rules of this application, that all valid shapes are convex, all size 4 shapes have all right angles within tolerance, and optionally all sides are the same length
-bool isPoly(cnt poly, int size, int regular) {
+bool isPoly(cnt poly, int size, int regular, double tol) {
     if (poly.size()==size && isContourConvex(poly)) {
         if (size == 4) {
-            auto angles = angles(r);
-            for (a : angles) {if (abs(a-90.0)>angleTol) {return false;}}    //Test that all angles are within tolerance of 90
+            auto angles = angles(poly);
+            for (double a : angles) {if (abs(a-90.0)>tol) {return false;}}    //Test that all angles are within tolerance of 90
         }
         if (regular) {return allSameLength(poly);}
         else {return true;}
     }
     else {return false;}
 }
-bool isRectangle(cnt poly, bool square) {return isPoly(poly,4,square);}
-bool isSquare(cnt poly) {return isPoly(poly,4,true);}
+bool isRectangle(cnt poly, bool square, double tol) {return isPoly(poly,4,square,tol);}
+bool isSquare(cnt poly, double tol) {return isPoly(poly,4,true,tol);}
 
 //Finds if there is a rectangle within poly
-bool hasRectangle(vector<Fp> poly) {
-    if (sizeOf(poly)!=4) {return false;}
+bool hasRectangle(vector<Fp> poly, double tol) {
+    if (poly.size()!=4) {return false;}
     //check all combinations of poly
-    for (a1 : poly) {
-        for (a2 : poly) {
-            for (a3 : poly) {
-                for (a4 : poly) {
-                    if (isRectangle({a1.center,a2.center,a3.center,a4.center},false)) {
+    for (Fp a1 : poly) {
+        for (Fp a2 : poly) {
+            for (Fp a3 : poly) {
+                for (Fp a4 : poly) {
+                    if (isRectangle((cnt){a1.center,a2.center,a3.center,a4.center},false,tol)) {
                         return true;
     }}}}}
     return false;
@@ -128,4 +150,5 @@ vector<double> dists(cnt poly) {
         a++; b++;
         if (b==poly.size()) {b=0;}
     }
+    return out;
 }

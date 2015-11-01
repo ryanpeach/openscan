@@ -5,30 +5,35 @@
  *      Author: ryanp
  */
 
+#include <opencv2/opencv.hpp>
 #include <vector>
-#include <opencv.hpp>
+#include <geometry.hpp>
+#include <capture.hpp>
 
 using namespace std;
+using namespace cv;
 
 typedef vector<Point> cnt;
 
 struct Cnts {
 	vector<cnt> contours;
     vector<Vec4i> heirarchy;
-}
+};
 
 struct Fp {
 	vector<cnt> contours;
+	cnt contour;
 	Point center;
 	int depth, shape;
 
-	Fp (vector<cnt> conts) throws Exception {
+	Fp (vector<cnt> conts) {
 		contours = conts;
 		center = centroid(contours);
 		depth = findInnerBorder(contours);
-		shape = contours[this.depth].size();
+		contour = contours[depth];
+		shape = contours[depth].size();
 	}
-}
+};
 
 
 // -------------- Feature Detection ----------------
