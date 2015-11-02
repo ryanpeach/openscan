@@ -2,64 +2,56 @@
 #include <vector>
 #include <cmath>
 #include <geometry.hpp>
+#include <cvmethods.hpp>
 #include <capture.hpp>
+#include <iostream>
 
 using namespace std;
 using namespace cv;
 
-typedef vector<Point> cnt;
+class Capture {
+    private:
+        //Variable Declaration
+        Cnts polys;            //
+        vector<Fp> fps;        //
+        int angleTol;          //
+        int distTol;           //
+        int polyTol;           //
+        int wSize;             //
+        int C;                 //
+        int etol1;             //
+        int etol2;             //
+        int eSize;             //
+        int R;                 //
+        double aspectRatio;    //
 
-struct Cnts {
-	vector<cnt> contours;
-    vector<Vec4i> heirarchy;
-};
+        /**
+         * The alternative process. Finds the border of the page without using focus point corners.
+         * If any focus points exist, makes sure they are all within the found border.
+         * Filters the output, warps it, returns the scan.
+         * @param The RGB image
+         * @return Returns a vector {The original image with a found border drawn, The scan in RGB}
+         * @return If no border found, returns {The original image, The original image}.
+         * @complexity O(?)
+         */
+        vector<Mat> process2(Mat img);
 
-struct Fp {
-	vector<cnt> contours;
-	cnt contour;
-	Point center;
-	int depth, shape;
+    public:
+        /**
+         * The main process. Finds the border of the page, filters it, warps it, returns the scan.
+         * @param The RGB image
+         * @return Returns a vector {The original image with a found border drawn, The scan in RGB}
+         * @return If no border found, returns {The original image, The original image}.
+         * @complexity O(?)
+         */
+        vector<Mat> process(Mat img);
 
-	Fp (vector<cnt> conts, double angleTol);
-	Fp (vector<cnt> conts);
-};
+        //Sets Global variables
+        void Capture (int angleTol, int distTol, int polyTol, int wSize, int C, double aspectRatio, int etol1, int etol2, int eSize, int R) {
+            this.angleTol = angleTol; this.distTol = distTol; this.polyTol = polyTol; this.wSize = wSize; this.C = C;
+            this.aspectRatio = aspectRatio; this.etol1 = etol1; this.etol2 = etol2; this.eSize = eSize; this.R = R;
+        }
 
-
-// -------------- Feature Detection ----------------
-//Checks shape of each contour from last to -5 and finds the first 'square.' Returns 0 if none exists.
-int findInnerBorder(vector<cnt> cnts, double tol);
-int findInnerBorder(Cnts cnts, double tol);
-
-//Filters the img, finds the contours, and returns the Cnts.
-Cnts findPolys (Mat img, double tol);
-
-//Find all the focus points within an image.
-vector<Fp> findFocusPoints (Cnts polys);
-
-//Classifies squares and selects the four most likely to be corners
-//Null-Condition: Returns null
-vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol);
-
-//Sort edges by distance.
-//Corners must be a rectangle
-//Null-Condition: Returns corners
-vector<Fp> sortCorners(vector<Fp> corners);
-
-//Null-Condition: Returns fps[0]
-Fp getRef(vector<Fp> fps);
-
-//Null-Condition: Returns contour[0]
-Point getRef(cnt contour);
-
-// ------------ Image Manipulation --------------
-//wSize must be an odd number, will be rounded up.
-Mat importFilter(Mat img, int tol1, int tol2, int wSize);
-
-Mat outputFilter(Mat img, int wSize, int C);
-
-Mat cropImage(Mat img, int R);
-
-//Reference: Modified from http://www.pyimagesearch.com/2014/08/25/4-point-opencv-getperspective-transform-example/
-Mat fixPerspective (Mat img, vector<cnt> border, Point ref);
-
-bool isColor(Mat img);
+        //Sets default variables
+        Mat Capture() {return IMGProcessor(img,10,5,5,11,2,8.5/11.0,100,200,3,.04);}
+}

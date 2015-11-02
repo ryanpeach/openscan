@@ -9,7 +9,7 @@
 #include <vector>
 #include <cmath>
 #include <geometry.hpp>
-#include <capture.hpp>
+#include <cvmethods.hpp>
 #include <iostream>
 
 using namespace std;
