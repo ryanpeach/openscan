@@ -2,11 +2,12 @@
  * capture.cpp
  *
  *  Created on: Oct 31, 2015
- *      Author: ryanp
+ *      Author: Ryan Peach
  */
 
 #include <opencv2/opencv.hpp>
 #include <vector>
+#include <cmath>
 #include <geometry.hpp>
 #include <capture.hpp>
 
@@ -26,38 +27,43 @@ struct Fp {
 	Point center;
 	int depth, shape;
 
-	Fp (vector<cnt> conts) {
+	Fp (vector<cnt> conts, double angleTol) {
 		contours = conts;
 		center = centroid(contours);
-		depth = findInnerBorder(contours);
+		depth = findInnerBorder(contours,angleTol);
 		contour = contours[depth];
 		shape = contours[depth].size();
 	}
+	Fp (vector<cnt> conts) {Fp(conts,10.0);}
+
+	private:
+		//Checks shape of each contour from last to -5 and finds the first 'square.' Returns 0 if none exists.
+		//Null-Condition: returns -1;
+		int findInnerBorder(vector<cnt> cnts, double angleTol) {
+			cnt contour;
+			for (int x = cnts.size(); x > 0; x++) {
+				contour = cnts[x];
+				if (isPoly(contour,4,true,angleTol)) {return x+1;}
+			}
+			return -1;
+		}
+		int findInnerBorder(Cnts cnts) {return findInnerBorder(cnts.contours,10.0);}
+
 };
 
 
 // -------------- Feature Detection ----------------
-//Checks shape of each contour from last to -5 and finds the first 'square.' Returns 0 if none exists.
-int findInnerBorder(vector<cnt> cnts) {
-	cnt contour;
-	for (int x = sizeOf(cnts); x > 0; x++) {
-		contour = cnts[x]
-		if (isPoly(contour,4,true)) {return x+1;}
-		else {return -1;}
-	}
-}
-int findInnerBorder(Cnts cnts) {return findInnerBorder(cnts.contours);}
 
 //Filters the img, finds the contours, and returns the Cnts.
 //Uses: polyTol
-Cnts findPolys (Mat img) {
+Cnts findPolys (Mat img, double tol) {
 	//Find contours and heirarchy
 	vector<cnt> contours, polys; vector<Vec4i> heirarchy; cnt temp;
 	findContours(img, contours, heirarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
 
 	//Return approximate polygons
 	for (int i = 0; i < contours.size(); i++) {
-		approxPolyDP(contours[i], temp, polyTol, true);
+		approxPolyDP(contours[i], temp, tol, true);
 		polys.push_back(temp);
 	}
 
@@ -66,23 +72,24 @@ Cnts findPolys (Mat img) {
 }
 
 //Find all the focus points within an image.
-vector<Fp> findFocusPoints (Cnts polys) {
+vector<Fp> findFocusPoints (Cnts polys, double angleTol) {
 	//Definitions
-	vector<FP> out; FP tempFp; vector<vector<cnt>> cntV;
+	vector<Fp> out; Fp tempFp; vector<vector<cnt>> cntV;
 	vector<int> done; vector<cnt> contours; int k;
+	cnt poly;
 
 	for(int i = 0; i < polys.contours.size(); i++) {
 		k=i; poly.clear();
-		if(!done.contains(i)){        //Check that through navigation you haven't been here before
+		if(!contains(done,i)){        //Check that through navigation you haven't been here before
 			done.push_back(i);
 
 			//Navigate the heirarchy
-			while (heirarchy[k][2] != -1) {
-				k=heirarchy[k][2];
+			while (polys.heirarchy[k][2] != -1) {
+				k=polys.heirarchy[k][2];
 				done.push_back(k);
 				contours.push_back(polys.contours[k]);
 			}
-			if (heirarchy[k][2] != -1) {contours.push_back(polys.contours[k]);} //Add the last element
+			if (polys.heirarchy[k][2] != -1) {contours.push_back(polys.contours[k]);} //Add the last element
 
 			//Check if there are enough polys to count as a potential focus point, append them to fp
 			if (poly.size() >= 5) {cntV.push_back(contours);}
@@ -90,9 +97,9 @@ vector<Fp> findFocusPoints (Cnts polys) {
 	}
 
 	//Filter the focus points for their innermost border
-	for (int x = 0; x < cntV.size()); x++) {
-		tempFp = Fp(cntV[x]);
-		if (tempFp.depth >= 0) {out.push_back(tempFp);}
+	for (int x = 0; x < cntV.size(); x++) {
+		tempFp = Fp(cntV[x],angleTol);
+		if (tempFp.depth >= 0) {out.push_back(tempFp);}	//Check that cntV[x] is a valid Fp
 	}
 
 	//Return the focus points
@@ -102,25 +109,28 @@ vector<Fp> findFocusPoints (Cnts polys) {
 //Classifies squares and selects the four most likely to be corners
 //Null-Condition: Returns null
 //Uses: angleTol
-vector<Fp> getCorners(vector<Fp> focusPoints) {
+vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol) {
 	list<Fp> fpList = list<Fp>(focusPoints);
-	list<Fp> fours = fpList.remove_if([](Fp z){return z.shape == 4;});
-	double angles (Point x) {
+	list<Fp> fours = fpList;
+	fours.remove_if([](Fp z){return z.shape != 4;});  //Make fours a list of only size four Fp's
+	list<double> angles (Point x) {
 		vector<double> out;
-		for (Fp y : fours) {for (Fp z : fours) {if (x != y && y != z && x != z) {out.push_back(angle(x,y,z));}}}
+		for (Fp y : fours) {for (Fp z : fours) {if (x != y && y != z && x != z) {out.push_back(angle(x,y.center,z.center));}}}
 		return out;
 	}
 
 	//Classify corners as having 2 right angles
-	list<Fp> out;
-	for (f : fours) {
-		if (angles(f.contours).remove_if([](double z){return math.abs(z-90.0)<angleTol;}).size()>=2 && !find(out.begin(),out.end(),f)) {
+	vector<Fp> out;
+	for (Fp f : fours) {
+		auto angs = angles(f.center);
+		angs.remove_if([](double z){return abs(z-90.0)<angleTol;});
+		if (angs.size()>=2 && !contains(out,f)) {
 			out.push_back(f);
 		}
 	}
 
 	//Return their centroids
-	if (!hasRectangle(out)) {return null;}
+	if (!hasRectangle(out, angleTol)) {return vector<Fp>();}
 	return vector<Fp>(out);
 }
 
@@ -130,10 +140,10 @@ vector<Fp> getCorners(vector<Fp> focusPoints) {
 vector<Fp> sortCorners(vector<Fp> corners) {
 	Point cent = centroid(corners); list<double> polar; int n; vector<Fp> out;
 	for (Fp f : corners) {polar.push_back(angle(f.center,cent));} //Calculate all the angles from the centroid, maintaining index
+	list<double> sorted = polar.sort();
 	//Sort "corners" by the order of sorted "polar"
-	vector<Point> sorted = polar.sort();
-	for (int i = 0; i<polar.size()); i++) {
-		n = find(polar.begin(), polar.end(), sorted[i]) - polar.begin(); //Gets the index of sorted[i]
+	for (int i = 0; i<polar.size(); i++) {
+		n = index(polar, (double)sorted[i]);
 		out.push_back(corners[n]); //Return sorted corners
 	}
 
@@ -164,79 +174,93 @@ Point getRef(cnt contour) {
 }
 
 // ------------ Image Manipulation --------------
-//Uses: etol1, etol2, eSize
-Mat importFilter(Mat img){
-	//Declarations
+//wSize must be an odd number, will be rounded up.
+Mat importFilter(Mat img, int tol1, int tol2, int wSize){
+	//Testing & Declarations
 	Mat gray, edges;
+	while(wSize%2!=1) {wSize++;}	//wSize must be an odd number
 
 	//Convert to gray if not already
 	if (isColor(img)) {cvtColor(img,gray,COLOR_RGB2GRAY);}
-	else {gray = img.copy();}
+	else {gray = img;}
 
 	//Return Canny Edge Detection
-	Canny(gray,edges,etol1,etol2,eSize);
-	return edges
+	Canny(gray,edges,tol1,tol2,wSize);
+	return edges;
 }
 
 //Uses: wSize, C
-Mat outputFilter(Mat img){
+Mat outputFilter(Mat img, int wSize, int C){
+	//Testing & Declarations
 	Mat gray, out;
-	cvtColor(img, gray, COLOR_RGB2GRAY);
+	while(wSize%2!=1) {wSize++;}	//wSize must be an odd number
+
+	//Convert to gray if not already
+	if (isColor(img)) {cvtColor(img,gray,COLOR_RGB2GRAY);}
+	else {gray = img;}
+
 	adaptiveThreshold(gray, out, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, wSize, C);
 	return out;
 }
 
 //Uses: R
-Mat cropImage(Mat img){
+Mat cropImage(Mat img, int R){
 	int sizeX = img.cols; int sizeY = img.rows;
-	return img[R:sizeY-R][R:sizeX-R];
+	Mat out = Mat(sizeY-2*R,sizeX-2*R,img.type());
+	for (int x = R; x<sizeX-R; x++) {
+		for (int y = R; y<sizeY-R; y++) {
+			out[y-R][x-R]=img[y][x];
+		}
+	}
+	return out;
 }
 
 //Uses: aspectRatio
 //Reference: Modified from http://www.pyimagesearch.com/2014/08/25/4-point-opencv-getperspective-transform-example/
 Mat fixPerspective (Mat img, vector<cnt> border, Point ref) {
 	//Declare variables
-	cnt t1, tr, br, b1;
-	Mat M, out;
+	cnt tl, tr, bl, br;
+	Mat out;
 
 	//Rotate the array until the reference is first
 	while (centroid(border[0]) != ref)
-	border = rotateList(border,1);
+	border = rotateVec(border);
 
 	tl = border[0]; tr = border[1]; br = border[2]; bl = border[3];
 
 	// compute the width of the new image, which will be the
 	// maximum distance between bottom-right and bottom-left
 	// x-coordiates or the top-right and top-left x-coordinates
-	auto widthA = math.sqrt(((br[0] - bl[0]) ** 2) + ((br[1] - bl[1]) ** 2));
-	auto widthB = math.sqrt(((tr[0] - tl[0]) ** 2) + ((tr[1] - tl[1]) ** 2));
-	auto maxWidth = max(int(widthA), int(widthB));
+	auto widthA = sqrt(pow((double)(br[0] - bl[0]), 2.0) + pow((double)(br[1] - bl[1]), 2.0));
+	auto widthB = sqrt(pow((double)(tr[0] - tl[0]), 2.0) + pow((double)(tr[1] - tl[1]), 2.0));
+	int maxWidth = max(int(widthA), int(widthB));
 
 	// compute the height of the new image, which will be the
 	// maximum distance between the top-right and bottom-right
 	// y-coordinates or the top-left and bottom-left y-coordinates
-	auto heightA = math.sqrt(((tr[0] - br[0]) ** 2) + ((tr[1] - br[1]) ** 2));
-	auto heightB = math.sqrt(((tl[0] - bl[0]) ** 2) + ((tl[1] - bl[1]) ** 2));
-	auto maxHeight = max(int(heightA), int(heightB));
+	auto heightA = sqrt(pow((double)(tr[0] - br[0]), 2.0) + pow((double)(tr[1] - br[1]), 2.0));
+	auto heightB = sqrt(pow((double)(tl[0] - bl[0]), 2.0) + pow((double)(tl[1] - bl[1]), 2.0));
+	int maxHeight = max((int)heightA, (int)heightB);
 
 	// now that we have the dimensions of the new image, construct
 	// the set of destination points to obtain a "birds eye view",
 	// (i.e. top-down view) of the image, again specifying points
 	// in the top-left, top-right, bottom-right, and bottom-left
 	// order
-	auto dst = Rect(Point(0, 0),
+	auto dst = vector<Point2f>({Point(0, 0),
 	Point(maxWidth - 1, 0),
 	Point(maxWidth - 1, maxHeight - 1),
-	Point(0, maxHeight - 1));
+	Point(0, maxHeight - 1)});
+	auto src = vector<Point2f>({border[0],border[1],border[2],border[3]});
 
 	//Return Perspective Transform
-	M = getPerspectiveTransform(border, dst);
-	warpPerspective(img, out, M, (maxWidth, maxHeight));
+	auto M = getPerspectiveTransform(src, dst);
+	warpPerspective(img, out, M, Size(maxWidth, maxHeight));
 	return out;
 }
 
 bool isColor(Mat img){
-	if (sizeOf(img[0][0])==3) {return true;}
-	else {return false}
+	if (sizeof(img[0][0])==3) {return true;}
+	else {return false;}
 }
 

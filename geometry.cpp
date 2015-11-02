@@ -46,18 +46,21 @@ bool allInside(cnt poly, vector<Fp> fps) {
     return true;
 }
 
-cnt rotateCnt(cnt contour) {
-    cnt out = cnt().reserve(contour.size());
-    for (int i = 1; i < contour.size(); i++) {
-    	out.push_back(contour[i]);
-    }
-    out.push_back(contour[0]);
-    return out;
-}
-cnt rotateCnt(cnt contour, int n) {
-	cnt out = contour;
-	for (;n>0;n--){out = rotateCnt(out);}
+template <typename G>
+vector<G> rotateVec(vector<G> vec){
+	cnt out = cnt().reserve(vec.size());
+	for (int i = 1; i < vec.size(); i++) {
+		out.push_back(vec[i]);
+	}
+	out.push_back(vec[0]);
 	return out;
+}
+template <typename F>
+list<F> rotateLst(list<F> lst){
+	return rotateVec(vector<F>(lst));
+}
+cnt rotateCnt(cnt contour){
+	return rotateVec(contour);
 }
 
 //Returns the center of a contour, or of a bunch of contours, or of a bunch of points
@@ -100,19 +103,19 @@ double angle(Point origin, Point c2, Point c3) {
 }
 
 //Runs the polygon rules of this application, that all valid shapes are convex, all size 4 shapes have all right angles within tolerance, and optionally all sides are the same length
-bool isPoly(cnt poly, int size, int regular, double tol) {
+bool isPoly(cnt poly, int size, int regular, double angleTol) {
     if (poly.size()==size && isContourConvex(poly)) {
         if (size == 4) {
             auto angles = angles(poly);
-            for (double a : angles) {if (abs(a-90.0)>tol) {return false;}}    //Test that all angles are within tolerance of 90
+            for (double a : angles) {if (abs(a-90.0)>angleTol) {return false;}}    //Test that all angles are within tolerance of 90
         }
-        if (regular) {return allSameLength(poly);}
+        if (regular) {return allSameLength(poly, angleTol);}
         else {return true;}
     }
     else {return false;}
 }
-bool isRectangle(cnt poly, bool square, double tol) {return isPoly(poly,4,square,tol);}
-bool isSquare(cnt poly, double tol) {return isPoly(poly,4,true,tol);}
+bool isRectangle(cnt poly, bool square, double angleTol) {return isPoly(poly,4,square,angleTol);}
+bool isSquare(cnt poly, double angleTol) {return isPoly(poly,4,true,angleTol);}
 
 //Finds if there is a rectangle within poly
 bool hasRectangle(vector<Fp> poly, double tol) {
@@ -151,4 +154,26 @@ vector<double> dists(cnt poly) {
         if (b==poly.size()) {b=0;}
     }
     return out;
+}
+
+//Other functions
+template <typename T>
+bool contains(list<T> lst, T item) {
+	return find(lst.begin(),lst.end(),item);
+}
+
+template <typename E>
+bool contains(vector<E> lst, E item) {
+	return find(lst.begin(),lst.end(),item);
+}
+
+template <typename G>
+//Null-Condition: returns -1
+int index(list<G> lst, G item) {
+	for (int i = 0; i<lst.size(); i++){
+		if (lst[i]==item) {
+			return i;
+		}
+	}
+	return -1;
 }

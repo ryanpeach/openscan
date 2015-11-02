@@ -1,12 +1,6 @@
-/*
- * capture.cpp
- *
- *  Created on: Oct 31, 2015
- *      Author: ryanp
- */
-
 #include <opencv2/opencv.hpp>
 #include <vector>
+#include <cmath>
 #include <geometry.hpp>
 #include <capture.hpp>
 
@@ -26,26 +20,25 @@ struct Fp {
 	Point center;
 	int depth, shape;
 
+	Fp (vector<cnt> conts, double angleTol);
 	Fp (vector<cnt> conts);
 };
 
 
 // -------------- Feature Detection ----------------
 //Checks shape of each contour from last to -5 and finds the first 'square.' Returns 0 if none exists.
-int findInnerBorder(vector<cnt> cnts);
-int findInnerBorder(Cnts cnts);
+int findInnerBorder(vector<cnt> cnts, double tol);
+int findInnerBorder(Cnts cnts, double tol);
 
 //Filters the img, finds the contours, and returns the Cnts.
-Cnts findPolys (Mat img);
-Cnts findPolys (Mat img, int tol);
+Cnts findPolys (Mat img, double tol);
 
 //Find all the focus points within an image.
 vector<Fp> findFocusPoints (Cnts polys);
 
 //Classifies squares and selects the four most likely to be corners
 //Null-Condition: Returns null
-vector<Fp> getCorners(vector<Fp> focusPoints);
-vector<Fp> getCorners(vector<Fp> focusPoints, int tol);
+vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol);
 
 //Sort edges by distance.
 //Corners must be a rectangle
@@ -59,16 +52,14 @@ Fp getRef(vector<Fp> fps);
 Point getRef(cnt contour);
 
 // ------------ Image Manipulation --------------
-Mat importFilter(Mat img);
+//wSize must be an odd number, will be rounded up.
 Mat importFilter(Mat img, int tol1, int tol2, int wSize);
 
-Mat outputFilter(Mat img);
 Mat outputFilter(Mat img, int wSize, int C);
 
 Mat cropImage(Mat img, int R);
 
 //Reference: Modified from http://www.pyimagesearch.com/2014/08/25/4-point-opencv-getperspective-transform-example/
 Mat fixPerspective (Mat img, vector<cnt> border, Point ref);
-Mat fixPerspective (Mat img, vector<cnt> border, Point ref, double aspectRatio);
 
 bool isColor(Mat img);
