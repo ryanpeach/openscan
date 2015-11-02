@@ -18,7 +18,7 @@ typedef vector<Point> cnt;
 
 #define PI 3.14159265
 
-bool allSameLength(cnt poly, int tol){
+bool allSameLength(cnt poly, int distTol){
     vector<vector<Point>> pairs; vector<double> lengths, error; vector<bool> test; int i; int mean = 0;
 
     //Get a list of all lines in poly
@@ -32,7 +32,7 @@ bool allSameLength(cnt poly, int tol){
 
     //Get error from mean and test if it is within tolerance
     for (i = 0; i < poly.size(); i++) {error.push_back(abs(lengths[i]-mean));}               //Get the error from the mean of each length
-    for (i = 0; i < poly.size(); i++) {test.push_back(error[i] < tol);}                      //Check if the error is within tolerance
+    for (i = 0; i < poly.size(); i++) {test.push_back(error[i] < distTol);}                      //Check if the error is within tolerance
     return find(test.begin(), test.end(), false)!=test.end();                                //Test and return to see if there is a false within the test vector
 }
 

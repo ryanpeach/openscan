@@ -18,7 +18,7 @@ typedef vector<Point> cnt;
 
 #define PI 3.14159265
 
-bool allSameLength(cnt poly, int tol);
+bool allSameLength(cnt poly, int distTol);
 
 //Test that all focus points are inside the poly
 bool allInside(cnt poly, vector<Fp> fps);
