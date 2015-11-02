@@ -1,8 +1,9 @@
-/*
- * geometry.cpp
+/**
+ * geometry.hpp
  *
- *  Created on: Oct 31, 2015
- *      Author: Ryan Peach
+ * @date Oct 31, 2015
+ * @author Ryan Peach
+ * @version v0.1
  */
 
 #include <opencv2/opencv.hpp>
@@ -36,7 +37,6 @@ bool allSameLength(cnt poly, int distTol){
     return find(test.begin(), test.end(), false)!=test.end();                                //Test and return to see if there is a false within the test vector
 }
 
-//Test that all focus points are inside the poly
 bool allInside(cnt poly, vector<Fp> fps) {
     for (Fp f : fps) {
         if (pointPolygonTest(poly, f.center, false) < 0) {
@@ -63,7 +63,6 @@ cnt rotateCnt(cnt contour){
 	return rotateVec(contour);
 }
 
-//Returns the center of a contour, or of a bunch of contours, or of a bunch of points
 Point centroid(cnt contour) {
     Point sum = Point(0,0);
     for (Point p : contour) {sum += p;}
@@ -102,36 +101,34 @@ double angle(Point origin, Point c2, Point c3) {
     return acos(diff1.dot(diff2)/(norm1*norm2)) * 180.0 / PI;
 }
 
-//Runs the polygon rules of this application, that all valid shapes are convex, all size 4 shapes have all right angles within tolerance, and optionally all sides are the same length
-bool isPoly(cnt poly, int size, int regular, double angleTol) {
+bool isPoly(cnt poly, int size, int regular, double angleTol, double distTol) {
     if (poly.size()==size && isContourConvex(poly)) {
         if (size == 4) {
             auto angles = angles(poly);
             for (double a : angles) {if (abs(a-90.0)>angleTol) {return false;}}    //Test that all angles are within tolerance of 90
         }
-        if (regular) {return allSameLength(poly, angleTol);}
+        if (regular) {return allSameLength(poly, distTol);}
         else {return true;}
     }
     else {return false;}
 }
-bool isRectangle(cnt poly, bool square, double angleTol) {return isPoly(poly,4,square,angleTol);}
-bool isSquare(cnt poly, double angleTol) {return isPoly(poly,4,true,angleTol);}
+bool isRectangle(cnt poly, bool square, double angleTol, double distTol) {return isPoly(poly,4,square,angleTol,distTol);}
+bool isSquare(cnt poly, double angleTol, double distTol) {return isPoly(poly,4,true,angleTol,distTol);}
 
-//Finds if there is a rectangle within poly
-bool hasRectangle(vector<Fp> poly, double tol) {
-    if (poly.size()!=4) {return false;}
+cnt hasRectangle(vector<Fp> fps, double angleTol, double distTol) {
+    if (fps.size()<4) {return cnt();}
     //check all combinations of poly
-    for (Fp a1 : poly) {
-        for (Fp a2 : poly) {
-            for (Fp a3 : poly) {
-                for (Fp a4 : poly) {
-                    if (isRectangle((cnt){a1.center,a2.center,a3.center,a4.center},false,tol)) {
-                        return true;
-    }}}}}
-    return false;
+    for (Fp a1 : fps) {
+        for (Fp a2 : fps) {
+            for (Fp a3 : fps) {
+                for (Fp a4 : fps) {
+                    if (a1 != a2 && a1 != a3 && a1 != a4 && a2 != a3 && a2 != a4 && a3 != a4) {
+                        if (isRectangle((cnt){a1.center,a2.center,a3.center,a4.center},false,angleTol,distTol)) {
+                            return (cnt){a1.center,a2.center,a3.center,a4.center};
+    }}}}}}
+    return cnt();
 }
 
-//Returns a vector of angles for the polygon
 vector<double> angles(cnt poly) {
     int a = 0; int b = poly.size()-1; int c = 1;
     vector<double> out;
@@ -144,7 +141,6 @@ vector<double> angles(cnt poly) {
     return out;
 }
 
-//Returns a vector of distances for the polygon
 vector<double> dists(cnt poly) {
     int a = 0; int b = 1;
     vector<double> out;
@@ -156,20 +152,18 @@ vector<double> dists(cnt poly) {
     return out;
 }
 
-//Other functions
 template <typename T>
 bool contains(list<T> lst, T item) {
 	return find(lst.begin(),lst.end(),item);
 }
 
-template <typename E>
-bool contains(vector<E> lst, E item) {
-	return find(lst.begin(),lst.end(),item);
+template <typename T>
+bool contains(vector<T> vec, T item) {
+	return find(vec.begin(),vec.end(),item);
 }
 
-template <typename G>
-//Null-Condition: returns -1
-int index(list<G> lst, G item) {
+template <typename T>
+int index(list<T> lst, T item) {
 	for (int i = 0; i<lst.size(); i++){
 		if (lst[i]==item) {
 			return i;
