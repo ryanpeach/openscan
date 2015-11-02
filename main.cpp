@@ -61,17 +61,17 @@ void testGeometry(){
 	double test12 = angle(a, b, c);
 	printr("centroid",vector<Point>({a,b}),test10); printr("centroid",vector<Point>({a,b}),test11); printr("centroid",vector<Point>({a,b,c}),test12);
 
-	bool test13a = isPoly(testPoly, 3, false, 0); //True
-	bool test13b = isPoly(testPoly, 3, true, 0); //False
-	bool test13c = isPoly(testPoly, 4, false, 0); //False
+	bool test13a = isPoly(testPoly, 3, false, 0, 0); //True
+	bool test13b = isPoly(testPoly, 3, true, 0, 0); //False
+	bool test13c = isPoly(testPoly, 4, false, 0, 0); //False
 	printr("isPoly",testPoly,test13a,true); printr("isPoly",testPoly,test13b,false); printr("isPoly",testPoly,test13c,false);
 
-	bool test14 = isRectangle(bigTestPoly, false, 0); //True
-	bool test15 = isSquare(bigTestPoly, 0); //True
+	bool test14 = isRectangle(bigTestPoly, false, 0, 0); //True
+	bool test15 = isSquare(bigTestPoly, 0, 0); //True
 	printr("isRectangle",bigTestPoly,test14,true); printr("isSquare",bigTestPoly,test15,true);
 
-	bool test16a = hasRectangle(vector<Fp>({testFp2,testFp3}), 0); //True
-	bool test16b = hasRectangle(vector<Fp>({testFp3}), 0); //False
+	bool test16a = hasRectangle(vector<Fp>({testFp2,testFp3}), 0, 0); //True
+	bool test16b = hasRectangle(vector<Fp>({testFp3}), 0, 0); //False
 	printr("hasRectangle",vector<Fp>({testFp2,testFp3}),test16a,true); printr("hasRectangle",vector<Fp>({testFp3}),test16b,false);
 
 	vector<double> test17 = angles(testPoly);

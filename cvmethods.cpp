@@ -27,27 +27,26 @@ struct Fp {
 	Point center;
 	int depth, shape;
 
-	Fp (vector<cnt> conts, double angleTol) {
+	Fp (vector<cnt> conts, double angleTol, double distTol) {
 		contours = conts;
 		center = centroid(contours);
-		depth = findInnerBorder(contours,angleTol);
+		depth = findInnerBorder(contours,angleTol,distTol);
 		contour = contours[depth];
 		shape = contours[depth].size();
 	}
-	Fp (vector<cnt> conts) {Fp(conts,10.0);}
+	Fp (vector<cnt> conts) {Fp(conts,10.0,5.0);}
 
 	private:
 		//Checks shape of each contour from last to -5 and finds the first 'square.' Returns 0 if none exists.
 		//Null-Condition: returns -1;
-		int findInnerBorder(vector<cnt> cnts, double angleTol) {
+		int findInnerBorder(vector<cnt> cnts, double angleTol, double distTol) {
 			cnt contour;
 			for (int x = cnts.size(); x > 0; x++) {
 				contour = cnts[x];
-				if (isPoly(contour,4,true,angleTol)) {return x+1;}
+				if (isPoly(contour,4,true,angleTol,distTol)) {return x+1;}
 			}
 			return -1;
 		}
-		int findInnerBorder(Cnts cnts) {return findInnerBorder(cnts.contours,10.0);}
 
 };
 
@@ -72,7 +71,7 @@ Cnts findPolys (Mat img, double tol) {
 }
 
 //Find all the focus points within an image.
-vector<Fp> findFocusPoints (Cnts polys, double angleTol) {
+vector<Fp> findFocusPoints (Cnts polys, double angleTol, double distTol) {
 	//Definitions
 	vector<Fp> out; Fp tempFp; vector<vector<cnt>> cntV;
 	vector<int> done; vector<cnt> contours; int k;
@@ -98,7 +97,7 @@ vector<Fp> findFocusPoints (Cnts polys, double angleTol) {
 
 	//Filter the focus points for their innermost border
 	for (int x = 0; x < cntV.size(); x++) {
-		tempFp = Fp(cntV[x],angleTol);
+		tempFp = Fp(cntV[x],angleTol,distTol);
 		if (tempFp.depth >= 0) {out.push_back(tempFp);}	//Check that cntV[x] is a valid Fp
 	}
 
@@ -109,7 +108,7 @@ vector<Fp> findFocusPoints (Cnts polys, double angleTol) {
 //Classifies squares and selects the four most likely to be corners
 //Null-Condition: Returns null
 //Uses: angleTol
-vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol) {
+vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol, double distTol) {
 	list<Fp> fpList = list<Fp>(focusPoints);
 	list<Fp> fours = fpList;
 	fours.remove_if([](Fp z){return z.shape != 4;});  //Make fours a list of only size four Fp's
@@ -130,7 +129,7 @@ vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol) {
 	}
 
 	//Return their centroids
-	if (!hasRectangle(out, angleTol)) {return vector<Fp>();}
+	if (!hasRectangle(out, angleTol, distTol)) {return vector<Fp>();}
 	return vector<Fp>(out);
 }
 
