@@ -1,9 +1,9 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include <cmath>
-#include <geometry.hpp>
-#include <cvmethods.hpp>
-#include <capture.hpp>
+#include "geometry.hpp"
+#include "cvmethods.hpp"
+#include "capture.hpp"
 #include <iostream>
 
 using namespace std;

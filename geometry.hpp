@@ -6,12 +6,6 @@
  * @version v0.1
  */
 
-#include <opencv2/opencv.hpp>
-#include <vector>
-#include <cmath>
-#include <geometry.hpp>
-#include <cvmethods.hpp>
-
 using namespace std;
 using namespace cv;
 
@@ -132,7 +126,7 @@ vector<double> dists(cnt poly);
  * @complexity O(?)
  */
 template <typename T> bool contains(list<T> lst, T item);
-template <typename E> bool contains(vector<E> vec, E item);
+template <typename T> bool contains(vector<T> vec, T item);
 
 /**
  * Tests whether or not item is within vec.
@@ -141,4 +135,4 @@ template <typename E> bool contains(vector<E> vec, E item);
  * @return -1 if none found.
  * @complexity O(n)
  */
-template <typename G> int index(list<G> lst, G item);
+template <typename T> int index(list<T> lst, T item);

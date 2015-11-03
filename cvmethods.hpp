@@ -1,9 +1,3 @@
-#include <opencv2/opencv.hpp>
-#include <vector>
-#include <cmath>
-#include <geometry.hpp>
-#include <cvmethods.hpp>
-
 using namespace std;
 using namespace cv;
 
