@@ -215,6 +215,8 @@ def allSameLength(poly):
 def webcamTest():
     """Runs a detection test on an image and displays the result"""
     cap = cv2.VideoCapture(0) #Setup webcam
+    if not cap.isOpened(): print "Camera error."
+    
     preview = None
     while(True):
         ret, frame = cap.read() #Capture frame by frame
