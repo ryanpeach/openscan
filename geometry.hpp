@@ -5,11 +5,28 @@
  * @author Ryan Peach
  * @version v0.1
  */
+#include <opencv2/opencv.hpp>
+#include <vector>
 
 using namespace std;
 using namespace cv;
 
 typedef vector<Point> cnt;
+
+struct Cnts {
+	vector<cnt> contours;
+	vector<Vec4i> heirarchy;
+};
+
+struct Fp {
+	vector<cnt> contours;
+	cnt contour;
+	Point center;
+	int depth, shape;
+
+	Fp (vector<cnt> conts, double angleTol, double distTol);
+	Fp (vector<cnt> conts);
+};
 
 #define PI 3.14159265
 

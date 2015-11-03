@@ -9,21 +9,17 @@
 #include <vector>
 #include <list>
 #include <cmath>
-#include "geometry.hpp"
-#include "cvmethods.hpp"
 #include <iostream>
 #include <sstream>
 
-using namespace std;
-using namespace cv;
+#include "cvmethods.hpp"
 
 string tostr(Point p) {
 	stringstream out;
 	out << "(";
 	out << (double)p.x << ", ";
 	out << (double)p.y << ")";
-	string s = out.str();
-	return s;
+	return out.str();
 }
 
 string tostr(Fp fp) {
@@ -37,8 +33,7 @@ string tostr(Cnts cnts) {
 string tostr(double d) {
 	stringstream out;
 	out << d;
-	string s = out.str();
-	return s;
+	return out.str();
 }
 
 template <typename T> string tostr(vector<T> vec) {
@@ -49,8 +44,7 @@ template <typename T> string tostr(vector<T> vec) {
 		out << ", ";
 	}
 	out << "}";
-	string s = out.str();
-	return s;
+	return out.str();
 }
 
 template <typename G> string tostr(list<G> lst) {
@@ -61,8 +55,7 @@ template <typename G> string tostr(list<G> lst) {
 		out << ", ";
 	}
 	out << "}";
-	string s = out.str();
-	return s;
+	return out.str();
 }
 
 string tostr(cnt contour) {
@@ -71,8 +64,7 @@ string tostr(cnt contour) {
 		out << tostr(p);
 		out << ", ";
 	}
-	string s = out.str();
-	return s;
+	return out.str();
 }
 
 template <typename T, typename G>
@@ -91,9 +83,9 @@ void testGeometry(){
 	Point a = Point(0,0); Point b = Point(1,1); Point c = Point(0,1);
 	cnt testPoly = {Point(0,0),Point(1,1),Point(2,1)}; string testPolyS = "{Point(0,0),Point(1,1),Point(2,1)}";
 	cnt bigTestPoly = {Point(-2,-2),Point(-2,2),Point(2,2),Point(2,-2)};
-	Fp testFp1 = Fp(vector<cnt> {bigTestPoly,testPoly});
-	Fp testFp2 = Fp(vector<cnt> {bigTestPoly});
-	Fp testFp3 = Fp(vector<cnt> {testPoly});
+	Fp testFp1 = Fp({bigTestPoly, testPoly});
+	Fp testFp2 = Fp({bigTestPoly});
+	Fp testFp3 = Fp({testPoly});
 	list<Point> testLst = {Point(0,0),Point(1,1),Point(2,2)};
 	Cnts contour = Cnts();
 	vector<cnt> conts = vector<cnt>({testPoly,bigTestPoly});
@@ -110,7 +102,7 @@ void testGeometry(){
 	printr("allInside",bigTestPoly,test2a,true); printr("allInside",testPoly,test2b,false);
 
 	auto test3 = rotateLst(testLst);
-	auto test4 = rotateVec(vector<Point> testLst);
+	auto test4 = rotateVec(vector<Point>(testLst.begin(),testLst.end()));
 	cnt  test5 = rotateCnt(testPoly);
 	printr("rotate",testLst,test3,list<Point> {Point(1,1),Point(2,2),Point(0,0)});
 	printr("rotate",testLst,test4,vector<Point> {Point(1,1),Point(2,2),Point(0,0)});
@@ -136,9 +128,9 @@ void testGeometry(){
 	bool test15 = isSquare(bigTestPoly, 0, 0); //True
 	printr("isRectangle",bigTestPoly,test14,true); printr("isSquare",bigTestPoly,test15,true);
 
-	bool test16a = hasRectangle(vector<Fp> {testFp2,testFp3}, 0, 0); //True
-	bool test16b = hasRectangle(vector<Fp> {testFp3}, 0, 0); //False
-	printr("hasRectangle",vector<Fp>({testFp2,testFp3}),test16a,true); printr("hasRectangle",vector<Fp>({testFp3}),test16b,false);
+	bool test16a = hasRectangle({testFp2,testFp3}, 0.0, 0.0).size()!=0; //True
+	bool test16b = hasRectangle({testFp3}, 0.0, 0.0).size()!=0; //False
+	printr("hasRectangle",vector<Fp> {testFp2,testFp3},test16a,true); printr("hasRectangle",vector<Fp> {testFp3},test16b,false);
 
 	vector<double> test17 = angles(testPoly);
 	vector<double> test18 = dists(testPoly);

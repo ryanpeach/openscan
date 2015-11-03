@@ -1,23 +1,4 @@
-using namespace std;
-using namespace cv;
-
-typedef vector<Point> cnt;
-
-struct Cnts {
-	vector<cnt> contours;
-    vector<Vec4i> heirarchy;
-};
-
-struct Fp {
-	vector<cnt> contours;
-	cnt contour;
-	Point center;
-	int depth, shape;
-
-	Fp (vector<cnt> conts, double angleTol);
-	Fp (vector<cnt> conts);
-};
-
+#include "geometry.hpp"
 
 // -------------- Feature Detection ----------------
 //Checks shape of each contour from last to -5 and finds the first 'square.' Returns 0 if none exists.

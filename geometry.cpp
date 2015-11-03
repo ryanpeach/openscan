@@ -5,12 +5,9 @@
  * @author Ryan Peach
  * @version v0.1
  */
-
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include <cmath>
-#include "geometry.hpp"
-#include "cvmethods.hpp"
 
 using namespace std;
 using namespace cv;
@@ -18,6 +15,40 @@ using namespace cv;
 typedef vector<Point> cnt;
 
 #define PI 3.14159265
+
+struct Cnts {
+	vector<cnt> contours;
+    vector<Vec4i> heirarchy;
+};
+
+struct Fp {
+	vector<cnt> contours;
+	cnt contour;
+	Point center;
+	int depth, shape;
+
+	Fp (vector<cnt> conts, double angleTol, double distTol) {
+		contours = conts;
+		center = centroid(contours);
+		depth = findInnerBorder(contours,angleTol,distTol);
+		contour = contours[depth];
+		shape = contours[depth].size();
+	}
+	Fp (vector<cnt> conts) {Fp(conts,10.0,5.0);}
+
+	private:
+		//Checks shape of each contour from last to -5 and finds the first 'square.' Returns 0 if none exists.
+		//Null-Condition: returns -1;
+		int findInnerBorder(vector<cnt> cnts, double angleTol, double distTol) {
+			cnt contour;
+			for (int x = cnts.size(); x > 0; x++) {
+				contour = cnts[x];
+				if (isPoly(contour,4,true,angleTol,distTol)) {return x+1;}
+			}
+			return -1;
+		}
+
+};
 
 bool allSameLength(cnt poly, int distTol){
     vector<vector<Point>> pairs; vector<double> lengths, error; vector<bool> test; int i; int mean = 0;
