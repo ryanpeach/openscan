@@ -5,6 +5,7 @@
 #include "cvmethods.hpp"
 #include "capture.hpp"
 #include <iostream>
+#include "support.hpp"
 
 using namespace std;
 using namespace cv;

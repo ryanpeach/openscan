@@ -3,3 +3,5 @@ opencv/
 *.sh~
 *.swp
 *.o
+*.cpp~
+*.hpp~

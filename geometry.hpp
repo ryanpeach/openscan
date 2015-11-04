@@ -53,20 +53,6 @@ bool allSameLength(cnt poly, int distTol);
  */
 bool allInside(cnt poly, vector<Fp> fps);
 
-/**
- * Shifts all cells of lst, vec, or contour right by one cell, moves the last cell first.
- * @param  Any list/vector/cnt you wish to rotate.
- * @return The rotated list/vector/contour.
- * @complexity O(?)
- */
-template <typename G>
-vector<G> rotateVec(vector<G> vec);
-
-template <typename F>
-list<F> rotateLst(list<F> lst);
-
-cnt rotateCnt(cnt contour);
-
 
 /**
  * Returns the center of a contour, or of a bunch of contours, or of a bunch of points.
@@ -74,10 +60,11 @@ cnt rotateCnt(cnt contour);
  * @return The mean of all points contained in the param returned as a Point.
  * @complexity O(?)
  */
-Point centroid(cnt contour);
-Point centroid(vector<cnt> contours);
-Point centroid(Cnts contours);
-Point centroid(vector<Fp> fps);
+Point centroid(Point p);
+template <typename U> Point centroid(vector<U> c);
+Point centroid<Point> (cnt);
+Point centroid<cnt> (vector<cnt>);
+Point centroid (Cnts contours);
 
 /**
  * Returns the distance between point a and b.
@@ -117,17 +104,6 @@ bool isPoly(cnt poly, int size, bool regular, double angleTol, double distTol);
 bool isRectangle(cnt poly, bool square, double angleTol, double distTol);
 bool isSquare(cnt poly, double angleTol, double distTol);
 
-/**
- * Iterates through all Fp's given to see if some set of 4 Fp's can be ordered together to create a rectangular polygon.
- * @param  vector<Fp> fps: a list of Fp's of any size >= 4.
- * @param  double angleTol: the angle tolerance of the angle equality.
- * @param  double distTol: the distance tolerance of the length equality.
- * @return Returns a found rectangle as a cnt.
- * @return Returns an empty contour if none was found.
- * @issues isPoly should have consistent angle-testing if regular among all sizes of polys.
- * @complexity O(?)
- */
-cnt hasRectangle(vector<Fp> fps, double angleTol, double distTol);
 
 /**
  * Returns the angles line-angle-line between all neighboring triplets in poly.
@@ -144,22 +120,3 @@ vector<double> angles(cnt poly);
  * @complexity O(?)
  */
 vector<double> dists(cnt poly);
-
-// ------------- Supporting List Functions -------------------
-/**
- * Tests whether or not item is within lst.
- * @param  lst: Any list or vector.
- * @return True/False item is inside lst.
- * @complexity O(?)
- */
-template <typename T, typename U > bool contains(U lst, T item);
-bool contains (vector<int>, int);
-
-/**
- * Tests whether or not item is within vec.
- * @param  lst: Any list or vector.
- * @return first index of item inside lst.
- * @return -1 if none found.
- * @complexity O(n)
- */
-template <typename T, typename U> int index(U lst, T item);

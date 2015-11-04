@@ -9,6 +9,7 @@
 #include <vector>
 #include <cmath>
 #include "geometry.hpp"
+#include "support.hpp"
 
 using namespace std;
 using namespace cv;
@@ -66,16 +67,6 @@ vector<Fp> findFocusPoints (Cnts polys, double angleTol, double distTol) {
 
 	//Return the focus points
 	return vector<Fp>(out.begin(),out.end());
-}
-
-list<double> angs (Point x, list<Fp> fours) {
-	vector<double> out;
-	for (Fp y : fours) {for (Fp z : fours) {if (x != y.center && y != z && x != z.center) {out.push_back(angle(x,y.center,z.center));}}}
-	return list<double>(out.begin(),out.end());
-}
-
-bool cmpAng(const double& z, double angleTol) {
-	return abs(z-90.0)<angleTol;
 }
 
 //Classifies squares and selects the four most likely to be corners
