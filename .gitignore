@@ -2,3 +2,4 @@ opencv/
 ./build
 *.sh~
 *.swp
+*.o
