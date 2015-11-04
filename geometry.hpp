@@ -7,6 +7,7 @@
  */
 #include <opencv2/opencv.hpp>
 #include <vector>
+#include <list>
 
 using namespace std;
 using namespace cv;
@@ -26,6 +27,10 @@ struct Fp {
 
 	Fp (vector<cnt> conts, double angleTol, double distTol);
 	Fp (vector<cnt> conts);
+	Fp ();
+
+	bool operator== (Fp newFp);
+	bool operator!= (Fp newFp);
 };
 
 #define PI 3.14159265
@@ -54,9 +59,14 @@ bool allInside(cnt poly, vector<Fp> fps);
  * @return The rotated list/vector/contour.
  * @complexity O(?)
  */
-template <typename F> list<F> rotateLst(list<F> lst);
-template <typename G> vector<G> rotateVec(vector<G> vec);
+template <typename G>
+vector<G> rotateVec(vector<G> vec);
+
+template <typename F>
+list<F> rotateLst(list<F> lst);
+
 cnt rotateCnt(cnt contour);
+
 
 /**
  * Returns the center of a contour, or of a bunch of contours, or of a bunch of points.
@@ -142,8 +152,8 @@ vector<double> dists(cnt poly);
  * @return True/False item is inside lst.
  * @complexity O(?)
  */
-template <typename T> bool contains(list<T> lst, T item);
-template <typename T> bool contains(vector<T> vec, T item);
+template <typename T, typename U > bool contains(U lst, T item);
+bool contains (vector<int>, int);
 
 /**
  * Tests whether or not item is within vec.
@@ -152,4 +162,4 @@ template <typename T> bool contains(vector<T> vec, T item);
  * @return -1 if none found.
  * @complexity O(n)
  */
-template <typename T> int index(list<T> lst, T item);
+template <typename T, typename U> int index(U lst, T item);

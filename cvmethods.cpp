@@ -23,7 +23,7 @@ Cnts findPolys (Mat img, double tol) {
 	findContours(img, contours, heirarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
 
 	//Return approximate polygons
-	for (int i = 0; i < contours.size(); i++) {
+	for (unsigned int i = 0; i < contours.size(); i++) {
 		approxPolyDP(contours[i], temp, tol, true);
 		polys.push_back(temp);
 	}
@@ -35,13 +35,13 @@ Cnts findPolys (Mat img, double tol) {
 //Find all the focus points within an image.
 vector<Fp> findFocusPoints (Cnts polys, double angleTol, double distTol) {
 	//Definitions
-	vector<Fp> out; Fp tempFp; vector<vector<cnt>> cntV;
+	list<Fp> out; Fp tempFp; vector<vector<cnt>> cntV;
 	vector<int> done; vector<cnt> contours; int k;
 	cnt poly;
 
-	for(int i = 0; i < polys.contours.size(); i++) {
+	for(unsigned int i = 0; i < polys.contours.size(); i++) {
 		k=i; poly.clear();
-		if(!contains(done,i)){        //Check that through navigation you haven't been here before
+		if(!contains(done,(int)i)){        //Check that through navigation you haven't been here before
 			done.push_back(i);
 
 			//Navigate the heirarchy
@@ -58,53 +58,67 @@ vector<Fp> findFocusPoints (Cnts polys, double angleTol, double distTol) {
 	}
 
 	//Filter the focus points for their innermost border
-	for (int x = 0; x < cntV.size(); x++) {
-		tempFp = Fp(cntV[x],angleTol,distTol);
-		if (tempFp.depth >= 0) {out.push_back(tempFp);}	//Check that cntV[x] is a valid Fp
+	for (unsigned int x = 0; x < cntV.size(); x++) {
+		if (tempFp.depth >= 0) { //Check that cntV[x] is a valid Fp
+			out.push_back(Fp(cntV[x],angleTol,distTol));
+		}
 	}
 
 	//Return the focus points
-	return out;
+	return vector<Fp>(out.begin(),out.end());
+}
+
+list<double> angs (Point x, list<Fp> fours) {
+	vector<double> out;
+	for (Fp y : fours) {for (Fp z : fours) {if (x != y.center && y != z && x != z.center) {out.push_back(angle(x,y.center,z.center));}}}
+	return list<double>(out.begin(),out.end());
+}
+
+bool cmpAng(const double& z, double angleTol) {
+	return abs(z-90.0)<angleTol;
 }
 
 //Classifies squares and selects the four most likely to be corners
 //Null-Condition: Returns null
 //Uses: angleTol
 vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol, double distTol) {
-	list<Fp> fpList = list<Fp>(focusPoints);
+	list<Fp> fpList = list<Fp>(focusPoints.begin(),focusPoints.end());
 	list<Fp> fours = fpList;
 	fours.remove_if([](Fp z){return z.shape != 4;});  //Make fours a list of only size four Fp's
-	list<double> angles (Point x) {
-		vector<double> out;
-		for (Fp y : fours) {for (Fp z : fours) {if (x != y && y != z && x != z) {out.push_back(angle(x,y.center,z.center));}}}
-		return out;
-	}
 
 	//Classify corners as having 2 right angles
-	vector<Fp> out;
+	list<Fp> out;
+	list<double> a, temp;
 	for (Fp f : fours) {
-		auto angs = angles(f.center);
-		angs.remove_if([](double z){return abs(z-90.0)<angleTol;});
-		if (angs.size()>=2 && !contains(out,f)) {
+		a = angs(f.center,fours);
+		temp.clear();
+		for (double d : a){
+			if (!(abs(d-90.0)<angleTol)) {
+				temp.push_back(d);
+			}
+		}
+		if (temp.size()>=2 && !contains(out,f)) {
 			out.push_back(f);
 		}
 	}
 
 	//Return their centroids
-	if (!hasRectangle(out, angleTol, distTol)) {return vector<Fp>();}
-	return vector<Fp>(out);
+	vector<Fp> vecOut = vector<Fp>(out.begin(),out.end());
+	if (hasRectangle(vecOut, angleTol, distTol).size()!=4) {return vector<Fp>();}
+	return vecOut;
 }
 
 //Sort edges by distance.
 //Corners must be a rectangle
 //Null-Condition: Returns corners
 vector<Fp> sortCorners(vector<Fp> corners) {
-	Point cent = centroid(corners); list<double> polar; int n; vector<Fp> out;
+	Point cent = centroid(corners); vector<double> polar; int n; vector<Fp> out;
 	for (Fp f : corners) {polar.push_back(angle(f.center,cent));} //Calculate all the angles from the centroid, maintaining index
-	list<double> sorted = polar.sort();
+	list<double> sorted = list<double>(polar.begin(),polar.end());
+	sorted.sort(); //sort sorted
 	//Sort "corners" by the order of sorted "polar"
-	for (int i = 0; i<polar.size(); i++) {
-		n = index(polar, (double)sorted[i]);
+	for (double d : sorted) {
+		n = index(polar, d);
 		out.push_back(corners[n]); //Return sorted corners
 	}
 
@@ -125,13 +139,18 @@ Fp getRef(vector<Fp> fps) {
 
 //Null-Condition: Returns contour[0]
 Point getRef(cnt contour) {
-	auto D = dists(contour); int a = 0; int b = 1;
+	auto D = dists(contour); unsigned int a = 0; unsigned int b = 1;
 	while (D[a]<=D[b]){
 		a++; b++;
 		if (b>=contour.size()){b=0;}
 		if (a==contour.size()){return contour[0];}
 	}
 	return contour[a];
+}
+
+bool isColor(Mat img){
+	if (img.channels()==3) {return true;}
+	else {return false;}
 }
 
 // ------------ Image Manipulation --------------
@@ -167,12 +186,7 @@ Mat outputFilter(Mat img, int wSize, int C){
 //Uses: R
 Mat cropImage(Mat img, int R){
 	int sizeX = img.cols; int sizeY = img.rows;
-	Mat out = Mat(sizeY-2*R,sizeX-2*R,img.type());
-	for (int x = R; x<sizeX-R; x++) {
-		for (int y = R; y<sizeY-R; y++) {
-			out[y-R][x-R]=img[y][x];
-		}
-	}
+	Mat out = img(Rect(R,R,sizeX,sizeY));
 	return out;
 }
 
@@ -180,27 +194,30 @@ Mat cropImage(Mat img, int R){
 //Reference: Modified from http://www.pyimagesearch.com/2014/08/25/4-point-opencv-getperspective-transform-example/
 Mat fixPerspective (Mat img, vector<cnt> border, Point ref) {
 	//Declare variables
-	cnt tl, tr, bl, br;
+	Point tl, tr, bl, br;
 	Mat out;
+	int n = 0;
 
 	//Rotate the array until the reference is first
-	while (centroid(border[0]) != ref)
-	border = rotateVec(border);
+	while (centroid(border[0]) != ref && n < 4) {
+		border = rotateVec(border);
+		n++;
+	}
 
-	tl = border[0]; tr = border[1]; br = border[2]; bl = border[3];
+	tl = centroid(border[0]); tr = centroid(border[1]); br = centroid(border[2]); bl = centroid(border[3]);
 
 	// compute the width of the new image, which will be the
 	// maximum distance between bottom-right and bottom-left
 	// x-coordiates or the top-right and top-left x-coordinates
-	auto widthA = sqrt(pow((double)(br[0] - bl[0]), 2.0) + pow((double)(br[1] - bl[1]), 2.0));
-	auto widthB = sqrt(pow((double)(tr[0] - tl[0]), 2.0) + pow((double)(tr[1] - tl[1]), 2.0));
+	auto widthA = sqrt(pow((double)(br.x - bl.x), 2.0) + pow((double)(br.y - bl.y), 2.0));
+	auto widthB = sqrt(pow((double)(tr.x - tl.x), 2.0) + pow((double)(tr.y - tl.y), 2.0));
 	int maxWidth = max(int(widthA), int(widthB));
 
 	// compute the height of the new image, which will be the
 	// maximum distance between the top-right and bottom-right
 	// y-coordinates or the top-left and bottom-left y-coordinates
-	auto heightA = sqrt(pow((double)(tr[0] - br[0]), 2.0) + pow((double)(tr[1] - br[1]), 2.0));
-	auto heightB = sqrt(pow((double)(tl[0] - bl[0]), 2.0) + pow((double)(tl[1] - bl[1]), 2.0));
+	auto heightA = sqrt(pow((double)(tr.x - br.x), 2.0) + pow((double)(tr.y - br.y), 2.0));
+	auto heightB = sqrt(pow((double)(tl.x - bl.x), 2.0) + pow((double)(tl.y - bl.y), 2.0));
 	int maxHeight = max((int)heightA, (int)heightB);
 
 	// now that we have the dimensions of the new image, construct
@@ -212,7 +229,7 @@ Mat fixPerspective (Mat img, vector<cnt> border, Point ref) {
 	Point(maxWidth - 1, 0),
 	Point(maxWidth - 1, maxHeight - 1),
 	Point(0, maxHeight - 1)});
-	auto src = vector<Point2f>({border[0],border[1],border[2],border[3]});
+	auto src = vector<Point2f>({tl,tr,bl,br});
 
 	//Return Perspective Transform
 	auto M = getPerspectiveTransform(src, dst);
@@ -220,7 +237,4 @@ Mat fixPerspective (Mat img, vector<cnt> border, Point ref) {
 	return out;
 }
 
-bool isColor(Mat img){
-	if (sizeof(img[0][0])==3) {return true;}
-	else {return false;}
-}
+
