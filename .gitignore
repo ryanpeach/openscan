@@ -1,0 +1,4 @@
+opencv/
+./build
+*.sh~
+*.swp
