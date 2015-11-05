@@ -11,7 +11,6 @@
 
 #include <opencv2/opencv.hpp>
 #include <vector>
-#include <list>
 #include <cmath>
 #include <typeinfo>
 
@@ -94,6 +93,6 @@ bool allInside(cnt poly, vector<Fp> fps);
  */
 cnt hasRectangle(vector<Fp> fps, double angleTol, double distTol);
 
-list<double> angs (Point x, list<Fp> fours);
+vector<double> angs (Point x, vector<Fp> fours);
 
 #endif

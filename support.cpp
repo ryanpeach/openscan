@@ -99,3 +99,10 @@ template vector<Point> initVec (const Point[], unsigned int);
 template vector<cnt> initVec (const cnt array[], unsigned int);
 template vector<Fp> initVec (const Fp array[], unsigned int);
 
+template <typename T>
+vector<T> filter(vector<T> vec, bool lambda) {
+    vector<T> out = vec;
+    auto rem = remove_if(out.begin(),out.end(),!lambda);
+    erase(rem, out.end());
+    return out;
+}

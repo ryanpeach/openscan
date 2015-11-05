@@ -80,4 +80,7 @@ vector<Point> initVec (const Point array[], unsigned int length);
 vector<cnt> initVec (const cnt array[], unsigned int length);
 vector<Fp> initVec (const Fp array[], unsigned int length);
 
+template <typename T>
+vector<T> filter(vector<T> vec, auto lambda);
+
 #endif

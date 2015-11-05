@@ -39,8 +39,8 @@ cnt hasRectangle(vector<Fp> fps, double angleTol, double distTol) {
     return cnt();
 }
 
-list<double> angs (Point x, list<Fp> fours) {
+vector<double> angs (Point x, vector<Fp> fours) {
 	vector<double> out;
 	for (Fp y : fours) {for (Fp z : fours) {if (x != y.center && y != z && x != z.center) {out.push_back(angle(x,y.center,z.center));}}}
-	return list<double>(out.begin(),out.end());
+	return out;
 }
