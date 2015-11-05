@@ -1,82 +1,60 @@
-#include <opencv2/opencv.hpp>
-#include <vector>
-#include <cmath>
-#include "geometry.hpp"
-#include "cvmethods.hpp"
+/**
+ * capture.cpp
+ *
+ * @date Nov 4, 2015
+ * @author Ryan Peach
+ * @version v0.1
+ */
+
 #include "capture.hpp"
-#include <iostream>
-#include "support.hpp"
 
-using namespace std;
-using namespace cv;
+vector<Mat> Capture::process(Mat img) {
+    // Define Variables
+    vector<Fp> corners, sort; Fp ref; Mat warp, crop, out;
 
-class Capture {
-    private:
-        //Variable Declaration
-        Cnts polys; vector<Fp> fps;
-        int angleTol, distTol, polyTol, wSize, C, etol1, etol2, eSize, R;
-        double aspectRatio;
+    // Intial Processing
+    polys = findPolys(img);
+    fps = findFocusPoints(polys);
 
-        //Processes the image without the help of corner focus points
-        //Null-Condition: Returns {null,img}
-        vector<Mat> process2(Mat img) {
-            //Get the largest rectangular border from polys which contains all focus points.
-            //If no focus points exist, then simply return the largest border.
-            cnt largest; int size=0;
-            for (int i = 0; i < polys.size(); i++) {
-                if (isRectangle(polys[i]) && contourArea(polys[i])>size) {
-                    if ((fps.size()!=0 && allInside(polys[i],fps)) || fps.size()==0) {
-                        largest = polys[i]; size = contourArea(polys[i]);
-                    }
-                }
+    // Get border from focus points
+    vector<Fp> corners = getCorners(fps, angleTol);
+    if (corners.size() == 4) {
+        Fp ref = getRef(corners);
+        vector<Fp> sort = sortCorners(corners, ref);
+        warp = fixPerspective(img, sort, ref);
+        crop = cropImage(warp, R*warp.cols);
+        out = outputFilter(crop, wSize, C);
+    } else {return {img, img};} //future revision: return process2(img);
+
+    Mat drawing = drawContour(img, sort, color = {255,0,0}, thickness = 1);
+    return {cvtColor(out, out, COLOR_GRAY2RGB), drawing};
+}
+
+// Processes the image without the help of corner focus points
+// Null-Condition: Returns {null,img}
+vector<Mat> Capture::process2(Mat img) {
+    // Get the largest rectangular border from polys which contains all focus points.
+    // If no focus points exist, then simply return the largest border.
+    cnt largest; int size = 0;
+    for (int i = 0; i < polys.size(); i++) {
+        if (isRectangle(polys[i]) && contourArea(polys[i]) > size) {
+            if ((fps.size() != 0 && allInside(polys[i],fps)) || fps.size() == 0) {
+                largest = polys[i]; size = contourArea(polys[i]);
             }
-
-            //If one is found, return the processed image. If exception or none found, return null.
-            if (size>0) {
-                Point ref = getRef(largest);
-                vector<Fp> sort = sortCorners(largest,ref);
-                Mat warp = fixPerspective(img,sort,ref,aspectRatio);
-                Mat crop = cropImage(warp,R*warp.cols);
-                Mat out = outputFilter(crop,wSize,C);
-
-                //Draw and return
-                Mat drawing = drawContour(img, largest, color = {255,0,0}, thickness = 1);
-                return {cvtColor(out,out,COLOR_GRAY2RGB), drawing};
-            }
-            else {return {img,img};}
         }
+    }
 
-    public:
-        // -------------- Main Methods ----------------------
-        //Null-Condition: Returns process2(img)
-        vector<Mat> process(Mat img) {
-            //Define Variables
-            vector<Fp> corners, sort; Fp ref; Mat warp, crop, out;
+    // If one is found, return the processed image. If exception or none found, return null.
+    if (size > 0) {
+        Point ref = getRef(largest);
+        vector<Fp> sort = sortCorners(largest, ref);
+        Mat warp = fixPerspective(img, sort, ref, aspectRatio);
+        Mat crop = cropImage(warp, R*warp.cols);
+        Mat out = outputFilter(crop, wSize, C);
 
-            //Intial Processing
-            polys = findPolys(img);
-            fps = findFocusPoints(polys);
-
-            //Get border from focus points
-            vector<Fp> corners = getCorners(fps,angleTol);
-            if (corners.size()==4) {
-                Fp ref = getRef(corners);
-                vector<Fp> sort = sortCorners(corners,ref);
-                warp = fixPerspective(img,sort,ref);
-                crop = cropImage(warp,R*warp.cols);
-                out = outputFilter(crop,wSize,C);
-            } else {return {img,img};} //future revision: return process2(img);
-
-            Mat drawing = drawContour(img, sort, color = {255,0,0}, thickness = 1);
-            return {cvtColor(out,out,COLOR_GRAY2RGB), drawing};
-        }
-
-        //Sets Global variables
-        void Capture (int angleTol, int distTol, int polyTol, int wSize, int C, double aspectRatio, int etol1, int etol2, int eSize, int R) {
-            this.angleTol = angleTol; this.distTol = distTol; this.polyTol = polyTol; this.wSize = wSize; this.C = C;
-            this.aspectRatio = aspectRatio; this.etol1 = etol1; this.etol2 = etol2; this.eSize = eSize; this.R = R;
-        }
-
-        //Sets default variables
-        Mat Capture() {return IMGProcessor(img,10,5,5,11,2,8.5/11.0,100,200,3,.04);}
+        // Draw and return
+        Mat drawing = drawContour(img, largest, color = {255,0,0}, thickness = 1);
+        return {cvtColor(out, out, COLOR_GRAY2RGB), drawing};
+    }
+    else {return {img, img};}
 }
