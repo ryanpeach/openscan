@@ -14,6 +14,7 @@
 #include <list>
 #include <cmath>
 #include <typeinfo>
+
 #include "support.hpp"
 #include "geometry.hpp"
 

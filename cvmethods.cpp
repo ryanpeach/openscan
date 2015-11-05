@@ -1,8 +1,9 @@
-/*
+/**
  * cvmethods.cpp
  *
- *  Created on: Oct 31, 2015
- *      Author: Ryan Peach
+ * @date Nov 4, 2015
+ * @author Ryan Peach
+ * @version v0.1
  */
 
 #include "cvmethods.hpp"
@@ -221,5 +222,3 @@ Mat fixPerspective (Mat img, vector<cnt> border, Point ref) {
 	warpPerspective(img, out, M, Size(maxWidth, maxHeight));
 	return out;
 }
-
-
