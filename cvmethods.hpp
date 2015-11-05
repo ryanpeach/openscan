@@ -1,4 +1,16 @@
+#ifndef CVMETHODS
+#define CVMETHODS
+
+#include <opencv2/opencv.hpp>
+#include <vector>
+#include <cmath>
+
+#include "support.hpp"
 #include "geometry.hpp"
+#include "focus.hpp"
+
+using namespace std;
+using namespace cv;
 
 // -------------- Feature Detection ----------------
 //Checks shape of each contour from last to -5 and finds the first 'square.' Returns 0 if none exists.
@@ -38,3 +50,5 @@ Mat cropImage(Mat img, int R);
 Mat fixPerspective (Mat img, vector<cnt> border, Point ref);
 
 bool isColor(Mat img);
+
+#endif

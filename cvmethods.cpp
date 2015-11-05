@@ -5,14 +5,7 @@
  *      Author: Ryan Peach
  */
 
-#include <opencv2/opencv.hpp>
-#include <vector>
-#include <cmath>
-#include "geometry.hpp"
-#include "support.hpp"
-
-using namespace std;
-using namespace cv;
+#include "cvmethods.hpp"
 
 // -------------- Feature Detection ----------------
 
@@ -36,7 +29,7 @@ Cnts findPolys (Mat img, double tol) {
 //Find all the focus points within an image.
 vector<Fp> findFocusPoints (Cnts polys, double angleTol, double distTol) {
 	//Definitions
-	list<Fp> out; Fp tempFp; vector<vector<cnt>> cntV;
+	vector<Fp> out; vector<vector<cnt>> cntV;
 	vector<int> done; vector<cnt> contours; int k;
 	cnt poly;
 
@@ -60,8 +53,9 @@ vector<Fp> findFocusPoints (Cnts polys, double angleTol, double distTol) {
 
 	//Filter the focus points for their innermost border
 	for (unsigned int x = 0; x < cntV.size(); x++) {
+		Fp tempFp = Fp(cntV[x],angleTol,distTol);
 		if (tempFp.depth >= 0) { //Check that cntV[x] is a valid Fp
-			out.push_back(Fp(cntV[x],angleTol,distTol));
+			out.emplace_back(tempFp.contours, tempFp.contour, tempFp.center, tempFp.depth, tempFp.shape);
 		}
 	}
 

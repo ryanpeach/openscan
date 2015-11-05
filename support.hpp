@@ -1,11 +1,22 @@
-#include<vector>
-#include<list>
-#include<opencv2/opencv.hpp>
+#ifndef SUPPORT
+#define SUPPORT
+
+#include <vector>
+#include <opencv2/opencv.hpp>
+#include <string>
+#include <sstream>
 
 using namespace std;
 using namespace cv;
 
 typedef vector<Point> cnt;
+
+struct Cnts {
+    vector<cnt> contours;
+    vector<Vec4i> heirarchy;
+};
+
+#include "focus.hpp"
 
 /**
  * Shifts all cells of lst, vec, or contour right by one cell, moves the last cell first.
@@ -15,10 +26,10 @@ typedef vector<Point> cnt;
  */
 template <typename Container, typename G> Container rotateVec (Container vec);
 
-template vector<int> rotateVec<vector<int>,int>();
-template vector<double> rotateVec<vector<double>,double>();
-template cnt rotateVec<cnt,Point>();
-template vector<cnt> rotateVec<vector<cnt>,cnt>();
+vector<int> rotateVec (vector<int>);
+vector<double> rotateVec (vector<double>);
+cnt rotateVec (cnt);
+vector<cnt> rotateVec (vector<cnt>);
 
 /**
  * Tests whether or not item is within lst.
@@ -28,10 +39,10 @@ template vector<cnt> rotateVec<vector<cnt>,cnt>();
  */
 template <typename Container, typename T> bool contains(Container lst, T item);
 
-template bool contains (vector<int>, int);
-template bool contains (vector<double>, double);
-template bool contains (cnt, Point);
-template bool contains (vector<cnt>, cnt);
+bool contains (vector<int>, int);
+bool contains (vector<double>, double);
+bool contains (cnt, Point);
+bool contains (vector<cnt>, cnt);
 
 /**
  * Tests whether or not item is within vec.
@@ -40,9 +51,33 @@ template bool contains (vector<cnt>, cnt);
  * @return -1 if none found.
  * @complexity O(n)
  */
-template <typename T, typename U> int index(U lst, T item);
+template <typename Container, typename T> int index(Container lst, T item);
 
-template int index (vector<int>, int);
-template int index (vector<double>, double);
-template int index (cnt, Point);
-template int index (vector<cnt>, cnt);
+int index (vector<int>, int);
+int index (vector<double>, double);
+int index (cnt, Point);
+int index (vector<cnt>, cnt);
+
+
+template <typename Container, typename T>
+string tostr(Container vec);
+string tostr(double d);
+string tostr(int i) {return tostr((double)i);}
+string tostr(Point p);
+string tostr(cnt contour);
+string tostr(Fp fp) {return tostr(fp.center);}
+
+template <typename T, typename G>
+void printr(string name, T value, G test, G expect);
+
+template <typename T, typename G>
+void printr(String name, G value, T test);
+
+template <typename T>
+vector<T> initVec (const T array[], unsigned int length);
+
+vector<Point> initVec (const Point array[], unsigned int length);
+vector<cnt> initVec (const cnt array[], unsigned int length);
+vector<Fp> initVec (const Fp array[], unsigned int length);
+
+#endif

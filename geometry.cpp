@@ -5,22 +5,8 @@
  * @author Ryan Peach
  * @version v0.1
  */
-#include <opencv2/opencv.hpp>
-#include <vector>
-#include <list>
-#include <cmath>
-#include <typeinfo>
-#include "support.hpp"
 
-using namespace std;
-using namespace cv;
-
-#define PI 3.14159265
-
-struct Cnts {
-    vector<cnt> contours;
-    vector<Vec4i> heirarchy;
-};
+#include "geometry.hpp"
 
 double dist(Point a, Point b){
     Point diff = a-b;
@@ -64,6 +50,22 @@ vector<double> dists(cnt poly) {
     return out;
 }
 
+template <typename U>
+Point centroid(vector<U> c) {
+    Point sum = Point(0,0);
+
+    for (U p : c) {
+    	sum += centroid(p);
+    }
+    int s = c.size();
+    Point out;
+    out.x = sum.x / s;
+    out.y = sum.y / s;
+    return out;
+}
+template Point centroid<Point> (cnt);
+template Point centroid<cnt> (vector<cnt>);
+
 bool allSameLength(cnt poly, int distTol){
     vector<vector<Point>> pairs; vector<double> lengths, error; vector<bool> test; unsigned int i = 0; int mean = 0;
 
@@ -81,25 +83,6 @@ bool allSameLength(cnt poly, int distTol){
     for (i = 0; i < poly.size(); i++) {test.push_back(error[i] < distTol);}                      //Check if the error is within tolerance
     return find(test.begin(), test.end(), false)!=test.end();                                //Test and return to see if there is a false within the test vector
 }
-
-//Point centroid (Point contour) {return contour;}
-Point centroid(Point p) {return p;}
-template <typename U>
-Point centroid(vector<U> c) {
-    Point sum = Point(0,0);
-
-    for (U p : c) {
-    	sum += centroid(p);
-    }
-    int s = c.size();
-    Point out;
-    out.x = sum.x / s;
-    out.y = sum.y / s;
-    return out;
-}
-template Point centroid<Point> (cnt);
-template Point centroid<cnt> (vector<cnt>);
-Point centroid (Cnts contours) {return centroid(contours.contours);}
 
 bool isPoly(cnt poly, int size, int regular, double angleTol, double distTol) {
 	vector<double> angs;
