@@ -65,7 +65,6 @@ string tostr(double d);
 string tostr(int i) {return tostr((double)i);}
 string tostr(Point p);
 string tostr(cnt contour);
-string tostr(Fp fp) {return tostr(fp.center);}
 
 template <typename T, typename G>
 void printr(string name, T value, G test, G expect);
@@ -78,9 +77,8 @@ vector<T> initVec (const T array[], unsigned int length);
 
 vector<Point> initVec (const Point array[], unsigned int length);
 vector<cnt> initVec (const cnt array[], unsigned int length);
-vector<Fp> initVec (const Fp array[], unsigned int length);
 
 template <typename T>
-vector<T> filter(vector<T> vec, auto lambda);
+vector<T> filter(vector<T> vec, bool lambda);
 
 #endif

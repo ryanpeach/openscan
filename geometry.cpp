@@ -63,8 +63,8 @@ Point centroid(vector<U> c) {
     out.y = sum.y / s;
     return out;
 }
-template Point centroid<Point> (cnt);
-template Point centroid<cnt> (vector<cnt>);
+template Point centroid (cnt);
+template Point centroid (vector<cnt>);
 
 bool allSameLength(cnt poly, int distTol){
     vector<vector<Point>> pairs; vector<double> lengths, error; vector<bool> test; unsigned int i = 0; int mean = 0;
