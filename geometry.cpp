@@ -50,21 +50,27 @@ vector<double> dists(cnt poly) {
     return out;
 }
 
-template <typename U>
-Point centroid(vector<U> c) {
+Point centroid(vector<Point> c) {
     Point sum = Point(0,0);
 
-    for (U p : c) {
-    	sum += centroid(p);
+    for (Point p : c) {
+    	sum += p;
     }
+
     int s = c.size();
     Point out;
     out.x = sum.x / s;
     out.y = sum.y / s;
     return out;
 }
-template Point centroid (cnt);
-template Point centroid (vector<cnt>);
+
+Point centroid(vector<cnt> vec) {
+	cnt out;
+	for (cnt c : vec) {
+		out.push_back(centroid(c));
+	}
+	return centroid(out);
+}
 
 bool allSameLength(cnt poly, int distTol){
     vector<vector<Point>> pairs; vector<double> lengths, error; vector<bool> test; unsigned int i = 0; int mean = 0;

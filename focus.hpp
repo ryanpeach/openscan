@@ -46,9 +46,9 @@ struct Fp {
 };
 
 Point centroid (vector<Fp> fps);
-Point centroid(Fp fp) {return fp.center;}
+Point centroid (Fp f) {return f.center;}
+
 string tostr(Fp fp);
-vector<Fp> initVec (const Fp array[], unsigned int length);
 
 /**
  * Test that the center of all focus points are inside the poly.

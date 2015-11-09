@@ -69,14 +69,26 @@ vector<Fp> findFocusPoints (Cnts polys, double angleTol, double distTol) {
 //Uses: angleTol
 vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol, double distTol) {
     //Make fours a list of only size four Fp's
-    vector<Fp> fours = filter(focusPoints,[](Fp z){return z.shape == 4;});
+    //vector<Fp> fours = filter(focusPoints,[](Fp z){return z.shape == 4;});
+	vector<Fp> fours;
+	for (Fp z : focusPoints) {
+		if (z.shape == 4) {
+			fours.push_back(z);
+		}
+	}
 
     //Classify corners as having 2 right angles
     vector<Fp> out;
     vector<double> a, temp;
     for (Fp f : fours) {
         a = angs(f.center,fours);
-        temp = filter(a,[](double d){return abs(d-90.0)<angleTol;});
+        //temp = filter(a,[](double d){return abs(d-90.0)<angleTol;});
+        vector<double> temp;
+        for (double d : a) {
+        	if (abs(d-90.0)<angleTol) {
+        		temp.push_back(d);
+        	}
+        }
         if (temp.size()>=2 && !contains(out,f)) {
             out.push_back(f);
         }
@@ -84,7 +96,7 @@ vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol, double distTol) {
 
     //Return their centroids
     if (hasRectangle(out, angleTol, distTol).size() != 4) {return vector<Fp>();}
-    return vecOut;
+    return out;
 }
 
 //Sort edges by distance.
@@ -93,8 +105,8 @@ vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol, double distTol) {
 vector<Fp> sortCorners(vector<Fp> corners) {
     Point cent = centroid(corners); vector<double> polar; int n; vector<Fp> out;
     for (Fp f : corners) {polar.push_back(angle(f.center,cent));} //Calculate all the angles from the centroid, maintaining index
-    list<double> sorted = list<double>(polar.begin(),polar.end());
-    sorted.sort(); //sort sorted
+    vector<double> sorted = polar;
+    sort(sorted.begin(),sorted.end());
     //Sort "corners" by the order of sorted "polar"
     for (double d : sorted) {
         n = index(polar, d);

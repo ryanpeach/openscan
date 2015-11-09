@@ -41,8 +41,6 @@ void testGeometry(){
 	const Point testLstA[] = {Point(0,0),Point(1,1),Point(2,2)};
 	const vector<Point> testLst = initVec(testLstA,3);
 	const vector<cnt> conts = vector<cnt>(initVec(testFp1A,2));
-	Cnts contour, contours = Cnts();
-	contours.contours = conts;
 
 	//Test Methods
 	bool test1a = allSameLength(testPoly, 0); //False
@@ -61,7 +59,7 @@ void testGeometry(){
 
 	Point test6 = centroid(testPoly);
 	Point test7 = centroid(testFp1);
-	Point test8 = centroid(contours);
+	Point test8 = centroid(conts);
     Point test9 = centroid(testFps1);
 	printr("centroid",testPoly,test6); printr("centroid",testPoly,test7); printr("centroid",testPoly,test8); printr("centroid",testPoly,test9);
 

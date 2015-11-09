@@ -67,11 +67,10 @@ vector<double> dists(cnt poly);
  * @return The mean of all points contained in the param returned as a Point.
  * @complexity O(?)
  */
-Point centroid(Point p) {return p;}
-template <typename U> Point centroid(vector<U> c);
-Point centroid (cnt);
-Point centroid (vector<cnt>);
-Point centroid (Cnts contours) {return centroid(contours.contours);}
+Point centroid(vector<Point> c);
+Point centroid(vector<cnt> vec);
+Point centroid(Cnts c) {return centroid(c.contours);}
+
 
 /**
  * Test that all Points inside poly are the same distance from their neighbors as all others.

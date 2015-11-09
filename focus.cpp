@@ -35,14 +35,13 @@ bool Fp::operator== (Fp newFp) {
 }
 
 string tostr(Fp fp) {return tostr(fp.center);}
-template vector<Fp> initVec<Fp>(Fp[],unsigned int);
 
-Point centroid(vector<Fp> fps) {
-    vector<cnt> contours;
-    for (Fp f : fps) {
-        contours.push_back(f.contour);
-    }
-    return centroid(contours);
+Point centroid (vector<Fp> fps) {
+	cnt out;
+	for (Fp f : fps) {
+		out.push_back(f.center);
+	}
+	return centroid(out);
 }
 
 bool allInside(cnt poly, vector<Fp> fps) {
