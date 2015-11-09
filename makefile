@@ -5,8 +5,11 @@ CFLAGS  = -g -Wall -std=c++11
 
 all: openscan
 
-openscan: support.o geometry.o focus.o cvmethods.o main.o
-	$(CC) $(CFLAGS) main.cpp cvmethods.o focus.o geometry.o support.o -o openscan
+openscan: main.o cvmethods.o focus.o geometry.o support.o
+	$(CC) $(CFLAGS) main.o cvmethods.o focus.o geometry.o support.o -o openscan
+
+main.o: main.cpp
+	$(CC) $(CFLAGS) -c main.cpp
 
 cvmethods.o: cvmethods.cpp cvmethods.hpp
 	$(CC) $(CFLAGS) -c cvmethods.cpp
@@ -19,3 +22,4 @@ geometry.o: geometry.cpp geometry.hpp
 
 support.o: support.cpp support.hpp
 	$(CC) $(CFLAGS) -c support.cpp
+
