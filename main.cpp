@@ -10,16 +10,26 @@
 void testGeometry(){
     //Variable Declarations
     //Points
+<<<<<<< HEAD
     const Point a = Point(0,0), b = Point(1,1), c = Point(0,1);
+=======
+    const Point a = Point(0,0), b = Point(1,1), c = Point(0,1),
+>>>>>>> 351bcd36d0027eb1d41b2c29d98e05ef86039309
     const Point e = Point(2,0), d = Point(1,0);
     //Poly's
     const cnt tri {a,e,b}; //non-equal sides
     const cnt square {a,c,b,d};
     const cnt bigSquare {a*2-b,c*2-b,b*2-b,d*2-b};        
     //Fp's
+<<<<<<< HEAD
     const Fp testFp1 = Fp({bigSquare,square});
     const Fp testFp2 = Fp({bigSquare}); //not a valid Fp
     const Fp testFp3 = Fp({square}); //not a valid Fp
+=======
+    const testFp1 = Fp({bigSquare,square});
+    const testFp2 = Fp({bigSquare}); //not a valid Fp
+    const testFp3 = Fp({square}); //not a valid Fp
+>>>>>>> 351bcd36d0027eb1d41b2c29d98e05ef86039309
 
     //Vectors
     //Poly's
