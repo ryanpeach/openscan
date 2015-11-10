@@ -44,6 +44,10 @@ Point centroid (vector<Fp> fps) {
 	return centroid(out);
 }
 
+Point centroid (Fp f) {
+    return f.center;
+}
+
 bool allInside(cnt poly, vector<Fp> fps) {
     for (Fp f : fps) {
         if (pointPolygonTest(poly, f.center, false) < 0) {

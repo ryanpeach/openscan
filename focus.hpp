@@ -40,7 +40,7 @@ struct Fp {
 };
 
 Point centroid (vector<Fp> fps);
-Point centroid (Fp f) {return f.center;}
+Point centroid (Fp f);
 
 string tostr(Fp fp);
 
