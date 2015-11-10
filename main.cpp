@@ -8,35 +8,44 @@
 #include "cvmethods.hpp"
 
 void testGeometry(){
-	//Variable Declarations
-//	const Point a = Point(0,0), b = Point(1,1), c = Point(0,1);
-//	const Point abA[] = {a,b}; const Point abcA[] = {a,b,c};
-//	const vector<Point> ab = initVec(abA,2); const vector<Point> abc = initVec(abcA,3);
-//	const Point testPolyA[] = {Point(0,0),Point(1,1),Point(2,1)};
-//	const string testPolyS = "{Point(0,0),Point(1,1),Point(2,1)}";
-//
-//	const cnt testFp1A[] = {bigTestPoly, testPoly};
-//	const cnt testFp2A[] = {bigTestPoly};
-//	const cnt testFp3A[] = {testPoly};
-//	const Fp testFp1 = Fp(initVec(testFp1A,2));
-//	const Fp testFp2 = Fp(initVec(testFp2A,1));
-//	const Fp testFp3 = Fp(initVec(testFp3A,1));
-//	const Fp testFpsA[] = {testFp1,testFp2,testFp3};
-//	const Fp testFpsB[] = {testFp2,testFp3};
-//	const Fp testFpsC[] = {testFp3};
-//	const vector<Fp> testFps1 = initVec(testFpsA,3);
-//	const vector<Fp> testFps2 = initVec(testFpsB,2);
-//	const vector<Fp> testFps3 = initVec(testFpsC,1);
-//
-//	const Point testLstA[] = {Point(0,0),Point(1,1),Point(2,2)};
-//	const vector<Point> testLst = initVec(testLstA,3);
-//	const vector<cnt> conts = vector<cnt>(initVec(testFp1A,2));
+    //Variable Declarations
+    //Points
+    const Point a = Point(0,0), b = Point(1,1), c = Point(0,1),
+    const Point e = Point(2,0), d = Point(1,0);
+    //Poly's
+    const cnt tri {a,e,b}; //non-equal sides
+    const cnt square {a,c,b,d};
+    const cnt bigSquare {a*2-b,c*2-b,b*2-b,d*2-b};        
+    //Fp's
+    const testFp1 = Fp({bigSquare,square});
+    const testFp2 = Fp({bigSquare}); //not a valid Fp
+    const testFp3 = Fp({square}); //not a valid Fp
 
-	//Test Methods
-        //Test allSameLength()
-	cnt testPoly {Point(0,0),Point(1,1),Point(2,1)};
-        bool test1a = allSameLength(testPoly, 0); //False
-	printr("allSameLength",testPoly,test1a,false);
+    //Vectors
+    //Poly's
+    const vector<cnt> vpoly1 {tri,square,bigSquare};
+    const vector<cnt> vpoly2 {tri,square};
+    const vector<cnt> vpoly3 {square,bigSquare};
+    const vector<cnt> vpoly4 {tri,bigSquare};
+    const vector<cnt> vpoly5 {tri};
+    const vector<cnt> vpoly6 {square};
+    const vector<cnt> vpoly7 {bigSquare};
+
+    //Fp's
+    const vector<Fp> vfp1 {testFp1,testFp2,testFp3};
+    const vector<Fp> vfp2 {testFp1,testFp2};
+    const vector<Fp> vfp3 {testFp2,testFp3};
+    const vector<Fp> vfp4 {testFp1,testFp3};
+    const vector<Fp> vfp5 {testFp1};
+    const vector<Fp> vfp6 {testFp2};
+    const vector<Fp> vfp7 {testFp3};
+   
+    //Test Methods
+    //Test allSameLength()
+    bool test1a = allSameLength(square, 0); //True
+    bool test1b = allSameLength(tri, 0); //False
+    printr("allSameLength",square,test1a,true); 
+    printr("allSameLength",tri,test1b,false);
 
 //	const Fp ar1[] = {testFp3}; const Fp ar2[] = {testFp1};
 //	bool test2a = allInside(bigTestPoly, initVec(ar1,1)); //True
