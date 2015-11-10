@@ -23,3 +23,5 @@ geometry.o: geometry.cpp geometry.hpp
 support.o: support.cpp support.hpp
 	$(CC) $(CFLAGS) -c support.cpp
 
+clear: 
+	rm *.o

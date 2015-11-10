@@ -17,12 +17,26 @@ int Fp::findInnerBorder(vector<cnt> cnts, double angleTol, double distTol) {
 	return -1;
 }
 
+Fp::Fp(vector<cnt> conts, cnt cont, Point cent, int d, int s) {
+    contours = conts; contour = cont; center = cent; depth = d; shape = s;
+}
+
 Fp::Fp (vector<cnt> conts, double angleTol, double distTol) {
 	contours = conts;
 	center = centroid(contours);
 	depth = Fp::findInnerBorder(contours,angleTol,distTol);
 	contour = contours[depth];
 	shape = contours[depth].size();
+}
+
+Fp::Fp (vector<cnt> conts) {Fp(conts,10.0,5.0);}
+
+bool Fp::operator!= (Fp newFp) {
+    return !(*this == newFp);
+}
+
+Fp Fp::copy () {
+    return Fp(contours, contour, center, depth, shape);
 }
 
 bool Fp::operator== (Fp newFp) {

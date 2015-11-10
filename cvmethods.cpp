@@ -36,7 +36,7 @@ vector<Fp> findFocusPoints (Cnts polys, double angleTol, double distTol) {
 
     for(unsigned int i = 0; i < polys.contours.size(); i++) {
         k=i; poly.clear();
-        if(!contains(done,(int)i)){        //Check that through navigation you haven't been here before
+        if(!contains<vector<int>,int>(done,(int)i)){        //Check that through navigation you haven't been here before
             done.push_back(i);
 
             //Navigate the heirarchy
@@ -89,7 +89,7 @@ vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol, double distTol) {
         		temp.push_back(d);
         	}
         }
-        if (temp.size()>=2 && !contains(out,f)) {
+        if (temp.size()>=2 && !contains<vector<Fp>,Fp>(out,f)) {
             out.push_back(f);
         }
     }
