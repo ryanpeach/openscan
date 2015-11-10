@@ -6,8 +6,12 @@
  */
 
 #include "cvmethods.hpp"
+#define TEST
 
 void testGeometry(){
+#ifdef TEST 
+    cout << "running testGeometry" << endl;
+#endif
     //Variable Declarations
     //Points
     const Point a = Point(0,0), b = Point(1,1), c = Point(0,1);
@@ -15,11 +19,15 @@ void testGeometry(){
     //Poly's
     const cnt tri {a,e,b}; //non-equal sides
     const cnt square {a,c,b,d};
-    const cnt bigSquare {a*2-b,c*2-b,b*2-b,d*2-b};        
+    const cnt bigSquare {a*2-b,c*2-b,b*2-b,d*2-b};       
     //Fp's
     const Fp testFp1 = Fp({bigSquare,square});
     const Fp testFp2 = Fp({bigSquare}); //not a valid Fp
     const Fp testFp3 = Fp({square}); //not a valid Fp
+
+#ifdef TEST 
+    cout << "test" << endl;
+#endif
 
     //Vectors
     //Poly's
@@ -30,7 +38,6 @@ void testGeometry(){
     const vector<cnt> vpoly5 {tri};
     const vector<cnt> vpoly6 {square};
     const vector<cnt> vpoly7 {bigSquare};
-
     //Fp's
     const vector<Fp> vfp1 {testFp1,testFp2,testFp3};
     const vector<Fp> vfp2 {testFp1,testFp2};
@@ -39,13 +46,17 @@ void testGeometry(){
     const vector<Fp> vfp5 {testFp1};
     const vector<Fp> vfp6 {testFp2};
     const vector<Fp> vfp7 {testFp3};
-   
+
+#ifdef TEST 
+    cout << "test" << endl;
+#endif
+
     //Test Methods
     //Test allSameLength()
-    bool test1a = allSameLength(square, 0); //True
-    bool test1b = allSameLength(tri, 0); //False
-    printr("allSameLength",square,test1a,true); 
-    printr("allSameLength",tri,test1b,false);
+    bool test1a = allSameLength(square, 0); cout << "allSameLength1"; //True
+    bool test1b = allSameLength(tri, 0); cout << "allSameLength2"; //False
+    printr("allSameLength",square,test1a,true); cout << "printr1";
+    printr("allSameLength",tri,test1b,false); cout << "printr2";
 
 //	const Fp ar1[] = {testFp3}; const Fp ar2[] = {testFp1};
 //	bool test2a = allInside(bigTestPoly, initVec(ar1,1)); //True
@@ -98,6 +109,7 @@ void testGeometry(){
 }
 
 int main() {
-	testGeometry();
-	return 0;
+    cout << "running main..." << endl;
+    testGeometry();
+    //return 0;
 }

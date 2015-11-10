@@ -7,14 +7,21 @@
  */
 
 #include "focus.hpp"
+#define TEST
 
 int Fp::findInnerBorder(vector<cnt> cnts, double angleTol, double distTol) {
-	cnt contour;
-	for (int x = cnts.size(); x > 0; x++) {
-		contour = cnts[x];
-		if (isPoly(contour,4,true,angleTol,distTol)) {return x+1;}
-	}
-	return -1;
+#ifdef TEST
+    cout << "findinnerborder start" << endl;
+#endif
+
+    cnt contour;
+    for (int x = cnts.size()-1; x > 0; x--) {
+        contour = cnts[x];
+        if (isPoly(contour,4,true,angleTol,distTol)) {return x+1;}
+    }
+    cout << "findinnerborder complete" << endl;
+
+    return -1;
 }
 
 Fp::Fp(vector<cnt> conts, cnt cont, Point cent, int d, int s) {

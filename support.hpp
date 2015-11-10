@@ -108,12 +108,12 @@ template<> string vtostr(Cnts vec);
 template <typename T, typename G>
 void printr(string name, T value, G test, G expect){
 	string v = tostr(value); string t = tostr(test); string e = tostr(expect); string r = tostr(test==expect);
-	cout << name << " - (" << v << ") " << t << ", " << e << ": (" << r << ")\n";
+    cout << name << " - (" << v << ") " << t << ", " << e << ": (" << r << ")\n" << endl;
 }
 
 template <typename T, typename G>
 void printr(String name, G value, T test){
-	cout << name << " - (" << tostr(value) << ") " << tostr(test);
+    cout << name << " - (" << tostr(value) << ") " << tostr(test) << endl;
 }
 
 #endif
