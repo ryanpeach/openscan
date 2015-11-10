@@ -21,21 +21,15 @@ struct Fp {
 
 	int findInnerBorder(vector<cnt> cnts, double angleTol, double distTol);
 
-	Fp (vector<cnt> conts, cnt cont, Point cent, int d, int s) {
-		contours = conts; contour = cont; center = cent; depth = d; shape = s;
-	}
+	Fp (vector<cnt> conts, cnt cont, Point cent, int d, int s);
 	Fp (vector<cnt> conts, double angleTol, double distTol);
-	Fp (vector<cnt> conts) {Fp(conts,10.0,5.0);}
+	Fp (vector<cnt> conts);
 
 	bool operator== (Fp newFp);
 
-	bool operator!= (Fp newFp) {
-		return !(*this == newFp);
-	}
+	bool operator!= (Fp newFp);
 
-	Fp copy () {
-		return Fp(contours, contour, center, depth, shape);
-	}
+	Fp copy ();
 
 };
 

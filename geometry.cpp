@@ -72,6 +72,8 @@ Point centroid(vector<cnt> vec) {
 	return centroid(out);
 }
 
+Point centroid(Cnts c){return centroid(c.contours);}
+
 bool allSameLength(cnt poly, int distTol){
     vector<vector<Point>> pairs; vector<double> lengths, error; vector<bool> test; unsigned int i = 0; int mean = 0;
 

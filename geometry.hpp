@@ -61,7 +61,7 @@ vector<double> dists(cnt poly);
  */
 Point centroid(vector<Point> c);
 Point centroid(vector<cnt> vec);
-Point centroid(Cnts c) {return centroid(c.contours);}
+Point centroid(Cnts c);
 
 
 /**
