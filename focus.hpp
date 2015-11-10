@@ -1,5 +1,5 @@
 /**
- * focus.cpp
+ * focus.hpp
  *
  * @date Nov 4, 2015
  * @author Ryan Peach
@@ -9,15 +9,9 @@
 #ifndef FOCUS
 #define FOCUS
 
-#include <opencv2/opencv.hpp>
-#include <vector>
-#include <cmath>
 #include <typeinfo>
 
 #include "geometry.hpp"
-
-using namespace std;
-using namespace cv;
 
 struct Fp {
 	vector<cnt> contours;

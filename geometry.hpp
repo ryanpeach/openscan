@@ -9,15 +9,7 @@
 #ifndef GEOMETRY
 #define GEOMETRY
 
-#include <opencv2/opencv.hpp>
-#include <vector>
-#include <cmath>
-#include <typeinfo>
-
 #include "support.hpp"
-
-using namespace std;
-using namespace cv;
 
 #define PI 3.14159265
 

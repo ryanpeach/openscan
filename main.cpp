@@ -5,14 +5,7 @@
  *      Author: Ryan Peach
  */
 
-#include <opencv2/opencv.hpp>
-#include <vector>
-#include <cmath>
-#include <iostream>
-
 #include "cvmethods.hpp"
-#include "geometry.hpp"
-#include "focus.hpp"
 
 void testGeometry(){
 	//Variable Declarations

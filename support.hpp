@@ -1,3 +1,11 @@
+/**
+ * support.hpp
+ *
+ * @date Oct 31, 2015
+ * @author Ryan Peach
+ * @version v0.1
+ */
+
 #ifndef SUPPORT
 #define SUPPORT
 

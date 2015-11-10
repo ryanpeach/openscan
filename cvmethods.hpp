@@ -9,12 +9,8 @@
 #ifndef CVMETHODS
 #define CVMETHODS
 
-#include <opencv2/opencv.hpp>
-#include <vector>
 #include <cmath>
 
-#include "support.hpp"
-#include "geometry.hpp"
 #include "focus.hpp"
 
 // -------------- Feature Detection ----------------
