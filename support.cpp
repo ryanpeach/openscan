@@ -27,3 +27,20 @@ template<>
 string vtostr(Cnts vec) {
 	return vtostr(vec.contours);
 }
+
+
+double sum(vector<double> nums){
+    double out = 0;
+    for (unsigned int i = 0; i < nums.size(); i++) {
+        out += nums[i];
+    }
+    return out;
+}
+
+Point sum(cnt pts) {
+    Point out = Point(0,0);
+    for (unsigned int i = 0; i < pts.size(); i++) {
+        out += pts[i];
+    }
+    return out;
+}

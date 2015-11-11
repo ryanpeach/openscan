@@ -9,6 +9,7 @@
 #ifndef GEOMETRY
 #define GEOMETRY
 
+#include "opencv2/imgproc/imgproc.hpp"
 #include "support.hpp"
 
 #define PI 3.14159265
@@ -18,6 +19,7 @@
  * @param  Point a, b.
  * @return The distance between a and b in eclidean space.
  * @complexity O(1)
+ * @tested works
  */
 double dist(Point a, Point b);
 
@@ -26,6 +28,7 @@ double dist(Point a, Point b);
  * @param  Point origin, a.
  * @return The unit angle in degrees of origin<a using origin as the center.
  * @complexity O(1)
+ * @tested untested
  */
 double angle(Point origin, Point a);
 
@@ -34,6 +37,7 @@ double angle(Point origin, Point a);
  * @param  Point origin, c2, c3.
  * @return The angle by line-angle-line of line c2-origin-c3 in degrees.
  * @complexity O(1)
+ * @tested works
  */
 double angle(Point origin, Point c2, Point c3);
 
@@ -42,6 +46,7 @@ double angle(Point origin, Point c2, Point c3);
  * @param  cnt poly: Any contour.
  * @return Returns vector of the same length as cnt in the same order where out[n] = angle(poly[n],poly[n-1],poly[n+1])
  * @complexity O(?)
+ * @tested works
  */
 vector<double> angles(cnt poly);
 
@@ -50,6 +55,7 @@ vector<double> angles(cnt poly);
  * @param  cnt poly: Any contour.
  * @return Returns vector of the same length as cnt in the same order where out[n] = dist(poly[n],poly[n+1])
  * @complexity O(?)
+ * @tested works
  */
 vector<double> dists(cnt poly);
 
@@ -58,6 +64,7 @@ vector<double> dists(cnt poly);
  * @param  A cnt, vector of cnt's, vector of Fp's, or a Cnts object.
  * @return The mean of all points contained in the param returned as a Point.
  * @complexity O(?)
+ * @tested works
  */
 Point centroid(vector<Point> c);
 Point centroid(vector<cnt> vec);
@@ -66,12 +73,23 @@ Point centroid(Cnts c);
 
 /**
  * Test that all Points inside poly are the same distance from their neighbors as all others.
- * @param  cnt poly:    Any cnt you wish to test.
- * @param  int distTol: The distance tolerance for calculation of equality.
+ * @param  cnt poly:       Any cnt you wish to test.
+ * @param  double distTol: The distance tolerance for calculation of equality.
  * @return True / False
  * @complexity O(?)
+ * @tested works
  */
 bool allSameLength(cnt poly, double distTol);
+
+/**
+ * Test that all Points inside poly have the same angle to their neighbors as all others.
+ * @param  cnt poly:        Any cnt you wish to test.
+ * @param  double angleTol: The distance tolerance for calculation of equality.
+ * @return True / False
+ * @complexity O(?)
+ * @tested untested
+ */
+bool regularAngles(cnt poly, double angleTol);
 
 /**
  * Tests whether or not a contour fits certain definitions of "polygon," "rectangle," or "square."
@@ -82,6 +100,7 @@ bool allSameLength(cnt poly, double distTol);
  * @return The angle by line-angle-line of line c2-origin-c3 in degrees.
  * @issues isPoly should have consistent angle-testing if regular among all sizes of polys.
  * @complexity O(?)
+ * @tested works
  */
 bool isPoly(cnt poly, int size, bool regular, double angleTol, double distTol);
 bool isRectangle(cnt poly, bool square, double angleTol, double distTol);

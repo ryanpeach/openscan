@@ -25,13 +25,13 @@ struct Cnts {
     vector<Vec4i> heirarchy;
 };
 
-#include "focus.hpp"
 
 /**
  * Shifts all cells of lst, vec, or contour right by one cell, moves the last cell first.
  * @param  Any list/vector/cnt you wish to rotate.
  * @return The rotated list/vector/contour.
  * @complexity O(?)
+ * @tested untested
  */
 template <typename Container>
 Container rotateVec (Container vec){
@@ -43,26 +43,19 @@ Container rotateVec (Container vec){
 	return out;
 }
 
-//template vector<int> rotateVec <vector<int>, int> (vector<int>);
-//template vector<double> rotateVec <vector<double>, double> (vector<double>);
-//template cnt rotateVec <cnt, Point> (cnt);
-//template vector<cnt> rotateVec <vector<cnt>, cnt> (vector<cnt>);
 
 /**
  * Tests whether or not item is within lst.
  * @param  lst: Any list or vector.
  * @return True/False item is inside lst.
  * @complexity O(?)
+ * @tested untested
  */
 template <typename Container, typename T>
 bool contains(Container lst, T item) {
 	return find(lst.begin(),lst.end(),item)!=lst.end();
 }
 
-//template bool contains (vector<int>, int);
-//template bool contains (vector<double>, double);
-//template bool contains (cnt, Point);
-//template bool contains (vector<cnt>, cnt);
 
 /**
  * Tests whether or not item is within vec.
@@ -70,6 +63,7 @@ bool contains(Container lst, T item) {
  * @return first index of item inside lst.
  * @return -1 if none found.
  * @complexity O(n)
+ * @tested untested
  */
 template <typename Container, typename T>
 int index(Container lst, T item) {
@@ -81,11 +75,14 @@ int index(Container lst, T item) {
 	return -1;
 }
 
-//template int index (vector<int>, int);
-//template int index (vector<double>, double);
-//template int index (cnt, Point);
-//template int index (vector<cnt>, cnt);
 
+/**
+ * Converts any type into a formatted string, vstring does the same for vectors
+ * @param  Any compatible type or vector of types to convert to string.
+ * @return Display string
+ * @complexity O(1), O(N)
+ * @tested works
+ */
 string tostr(double p);
 string tostr(Point p);
 string tostr(cnt contour);
@@ -102,18 +99,30 @@ string vtostr(Container vec) {
 	return out.str();
 }
 
-
 template<> string vtostr(Cnts vec);
 
-template <typename T, typename G>
-void printr(string name, T value, G test, G expect){
-	string v = tostr(value); string t = tostr(test); string e = tostr(expect); string r = tostr(test==expect);
-    cout << name << " - (" << v << ") " << t << ", " << e << ": (" << r << ")\n" << endl;
-}
 
-template <typename T, typename G>
-void printr(String name, G value, T test){
-    cout << name << " - (" << tostr(value) << ") " << tostr(test) << endl;
+/**
+ * Returns the sum of a vector of items which support addition.
+ * @param vector of numbers
+ * @return sum of numers
+ * @complexity O(N)
+ * @tested works
+ */
+double sum(vector<double> nums);
+Point sum(cnt pts);
+
+
+/**
+ * Returns the mean of a vector of summable and divisible items.
+ * @param vector
+ * @return mean of vector
+ * @complexity O(N)
+ * @tested works
+ */
+template <typename T>
+T mean(vector<T> nums){
+    return sum(nums) / nums.size();
 }
 
 #endif

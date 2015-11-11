@@ -16,10 +16,11 @@ void testGeometry(){
     //Variable Declarations
     //Points
     const Point a = Point(0,0), b = Point(100,100), c = Point(0,100);
-    const Point e = Point(200,0), d = Point(100,0);
+    const Point e = Point(200,0), d = Point(100,0), f = Point(100,200);
     //Poly's
     const cnt tri {a,e,b}; //non-equal sides
     const cnt square {a,c,b,d};
+    const cnt rect {a,c*2,f,d};
     const cnt bigSquare {a*2-b,c*2-b,b*2-b,d*2-b};       
     //Fp's
     const Fp testFp1 = Fp({bigSquare,square});
@@ -60,65 +61,27 @@ void testGeometry(){
     cout << "Triangle" << tostr(tri) << tostr(tric) << endl;
     cout << "Square" << tostr(square) << tostr(squarec) << endl;
     cout << "Big Square" << tostr(bigSquare) << tostr(bigsc) << endl;
+    cout << "Square & BigSquare Centroid: " << tostr(centroid(vpoly3)) << endl;
 
     //Dist & Angs
     vector<double> dts = dists(tri);
     vector<double> ans = angles(tri);
     cout << "Triangle lengths: " << vtostr(dts) << endl;
     cout << "Triangle angles: " << vtostr(ans) << endl;
+    cout << "Unit Angle: " << "Origin - " << tostr(a) << "; Point - " << tostr(b) << "; Ang - " << angle(a,b) << endl;
 
     //All same length
     cout << "Triangle all same length? " << allSameLength(tri,(double)0.0) << endl;
     cout << "Square all same length? " << allSameLength(square,(double)0.0) << endl;
 
-//	const Fp ar1[] = {testFp3}; const Fp ar2[] = {testFp1};
-//	bool test2a = allInside(bigTestPoly, initVec(ar1,1)); //True
-//	bool test2b = allInside(testPoly, initVec(ar2,1)); //False
-//	printr("allInside",bigTestPoly,test2a,true); printr("allInside",testPoly,test2b,false);
-//
-//	const Point ar3[] = {Point(1,1),Point(2,1),Point(0,0)};
-//	const cnt test4 = rotateVec(testPoly);
-//	const cnt answ4 = initVec(ar3,3);
-//	printr("rotate",testPoly,test4,answ4);
-//
-//	Point test6 = centroid(testPoly);
-//	Point test7 = centroid(testFp1);
-//	Point test8 = centroid(conts);
-//      Point test9 = centroid(testFps1);
-//	printr("centroid",testPoly,test6); printr("centroid",testPoly,test7); printr("centroid",testPoly,test8); printr("centroid",testPoly,test9);
-//
-//	double test10 = dist(a, b);
-//	double test11 = angle(a, b);
-//	double test12 = angle(a, b, c);
-//	printr("centroid",ab,test10); printr("centroid",ab,test11); printr("centroid",abc,test12);
-//
-//	bool test13a = isPoly(testPoly, 3, false, 0, 0); //True
-//	bool test13b = isPoly(testPoly, 3, true, 0, 0); //False
-//	bool test13c = isPoly(testPoly, 4, false, 0, 0); //False
-//	printr("isPoly",testPoly,test13a,true); printr("isPoly",testPoly,test13b,false); printr("isPoly",testPoly,test13c,false);
-//
-//	bool test14 = isRectangle(bigTestPoly, false, 0, 0); //True
-//	bool test15 = isSquare(bigTestPoly, 0, 0); //True
-//	printr("isRectangle",bigTestPoly,test14,true); printr("isSquare",bigTestPoly,test15,true);
-//
-//	bool test16a = hasRectangle(testFps2, 0.0, 0.0).size()!=0; //True
-//	bool test16b = hasRectangle(testFps3, 0.0, 0.0).size()!=0; //False
-//	printr("hasRectangle",testFps2,test16a,true); printr("hasRectangle",testFps3,test16b,false);
-//
-//	vector<double> test17 = angles(testPoly);
-//	vector<double> test18 = dists(testPoly);
-//	printr("angles",testPoly,test17); printr("angles",testPoly,test18);
-//
-//	bool test19a = contains(testLst, Point(1,1));  //True
-//	bool test20a = contains(testPoly, Point(1,1)); //True
-//	bool test19b = contains(testLst, Point(3,3));  //True
-//	bool test20b = contains(testPoly, Point(3,3)); //True
-//	printr("contains",testLst,test19a,true); printr("contains",testPoly,test20a,true);
-//	printr("contains",testLst,test19b,true); printr("contains",testPoly,test20b,true);
-//
-//	int test21 = index(testLst, Point(2,2));
-//	printr("index",testLst,test21,1);
-
+    //isPoly
+    bool test1 = isPoly(tri, 3, false, 0, 0); //True
+    bool test2 = isPoly(tri, 3, true, 0, 0); //False
+    bool test3 = isPoly(tri, 4, false, 0, 0); //False
+    bool test4 = isRectangle(rect, false, 0, 0); //True
+    bool test5 = isRectangle(rect, true, 0, 0); //False
+    bool test6 = isSquare(square, 0, 0); //True
+    cout << test1 << test2 << test3 << test4 << test5 << test6 << endl;
 }
 
 int main() {

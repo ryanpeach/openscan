@@ -126,22 +126,33 @@ bool allSameLength(cnt poly, double distTol){
     //Get error from mean and test if it is within tolerance
     for (i = 0; i < poly.size(); i++) {error.push_back(abs(lengths[i]-mean));}               //Get the error from the mean of each length
     for (i = 0; i < poly.size(); i++) {test.push_back(error[i] <= distTol);}                 //Check if the error is within tolerance
-    bool out = !(find(test.begin(), test.end(), false)!=test.end());                                //Test and return to see if there is a false within the test vector
+    bool out = !(find(test.begin(), test.end(), false)!=test.end());                         //Test and return to see if there is a false within the test vector
     cout << "Result is " << out << endl;
     return out;
 }
 
+bool regularAngles (cnt poly, double angleTol) {
+#ifdef TEST
+    cout << "Running regularAngles..." << endl;
+#endif
+    vector<double> angs = angles(poly);
+    double m = mean(angs);
+    for (double a : angs) {
+        if (abs(a-m)>angleTol) {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool isPoly(cnt poly, int size, bool regular, double angleTol, double distTol) {
 #ifdef TEST 
-    cout << "Running isPoly" << endl;
+    cout << "Running isPoly..." << endl;
 #endif
-    vector<double> angs;
     if (poly.size()==(unsigned int)size && isContourConvex(poly)) {
-        if (size == 4) {
-            angs = angles(poly);
-            for (double a : angs) {if (abs(a-90.0)>angleTol) {return false;}}    //Test that all angles are within tolerance of 90
+        if (regular) {
+            return allSameLength(poly, distTol) && regularAngles(poly, angleTol);
         }
-        if (regular) {return allSameLength(poly, distTol);}
         else {return true;}
     }
     else {return false;}

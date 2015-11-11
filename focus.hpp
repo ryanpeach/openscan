@@ -10,7 +10,6 @@
 #define FOCUS
 
 #include <typeinfo>
-#include "opencv2/imgproc/imgproc.hpp"
 
 #include "geometry.hpp"
 
