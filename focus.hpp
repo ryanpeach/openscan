@@ -30,8 +30,9 @@ struct Fp {
 
 	bool operator!= (Fp newFp);
 
-	Fp copy ();
+        bool isValid ();
 
+	Fp copy ();
 };
 
 Point centroid (vector<Fp> fps);

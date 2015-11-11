@@ -11,11 +11,12 @@
 void testGeometry(){
 #ifdef TEST 
     cout << "running testGeometry" << endl;
+    cout << "Creating Variables" << endl;
 #endif
     //Variable Declarations
     //Points
-    const Point a = Point(0,0), b = Point(1,1), c = Point(0,1);
-    const Point e = Point(2,0), d = Point(1,0);
+    const Point a = Point(0,0), b = Point(100,100), c = Point(0,100);
+    const Point e = Point(200,0), d = Point(100,0);
     //Poly's
     const cnt tri {a,e,b}; //non-equal sides
     const cnt square {a,c,b,d};
@@ -26,7 +27,7 @@ void testGeometry(){
     const Fp testFp3 = Fp({square}); //not a valid Fp
 
 #ifdef TEST 
-    cout << "test" << endl;
+    cout << "Creating Vectors" << endl;
 #endif
 
     //Vectors
@@ -52,11 +53,17 @@ void testGeometry(){
 #endif
 
     //Test Methods
-    //Test allSameLength()
-    bool test1a = allSameLength(square, 0); cout << "allSameLength1"; //True
-    bool test1b = allSameLength(tri, 0); cout << "allSameLength2"; //False
-    printr("allSameLength",square,test1a,true); cout << "printr1";
-    printr("allSameLength",tri,test1b,false); cout << "printr2";
+    //Centroid
+    Point tric = centroid(tri);
+    Point squarec = centroid(square);
+    Point bigsc = centroid(bigSquare);
+    cout << "Triangle" << tostr(tri) << tostr(tric) << endl;
+    cout << "Square" << tostr(square) << tostr(squarec) << endl;
+    cout << "Big Square" << tostr(bigSquare) << tostr(bigsc) << endl;
+    
+    //All same length
+    cout << "Triangle all same length? " << allSameLength(tri,0.0) << endl;
+    cout << "Square all same length? " << allSameLength(square,0.0) << endl;
 
 //	const Fp ar1[] = {testFp3}; const Fp ar2[] = {testFp1};
 //	bool test2a = allInside(bigTestPoly, initVec(ar1,1)); //True
