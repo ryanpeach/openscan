@@ -60,10 +60,16 @@ void testGeometry(){
     cout << "Triangle" << tostr(tri) << tostr(tric) << endl;
     cout << "Square" << tostr(square) << tostr(squarec) << endl;
     cout << "Big Square" << tostr(bigSquare) << tostr(bigsc) << endl;
-    
+
+    //Dist & Angs
+    vector<double> dts = dists(tri);
+    vector<double> ans = angles(tri);
+    cout << "Triangle lengths: " << vtostr(dts) << endl;
+    cout << "Triangle angles: " << vtostr(ans) << endl;
+
     //All same length
-    cout << "Triangle all same length? " << allSameLength(tri,0.0) << endl;
-    cout << "Square all same length? " << allSameLength(square,0.0) << endl;
+    cout << "Triangle all same length? " << allSameLength(tri,(double)0.0) << endl;
+    cout << "Square all same length? " << allSameLength(square,(double)0.0) << endl;
 
 //	const Fp ar1[] = {testFp3}; const Fp ar2[] = {testFp1};
 //	bool test2a = allInside(bigTestPoly, initVec(ar1,1)); //True

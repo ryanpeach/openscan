@@ -71,7 +71,7 @@ Point centroid(Cnts c);
  * @return True / False
  * @complexity O(?)
  */
-bool allSameLength(cnt poly, int distTol);
+bool allSameLength(cnt poly, double distTol);
 
 /**
  * Tests whether or not a contour fits certain definitions of "polygon," "rectangle," or "square."

@@ -108,7 +108,7 @@ Point centroid(vector<cnt> vec) {
 
 Point centroid(Cnts c){return centroid(c.contours);}
 
-bool allSameLength(cnt poly, int distTol){
+bool allSameLength(cnt poly, double distTol){
 #ifdef TEST 
     cout << "Running allSameLength" << endl;
 #endif
@@ -121,12 +121,14 @@ bool allSameLength(cnt poly, int distTol){
 
     //Calculate Mean
     for (i = 0; i<lengths.size(); i++) {mean += lengths[i];}
-    mean = mean / lengths.size();
+    mean /= lengths.size();
 
     //Get error from mean and test if it is within tolerance
     for (i = 0; i < poly.size(); i++) {error.push_back(abs(lengths[i]-mean));}               //Get the error from the mean of each length
-    for (i = 0; i < poly.size(); i++) {test.push_back(error[i] < distTol);}                      //Check if the error is within tolerance
-    return find(test.begin(), test.end(), false)!=test.end();                                //Test and return to see if there is a false within the test vector
+    for (i = 0; i < poly.size(); i++) {test.push_back(error[i] <= distTol);}                 //Check if the error is within tolerance
+    bool out = !(find(test.begin(), test.end(), false)!=test.end());                                //Test and return to see if there is a false within the test vector
+    cout << "Result is " << out << endl;
+    return out;
 }
 
 bool isPoly(cnt poly, int size, bool regular, double angleTol, double distTol) {

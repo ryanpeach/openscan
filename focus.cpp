@@ -14,10 +14,10 @@ int Fp::findInnerBorder(vector<cnt> cnts, double angleTol, double distTol) {
     cout << "findinnerborder start" << endl;
 #endif
 
-    cnt contour;
+    cnt c;
     for (int x = cnts.size()-1; x > 0; x--) {
-        contour = cnts[x];
-        if (isPoly(contour,4,true,angleTol,distTol)) {return x+1;}
+        c = cnts[x];
+        if (isPoly(c,4,true,angleTol,distTol)) {return x;}
     }
     cout << "findinnerborder complete" << endl;
 
