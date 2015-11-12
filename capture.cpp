@@ -13,8 +13,8 @@
 //Uses polyTol, angleTol, distTol, wSize, C;
 vector<Mat> Capture::process(Mat img, bool filter) {
     // Variable Declaration
-    Mat warp; frame = img;
-    
+    Mat warp, filtered;
+
     // Intial Processing
     polys = findPolys(img, polyTol);
     fps = findFocusPoints(polys, angleTol, distTol);
@@ -24,14 +24,14 @@ vector<Mat> Capture::process(Mat img, bool filter) {
     if (corners.size() == 4) {
         Fp ref = getRef(fps);
         warp = fixPerspective(img, corners, ref);
-        if (filter) {warp = outputFilter(warp, wSize, C);}
-    } else {return {img, img};}
+        if (filter) {filtered = outputFilter(warp, wSize, C);}
+    } else {return vector<Mat>();}
 
     cvtColor(warp, warp, COLOR_GRAY2RGB);
     Scalar color = Scalar(255,0,0);
     Mat drawing = warp;
     drawContours(drawing, centroids(corners), 0, color, 3, 8);
-    return {warp, drawing};
+    return {drawing, warp, filtered};
 }
 
 // Processes the image without the help of corner focus points
@@ -66,19 +66,48 @@ vector<Mat> Capture::process(Mat img, bool filter) {
 #ifdef DESKTOP
 void Capture::webCam() {
     VideoCapture cap;
-    Mat frame;
-    vector<Mat> preview;
-    if(!cap.open(0))
-        return;
+    Mat frame, preview, drawing, cropped;
+    vector<Mat> proc;
+    string filename, filepath;
+
+    bool found = false;
+
+    if(!cap.open(0)){return;}
+
+    namedWindow("Capture:Press and Hold 'q' to exit",WINDOW_NORMAL);
+    namedWindow("Preview: Press 's' to save.",WINDOW_NORMAL);
+
     for(;;)
     {
         cap >> frame;
         if( frame.empty() ) break; // end of video stream
-        preview = process(frame);
-        if (!(matEq(preview[0],frame) && matEq(preview[1],frame)))
-            imshow("Preview", preview);
-        imshow("Video", frame);
-        if( waitKey(1) == 27 ) break; // stop capturing by pressing ESC 
+        vector<Mat> proc = process(frame);
+
+        if (!proc.empty()) {
+            drawing = proc[0];
+            cropped = proc[1];
+            preview = proc[2];
+            found = true;
+        } else {
+            drawing = frame;
+            found = false;
+        }
+
+        //Show and save webcam out and preview
+        imshow("Capture:Press and Hold 'q' to exit", drawing);
+        if (found){
+            imshow("Capture:Press and Hold 's' to save", preview);
+       	    if (waitKey(10) & 0xFF == 's') { //save
+                filename = (string)(uuid.uuid4().hex)
+                filepath = "scans/" + filename  + ".jpg"
+                imwrite(filepath,preview)
+            }
+        }
+
+        //Quit
+        if (waitKey(10) & 0xFF == 'q'): {break;}
+        cap.release();
+        destroyAllWindows();
     }
 }
 #endif
