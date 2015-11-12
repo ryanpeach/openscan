@@ -4,6 +4,8 @@ import cv2
 import numpy as np
 import random
 import os
+import uuid
+
 
 ATOL = 10 #Degrees
 DTOL = 5 #Pixels
@@ -218,19 +220,23 @@ def webcamTest():
     if not cap.isOpened(): print "Camera error."
     
     preview = None
+    cv2.namedWindow("Capture:Press and Hold 'q' to exit",cv2.WINDOW_NORMAL)
+    cv2.namedWindow("Preview: Press 's' to save.",cv2.WINDOW_NORMAL)
+
     while(True):
         ret, frame = cap.read() #Capture frame by frame
         try:
             window, preview = imageTest(frame)
         except:
             window = frame
-        cv2.imshow("Press q to exit.", window)
+        cv2.imshow("Capture:Press and Hold 'q' to exit", window)
         if preview != None:
-            cv2.imshow("Preview: Press s to save.",preview)
-        if cv2.waitKey(1) & 0xFF == ord('s'): #save
-            if preview != None:
-                saveImage(preview)
-        if cv2.waitKey(1) & 0xFF == ord('q'): #Exit
+            cv2.imshow("Preview: Press 's' to save.",preview)
+       	    if cv2.waitKey(10) & 0xFF == ord('s'): #save
+		filename = str(uuid.uuid4().hex)
+		filepath = "scans/"+ filename  + ".jpg"
+		cv2.imwrite(filepath,preview)
+        if cv2.waitKey(10) & 0xFF == ord('q'): #Exit
             break
 
     #When everything done, release the capture
