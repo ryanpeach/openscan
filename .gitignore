@@ -1,12 +1,16 @@
-<<<<<<< HEAD
 ./saves/*
-=======
 opencv/
-./build
+./build/*
 *.sh~
 *.swp
 *.o
 *.cpp~
 *.hpp~
-openscan
->>>>>>> refs/remotes/origin/C++
+*.run
+*.bin
+*.exe
+sudo
+*.pyd
+.project
+.cproject
+./.settings/*

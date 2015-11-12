@@ -11,6 +11,8 @@ sudo apt-get install g++ cmake
 echo "--------------"
 echo "Cloning opencv..."
 sleep 2
+mkdir .lib
+cd .lib
 sudo git clone https://github.com/Itseez/opencv.git
 cd ./opencv
 
