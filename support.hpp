@@ -28,6 +28,7 @@ struct Cnts {
     Cnts();
 };
 
+bool matEq(Mat m1, Mat m2);
 
 /**
  * Shifts all cells of lst, vec, or contour right by one cell, moves the last cell first.

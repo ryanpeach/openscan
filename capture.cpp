@@ -6,29 +6,34 @@
  * @version v0.1
  */
 
+#define DESKTOP
+
 #include "capture.hpp"
 
-vector<Mat> Capture::process(Mat img) {
+//Uses polyTol, angleTol, distTol, wSize, C;
+vector<Mat> Capture::process(Mat img, bool filter) {
     // Variable Declaration
-    Mat warp, crop;
-    Mat out;
+    Mat warp;
     
     // Intial Processing
     polys = findPolys(img, Capture::polyTol);
-    fps = findFocusPoints(polys);
+    fps = findFocusPoints(polys, Capture::angleTol, Capture::distTol);
 
     // Get border from focus points
     vector<Fp> corners = getCorners(fps, Capture::angleTol, Capture::distTol);
     if (corners.size() == 4) {
         Fp ref = getRef(fps);
         warp = fixPerspective(img, corners, ref);
-        out = outputFilter(crop, wSize, C);
+        if (filter) {warp = outputFilter(warp, wSize, C);}
     } else {return {img, img};}
 
-    Mat drawing = drawContour(img, sort, {255,0,0}, 1);
-    cvtColor(out, out, COLOR_GRAY2RGB);
-    return {out, drawing};
+    cvtColor(warp, warp, COLOR_GRAY2RGB);
+    Scalar color = Scalar(255,0,0);
+    Mat drawing = warp;
+    drawContours(drawing, centroids(corners), 0, color, 3, 8);
+    return {warp, drawing};
 }
+
 // Processes the image without the help of corner focus points
 // Null-Condition: Returns {null,img}
 // vector<Mat> Capture::process2(Mat img) {
@@ -58,6 +63,7 @@ vector<Mat> Capture::process(Mat img) {
 //    else {return {img, img};}
 // }
 
+#ifdef DESKTOP
 void Capture::webCam() {
     VideoCapture cap;
     Mat frame;
@@ -69,9 +75,10 @@ void Capture::webCam() {
         cap >> frame;
         if( frame.empty() ) break; // end of video stream
         preview = process(frame);
-        if (!(bool)(preview == vector<Mat> {frame, frame}))
+        if (!(matEq(preview[0],frame) && matEq(preview[1],frame)))
             imshow("Preview", preview);
         imshow("Video", frame);
         if( waitKey(1) == 27 ) break; // stop capturing by pressing ESC 
     }
 }
+#endif

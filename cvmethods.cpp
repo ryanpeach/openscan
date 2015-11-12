@@ -12,19 +12,19 @@
 
 //Filters the img, finds the contours, and returns the Cnts.
 //Uses: polyTol
-Cnts findPolys (Mat img, double polyTol) {
+Cnts findPolys (Mat img, double distTol) {
     //Find contours and heirarchy
     vector<cnt> contours, polys; vector<Vec4i> heirarchy; cnt temp;
     findContours(img, contours, heirarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
 
     //Return approximate polygons
     for (unsigned int i = 0; i < contours.size(); i++) {
-        approxPolyDP(contours[i], temp, tol, true);
+        approxPolyDP(contours[i], temp, distTol, true);
         polys.push_back(temp);
     }
 
     //Return Cnts
-    return Cnt(polys, heirarchy);
+    return Cnts(polys, heirarchy);
 }
 
 //Find all the focus points within an image.
@@ -103,9 +103,9 @@ vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol, double distTol) {
 //Sort edges by distance.
 //Corners must be a rectangle
 //Null-Condition: Returns corners
-vector<Fp> sortCorners(vector<Fp> corners) {
-    Point cent = centroid(corners); vector<double> polar; int n; vector<Fp> out;
-    for (Fp f : corners) {polar.push_back(angle(f.center,cent));} //Calculate all the angles from the centroid, maintaining index
+cnt sortCorners(cnt corners) {
+    Point cent = centroid(corners); vector<double> polar; int n; cnt out;
+    for (Point p : corners) {polar.push_back(angle(p,cent));} //Calculate all the angles from the centroid, maintaining index
     vector<double> sorted = polar;
     sort(sorted.begin(),sorted.end());
     //Sort "corners" by the order of sorted "polar"
@@ -113,7 +113,14 @@ vector<Fp> sortCorners(vector<Fp> corners) {
         n = index(polar, d);
         out.push_back(corners[n]); //Return sorted corners
     }
+    return out;
+}
 
+vector<Fp> sortCorners(vector<Fp> corners, Fp ref) {
+    Point r = centroid(ref); vector<Fp> out = corners;
+    for(int i = 0; i < 4 && centroid(corners[0]) != r; i++) {
+        out = rotateVec(out);
+    }
     return out;
 }
 
@@ -228,3 +235,4 @@ Mat fixPerspective (Mat img, vector<Fp> border, Fp ref) {
     warpPerspective(img, out, M, Size(maxWidth, maxHeight));
     return out;
 }
+

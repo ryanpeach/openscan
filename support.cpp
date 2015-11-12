@@ -6,6 +6,10 @@ Cnts::Cnts(vector<cnt> polys, vector<Vec4i> heir):
 
 Cnts::Cnts(){}
 
+bool matEq(Mat a, Mat b) {
+    return countNonZero(a!=b)==0;
+}
+
 string tostr(double p) {
 	stringstream out;
 	out << p;

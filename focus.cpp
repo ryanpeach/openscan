@@ -77,6 +77,14 @@ Point centroid (Fp f) {
     return f.center;
 }
 
+cnt centroids(vector<Fp> fps) {
+    cnt out;
+    for (Fp fp : fps) {
+        out.push_back(centroid(fp));
+    }
+    return out;
+}
+
 bool allInside(cnt poly, vector<Fp> fps) {
     for (Fp f : fps) {
         if (pointPolygonTest(poly, f.center, false) < 0) {

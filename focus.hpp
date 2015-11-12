@@ -36,6 +36,7 @@ struct Fp {
 
 Point centroid (vector<Fp> fps);
 Point centroid (Fp f);
+cnt centroids (vector<Fp> fps);
 
 string tostr(Fp fp);
 

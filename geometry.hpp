@@ -92,6 +92,16 @@ bool allSameLength(cnt poly, double distTol);
 bool regularAngles(cnt poly, double angleTol);
 
 /**
+ * Test that border is the given aspect ratio. Assumes input is rectangular.
+ * @param  cnt border:      Any rectangular cnt you wish to test.
+ * @param  double ratioTol: The ratio tolerance for calculation of equality.
+ * @return True / False
+ * @complexity O(?)
+ * @tested untested
+ */
+bool isAspectRatio(cnt border, double aspectRatio, double ratioTol);
+
+/**
  * Tests whether or not a contour fits certain definitions of "polygon," "rectangle," or "square."
  * @param  cnt poly, the size of the poly (4 if rect or square)
  * @param  bool regular: whether or not all sides are the same length.

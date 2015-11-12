@@ -145,6 +145,15 @@ bool regularAngles (cnt poly, double angleTol) {
     return true;
 }
 
+bool isAspectRatio(cnt border, double aspectRatio, double ratioTol) {
+   vector<double> d = dists(border);
+   double test1 = abs(d[0]/d[1] - aspectRatio);
+   double test2 = abs(d[1]/d[2] - aspectRatio);
+   double test3 = abs(d[1]/d[0] - aspectRatio);
+   double test4 = abs(d[2]/d[1] - aspectRatio);
+   return test1 <= ratioTol || test2 <= ratioTol || test3 <= ratioTol || test4 <= ratioTol;
+}
+    
 bool isPoly(cnt poly, int size, bool regular, double angleTol, double distTol) {
 #ifdef TEST 
     cout << "Running isPoly..." << endl;
