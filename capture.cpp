@@ -69,6 +69,7 @@ void Capture::webCam() {
     Mat frame, preview, drawing, cropped;
     vector<Mat> proc;
     string filename, filepath;
+    time_t timer;
 
     bool found = false;
 
@@ -97,15 +98,15 @@ void Capture::webCam() {
         imshow("Capture:Press and Hold 'q' to exit", drawing);
         if (found){
             imshow("Capture:Press and Hold 's' to save", preview);
-       	    if (waitKey(10) & 0xFF == 's') { //save
-                filename = (string)(uuid.uuid4().hex)
-                filepath = "scans/" + filename  + ".jpg"
-                imwrite(filepath,preview)
+       	    if (cvWaitKey(10) == 's') {  //save
+                filename = asctime(localtime(&timer));
+                filepath = "scans/" + filename  + ".jpg";
+                imwrite(filepath,preview);
             }
         }
 
         //Quit
-        if (waitKey(10) & 0xFF == 'q'): {break;}
+        if (cvWaitKey(10) == 'q') {break;}
         cap.release();
         destroyAllWindows();
     }

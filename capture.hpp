@@ -12,6 +12,7 @@
 
 #include "cvmethods.hpp"
 #include "opencv2/highgui/highgui.hpp"
+#include <ctime>
 
 class Capture {
  private:
