@@ -6,13 +6,14 @@
  */
 
 #include "cvmethods.hpp"
+#include "capture.hpp"
 #define TEST
 
-void testGeometry(){
 #ifdef TEST 
+void testGeometry(){
     cout << "running testGeometry" << endl;
     cout << "Creating Variables" << endl;
-#endif
+    
     //Variable Declarations
     //Points
     const Point a = Point(0,0), b = Point(100,100), c = Point(0,100);
@@ -27,9 +28,7 @@ void testGeometry(){
     const Fp testFp2 = Fp({bigSquare}); //not a valid Fp
     const Fp testFp3 = Fp({square}); //not a valid Fp
 
-#ifdef TEST 
     cout << "Creating Vectors" << endl;
-#endif
 
     //Vectors
     //Poly's
@@ -49,9 +48,7 @@ void testGeometry(){
     const vector<Fp> vfp6 {testFp2};
     const vector<Fp> vfp7 {testFp3};
 
-#ifdef TEST 
-    cout << "test" << endl;
-#endif
+    cout << "Test Methods..." << endl;
 
     //Test Methods
     //Centroid
@@ -83,9 +80,13 @@ void testGeometry(){
     bool test6 = isSquare(square, 0, 0); //True
     cout << test1 << test2 << test3 << test4 << test5 << test6 << endl;
 }
+#endif
 
 int main() {
-    cout << "running main..." << endl;
+#ifdef TEST
+    cout << "Running main..." << endl;
     testGeometry();
-    //return 0;
+#endif
+    Capture C = Capture();
+    C.webCam();
 }

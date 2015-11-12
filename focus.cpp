@@ -86,18 +86,18 @@ bool allInside(cnt poly, vector<Fp> fps) {
     return true;
 }
 
-cnt hasRectangle(vector<Fp> fps, double angleTol, double distTol) {
-    if (fps.size()<4) {return cnt();}
+vector<Fp> hasRectangle(vector<Fp> fps, double angleTol, double distTol) {
+    if (fps.size()<4) {return vector<Fp>();}
     //check all combinations of poly
     for (Fp a1 : fps) {
-        for (Fp a2 : fps) {
-            for (Fp a3 : fps) {
-                for (Fp a4 : fps) {
-                    if (a1 != a2 && a1 != a3 && a1 != a4 && a2 != a3 && a2 != a4 && a3 != a4) {
-                        if (isRectangle((cnt){a1.center,a2.center,a3.center,a4.center},false,angleTol,distTol)) {
-                            return (cnt){a1.center,a2.center,a3.center,a4.center};
+    for (Fp a2 : fps) {
+    for (Fp a3 : fps) {
+    for (Fp a4 : fps) {
+        if (a1 != a2 && a1 != a3 && a1 != a4 && a2 != a3 && a2 != a4 && a3 != a4) {
+            if (isRectangle(cnt{a1.center,a2.center,a3.center,a4.center}, false,angleTol,distTol)) {
+                    return vector<Fp>{a1,a2,a3,a4};
     }}}}}}
-    return cnt();
+    return vector<Fp>();
 }
 
 vector<double> angs (Point x, vector<Fp> fours) {

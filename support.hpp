@@ -20,9 +20,12 @@ using namespace cv;
 
 typedef vector<Point> cnt;
 
-struct Cnts {
+struct Cnts { 
     vector<cnt> contours;
     vector<Vec4i> heirarchy;
+    
+    Cnts(vector<cnt> polys, vector<Vec4i> heir);
+    Cnts();
 };
 
 

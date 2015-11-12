@@ -1,5 +1,11 @@
 #include "support.hpp"
 
+Cnts::Cnts(vector<cnt> polys, vector<Vec4i> heir):
+    contours(polys), heirarchy(heir)
+{}
+
+Cnts::Cnts(){}
+
 string tostr(double p) {
 	stringstream out;
 	out << p;

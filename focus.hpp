@@ -58,7 +58,7 @@ bool allInside(cnt poly, vector<Fp> fps);
  * @issues isPoly should have consistent angle-testing if regular among all sizes of polys.
  * @complexity O(?)
  */
-cnt hasRectangle(vector<Fp> fps, double angleTol, double distTol);
+vector<Fp> hasRectangle(vector<Fp> fps, double angleTol, double distTol);
 
 vector<double> angs (Point x, vector<Fp> fours);
 

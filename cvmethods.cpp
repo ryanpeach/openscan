@@ -12,7 +12,7 @@
 
 //Filters the img, finds the contours, and returns the Cnts.
 //Uses: polyTol
-Cnts findPolys (Mat img, double tol) {
+Cnts findPolys (Mat img, double polyTol) {
     //Find contours and heirarchy
     vector<cnt> contours, polys; vector<Vec4i> heirarchy; cnt temp;
     findContours(img, contours, heirarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
@@ -24,13 +24,13 @@ Cnts findPolys (Mat img, double tol) {
     }
 
     //Return Cnts
-    return {polys, heirarchy};
+    return Cnt(polys, heirarchy);
 }
 
 //Find all the focus points within an image.
 vector<Fp> findFocusPoints (Cnts polys, double angleTol, double distTol) {
     //Definitions
-    vector<Fp> out; vector<vector<cnt>> cntV;
+    vector<Fp> out; vector< vector<cnt> > cntV;
     vector<int> done; vector<cnt> contours; int k;
     cnt poly;
 
@@ -61,7 +61,7 @@ vector<Fp> findFocusPoints (Cnts polys, double angleTol, double distTol) {
     }
 
     //Return the focus points
-    return vector<Fp>(out.begin(),out.end());
+    return out; 
 }
 
 //Classifies squares and selects the four most likely to be corners
@@ -70,12 +70,12 @@ vector<Fp> findFocusPoints (Cnts polys, double angleTol, double distTol) {
 vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol, double distTol) {
     //Make fours a list of only size four Fp's
     //vector<Fp> fours = filter(focusPoints,[](Fp z){return z.shape == 4;});
-	vector<Fp> fours;
-	for (Fp z : focusPoints) {
-		if (z.shape == 4) {
-			fours.push_back(z);
-		}
-	}
+    vector<Fp> fours;
+    for (Fp z : focusPoints) {
+            if (z.shape == 4) {
+                    fours.push_back(z);
+            }
+    }
 
     //Classify corners as having 2 right angles
     vector<Fp> out;
@@ -95,8 +95,9 @@ vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol, double distTol) {
     }
 
     //Return their centroids
-    if (hasRectangle(out, angleTol, distTol).size() != 4) {return vector<Fp>();}
-    return out;
+    vector<Fp> rect = hasRectangle(out, angleTol, distTol);
+    if (rect.size() != 4) {return vector<Fp>();}
+    else {return out;}
 }
 
 //Sort edges by distance.
@@ -183,19 +184,19 @@ Mat cropImage(Mat img, int R){
 
 //Uses: aspectRatio
 //Reference: Modified from http://www.pyimagesearch.com/2014/08/25/4-point-opencv-getperspective-transform-example/
-Mat fixPerspective (Mat img, vector<cnt> border, Point ref) {
+Mat fixPerspective (Mat img, vector<Fp> border, Fp ref) {
     //Declare variables
     Point tl, tr, bl, br;
     Mat out;
     int n = 0;
 
     //Rotate the array until the reference is first
-    while (centroid(border[0]) != ref && n < 4) {
+    while (border[0].center != ref.center && n < 4) {
         border = rotateVec(border);
         n++;
     }
 
-    tl = centroid(border[0]); tr = centroid(border[1]); br = centroid(border[2]); bl = centroid(border[3]);
+    tl = border[0].center; tr = border[1].center; br = border[2].center; bl = border[3].center;
 
     // compute the width of the new image, which will be the
     // maximum distance between bottom-right and bottom-left
