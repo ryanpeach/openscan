@@ -1,11 +1,9 @@
 ./saves/*
-opencv/
-./build/*
-*.sh~
+./.lib/*
+!./.lib/dependencies.sh
+*~
 *.swp
 *.o
-*.cpp~
-*.hpp~
 *.run
 *.bin
 *.exe
