@@ -16,14 +16,16 @@
 class Capture {
  private:
     // Variable Declaration
-    Cnts polys;            //
-    vector<Fp> fps;        //
-    int angleTol;          //
-    int distTol;           //
-    int polyTol;           //
-    int wSize;             //
+    Mat frame;             // A variable to hold the most current processed frame
+    Cnts polys;            // Just a temp variable to hold the polys from the most frame 
+    vector<Fp> fps;        // Just a temp variable to hold the Fp's from the most recent frame
+
+    int angleTol;          // The angle tolerance app-wide
+    int distTol;           // The distance tolerance for small polygons (like focus pointss)
+    int polyTol;           // The distance tolerance for unversal polygons (like page borders)
+    int wSize;             // 
     int C;                 //
-    double aspectRatio;    //
+    double aspectRatio;    // The aspect ratio of the page we are looking for.
     int etol1;             //
     int etol2;             //
     int eSize;             //

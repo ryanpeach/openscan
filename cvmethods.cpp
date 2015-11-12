@@ -10,8 +10,6 @@
 
 // -------------- Feature Detection ----------------
 
-//Filters the img, finds the contours, and returns the Cnts.
-//Uses: polyTol
 Cnts findPolys (Mat img, double distTol) {
     //Find contours and heirarchy
     vector<cnt> contours, polys; vector<Vec4i> heirarchy; cnt temp;
@@ -27,7 +25,6 @@ Cnts findPolys (Mat img, double distTol) {
     return Cnts(polys, heirarchy);
 }
 
-//Find all the focus points within an image.
 vector<Fp> findFocusPoints (Cnts polys, double angleTol, double distTol) {
     //Definitions
     vector<Fp> out; vector< vector<cnt> > cntV;
@@ -64,9 +61,6 @@ vector<Fp> findFocusPoints (Cnts polys, double angleTol, double distTol) {
     return out; 
 }
 
-//Classifies squares and selects the four most likely to be corners
-//Null-Condition: Returns null
-//Uses: angleTol
 vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol, double distTol) {
     //Make fours a list of only size four Fp's
     //vector<Fp> fours = filter(focusPoints,[](Fp z){return z.shape == 4;});
@@ -100,22 +94,6 @@ vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol, double distTol) {
     else {return out;}
 }
 
-//Sort edges by distance.
-//Corners must be a rectangle
-//Null-Condition: Returns corners
-cnt sortCorners(cnt corners) {
-    Point cent = centroid(corners); vector<double> polar; int n; cnt out;
-    for (Point p : corners) {polar.push_back(angle(p,cent));} //Calculate all the angles from the centroid, maintaining index
-    vector<double> sorted = polar;
-    sort(sorted.begin(),sorted.end());
-    //Sort "corners" by the order of sorted "polar"
-    for (double d : sorted) {
-        n = index(polar, d);
-        out.push_back(corners[n]); //Return sorted corners
-    }
-    return out;
-}
-
 vector<Fp> sortCorners(vector<Fp> corners, Fp ref) {
     Point r = centroid(ref); vector<Fp> out = corners;
     for(int i = 0; i < 4 && centroid(corners[0]) != r; i++) {
@@ -124,7 +102,24 @@ vector<Fp> sortCorners(vector<Fp> corners, Fp ref) {
     return out;
 }
 
-//Null-Condition: Returns fps[0]
+cnt sortCorners(cnt corners) {
+    //Variable Declaration
+    Point cent = centroid(corners); vector<double> polar; int n; cnt out;
+   
+    //Calculate all the angles from the centroid, maintaining index
+    for (Point p : corners) {polar.push_back(angle(p,cent));}
+    vector<double> sorted = polar;
+    sort(sorted.begin(),sorted.end());
+    
+    //Sort "corners" by the order of sorted "polar"
+    for (double d : sorted) {
+        n = index(polar, d);
+        out.push_back(corners[n]); //Return sorted corners
+    }
+    return out;
+}
+
+
 Fp getRef(vector<Fp> fps) {
     Fp maxFp = fps[0]; int max = maxFp.depth; //sets default values
     for (Fp fp : fps) {
@@ -136,7 +131,6 @@ Fp getRef(vector<Fp> fps) {
     return maxFp;
 }
 
-//Null-Condition: Returns contour[0]
 Point getRef(cnt contour) {
     auto D = dists(contour); unsigned int a = 0; unsigned int b = 1;
     while (D[a]<=D[b]){
@@ -147,13 +141,8 @@ Point getRef(cnt contour) {
     return contour[a];
 }
 
-bool isColor(Mat img){
-    if (img.channels()==3) {return true;}
-    else {return false;}
-}
 
 // ------------ Image Manipulation --------------
-//wSize must be an odd number, will be rounded up.
 Mat importFilter(Mat img, int tol1, int tol2, int wSize){
     //Testing & Declarations
     Mat gray, edges;
@@ -168,7 +157,6 @@ Mat importFilter(Mat img, int tol1, int tol2, int wSize){
     return edges;
 }
 
-//Uses: wSize, C
 Mat outputFilter(Mat img, int wSize, int C){
     //Testing & Declarations
     Mat gray, out;
@@ -182,15 +170,12 @@ Mat outputFilter(Mat img, int wSize, int C){
     return out;
 }
 
-//Uses: R
 Mat cropImage(Mat img, int R){
     int sizeX = img.cols; int sizeY = img.rows;
     Mat out = img(Rect(R,R,sizeX,sizeY));
     return out;
 }
 
-//Uses: aspectRatio
-//Reference: Modified from http://www.pyimagesearch.com/2014/08/25/4-point-opencv-getperspective-transform-example/
 Mat fixPerspective (Mat img, vector<Fp> border, Fp ref) {
     //Declare variables
     Point tl, tr, bl, br;
@@ -236,3 +221,7 @@ Mat fixPerspective (Mat img, vector<Fp> border, Fp ref) {
     return out;
 }
 
+bool isColor(Mat img){
+    if (img.channels()==3) {return true;}
+    else {return false;}
+}

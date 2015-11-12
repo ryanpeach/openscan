@@ -13,14 +13,14 @@
 //Uses polyTol, angleTol, distTol, wSize, C;
 vector<Mat> Capture::process(Mat img, bool filter) {
     // Variable Declaration
-    Mat warp;
+    Mat warp; frame = img;
     
     // Intial Processing
-    polys = findPolys(img, Capture::polyTol);
-    fps = findFocusPoints(polys, Capture::angleTol, Capture::distTol);
+    polys = findPolys(img, polyTol);
+    fps = findFocusPoints(polys, angleTol, distTol);
 
     // Get border from focus points
-    vector<Fp> corners = getCorners(fps, Capture::angleTol, Capture::distTol);
+    vector<Fp> corners = getCorners(fps, angleTol, distTol);
     if (corners.size() == 4) {
         Fp ref = getRef(fps);
         warp = fixPerspective(img, corners, ref);
