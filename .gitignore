@@ -1,1 +1,12 @@
+<<<<<<< HEAD
 ./saves/*
+=======
+opencv/
+./build
+*.sh~
+*.swp
+*.o
+*.cpp~
+*.hpp~
+openscan
+>>>>>>> refs/remotes/origin/C++
