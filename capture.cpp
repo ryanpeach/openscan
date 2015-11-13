@@ -16,7 +16,8 @@ vector<Mat> Capture::process(Mat img, bool filter) {
     Mat warp, filtered;
 
     // Intial Processing
-    polys = findPolys(img, polyTol);
+    edges = importFilter(img, etol1, etol2, wSize);
+    polys = findPolys(edges, polyTol);
     fps = findFocusPoints(polys, angleTol, distTol);
 
     // Get border from focus points
@@ -88,7 +89,7 @@ void Capture::webCam() {
         cout << "here2" <<endl;
 
         cap >> frame;
-        if( frame.empty() ) {break;} // end of video stream
+        if( frame.empty() ) {break;}  // end of video stream
         vector<Mat> proc = process(frame);
 
         cout << "here3" <<endl;
