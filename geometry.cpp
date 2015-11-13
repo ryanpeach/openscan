@@ -10,19 +10,19 @@
 #define TEST
 
 double dist(Point a, Point b){
-#ifdef TEST 
+#ifdef TEST
     cout << "Running dist..." << endl;
 #endif
     Point diff = a-b;
     double pow1 = pow((double)diff.x,2.0);
     double pow2 = pow((double)diff.y,2.0);
     double out = sqrt(pow1+pow2);
- 
+
     return out;
 }
 
 double angle(Point origin, Point a){
-#ifdef TEST 
+#ifdef TEST
     cout << "Running angle(2)..." << endl;
 #endif
     Point v = a - origin;
@@ -32,7 +32,7 @@ double angle(Point origin, Point a){
 }
 
 double angle(Point origin, Point c2, Point c3) {
-#ifdef TEST 
+#ifdef TEST
     cout << "Running angle(3)..." << endl;
 #endif
     Point a1 = origin; Point a2 = c2; Point a3 = origin; Point a4 = c3;
@@ -44,7 +44,7 @@ double angle(Point origin, Point c2, Point c3) {
 }
 
 vector<double> angles(cnt poly) {
-#ifdef TEST 
+#ifdef TEST
     cout << "Running angles..." << endl;
 #endif
     unsigned int a = 0; unsigned int b = poly.size()-1; unsigned int c = 1;
@@ -60,7 +60,7 @@ vector<double> angles(cnt poly) {
 }
 
 vector<double> dists(cnt poly) {
-#ifdef TEST 
+#ifdef TEST
     cout << "Running dists..." << endl;
 #endif
     unsigned int a = 0; unsigned int b = 1;
@@ -75,7 +75,7 @@ vector<double> dists(cnt poly) {
 }
 
 Point centroid(vector<Point> c) {
-#ifdef TEST 
+#ifdef TEST
     cout << "Running Centroid..." << endl;
 #endif
     Point sum = Point(0,0);
@@ -93,7 +93,7 @@ Point centroid(vector<Point> c) {
 }
 
 Point centroid(vector<cnt> vec) {
-#ifdef TEST 
+#ifdef TEST
     cout << "Running Centroid..." << endl;
 #endif
     cnt temp; Point cent;
@@ -102,14 +102,14 @@ Point centroid(vector<cnt> vec) {
         temp.push_back(cent);
     }
     Point out = centroid(temp);
-    
+
     return out;
 }
 
 Point centroid(Cnts c){return centroid(c.contours);}
 
 bool allSameLength(cnt poly, double distTol){
-#ifdef TEST 
+#ifdef TEST
     cout << "Running allSameLength" << endl;
 #endif
     vector<vector<Point>> pairs; vector<double> lengths, error; vector<bool> test; unsigned int i = 0; int mean = 0;
@@ -138,7 +138,7 @@ bool regularAngles (cnt poly, double angleTol) {
     vector<double> angs = angles(poly);
     double m = mean(angs);
     for (double a : angs) {
-        if (abs(a-m)>angleTol) {
+        if (abs(a-m) > angleTol) {
             return false;
         }
     }
@@ -146,19 +146,22 @@ bool regularAngles (cnt poly, double angleTol) {
 }
 
 bool isAspectRatio(cnt border, double aspectRatio, double ratioTol) {
-   vector<double> d = dists(border);
-   double test1 = abs(d[0]/d[1] - aspectRatio);
-   double test2 = abs(d[1]/d[2] - aspectRatio);
-   double test3 = abs(d[1]/d[0] - aspectRatio);
-   double test4 = abs(d[2]/d[1] - aspectRatio);
-   return test1 <= ratioTol || test2 <= ratioTol || test3 <= ratioTol || test4 <= ratioTol;
+#ifdef TEST
+    cout << "Running isAspectRatio..." << endl;
+#endif
+    vector<double> d = dists(border);
+    double test1 = abs(d[0]/d[1] - aspectRatio);
+    double test2 = abs(d[1]/d[2] - aspectRatio);
+    double test3 = abs(d[1]/d[0] - aspectRatio);
+    double test4 = abs(d[2]/d[1] - aspectRatio);
+    return test1 <= ratioTol || test2 <= ratioTol || test3 <= ratioTol || test4 <= ratioTol;
 }
-    
+
 bool isPoly(cnt poly, int size, bool regular, double angleTol, double distTol) {
-#ifdef TEST 
+#ifdef TEST
     cout << "Running isPoly..." << endl;
 #endif
-    if (poly.size()==(unsigned int)size && isContourConvex(poly)) {
+    if (poly.size() == (unsigned int)size && isContourConvex(poly)) {
         if (regular) {
             return allSameLength(poly, distTol) && regularAngles(poly, angleTol);
         }

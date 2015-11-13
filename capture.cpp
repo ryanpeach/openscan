@@ -6,12 +6,15 @@
  * @version v0.1
  */
 
-#define DESKTOP
-
 #include "capture.hpp"
+#define DESKTOP
+#define TEST
 
 // Uses polyTol, angleTol, distTol, wSize, C;
 vector<Mat> Capture::process(Mat img, bool filter) {
+#ifdef TEST
+    cout << "Running Capture::process..." << endl;
+#endif
     // Variable Declaration
     Mat warp, filtered;
 
@@ -29,7 +32,7 @@ vector<Mat> Capture::process(Mat img, bool filter) {
     } else {return vector<Mat>();}
 
     cvtColor(warp, warp, COLOR_GRAY2RGB);
-    Scalar color = Scalar(255,0,0);
+    Scalar color = Scalar(255, 0, 0);
     Mat drawing = warp;
     drawContours(drawing, centroids(corners), 0, color, 3, 8);
     return {drawing, warp, filtered};
@@ -66,6 +69,9 @@ vector<Mat> Capture::process(Mat img, bool filter) {
 
 #ifdef DESKTOP
 void Capture::webCam() {
+#ifdef TEST
+    cout << "Running Capture::webCam..." << endl;
+#endif
     VideoCapture cap;
     Mat frame, preview, drawing, cropped;
     vector<Mat> proc;
@@ -76,23 +82,26 @@ void Capture::webCam() {
 
     bool found = false;
 
-    if(!cap.open(0)){
+    if (!cap.open(0)){
         cout << "Camera failed to open..." << endl;
         return;
     }
 
-    namedWindow("Capture:Press and Hold 'q' to exit",WINDOW_NORMAL);
-    namedWindow("Preview: Press 's' to save.",WINDOW_NORMAL);
+    namedWindow("Capture:Press and Hold 'q' to exit", WINDOW_NORMAL);
+    namedWindow("Preview: Press 's' to save.", WINDOW_NORMAL);
 
-    for(;;)
-    {
-        cout << "here2" <<endl;
+#ifdef TEST
+    cout << "webCam: Beginning Main Loop..." << endl;
+#endif
 
+    for (;;) {
         cap >> frame;
-        if( frame.empty() ) {break;}  // end of video stream
+        if ( frame.empty() ) {break;}  // end of video stream
         vector<Mat> proc = process(frame);
 
-        cout << "here3" <<endl;
+#ifdef TEST
+        cout << "webCam: Process Complete!" << endl;
+#endif
 
         if (!proc.empty()) {
             drawing = proc[0];
@@ -108,14 +117,17 @@ void Capture::webCam() {
         imshow("Capture:Press and Hold 'q' to exit", drawing);
         if (found) {
             imshow("Capture:Press and Hold 's' to save", preview);
-       	    if (cvWaitKey(10) == 's') {  //save
-                filename = asctime(localtime(&timer));
+            if (cvWaitKey(10) == 's') {                       // save
+                filename = asctime_r(localtime_r(&timer));
                 filepath = "scans/" + filename  + ".jpg";
-                imwrite(filepath,preview);
+                imwrite(filepath, preview);
+#ifdef TEST
+                cout << "webCam: Saved as: " << filepath << endl;
+#endif
             }
         }
 
-        //Quit
+        // Quit
         if (cvWaitKey(10) == 'q') {break;}
     }
     cap.release();

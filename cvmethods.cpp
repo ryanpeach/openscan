@@ -7,10 +7,14 @@
  */
 
 #include "cvmethods.hpp"
+#define TEST
 
 // -------------- Feature Detection ----------------
 
 Cnts findPolys(Mat img, double distTol) {
+#ifdef TEST
+        cout << "Running findPolys..." << endl;
+#endif
     // Find contours and heirarchy
     vector<cnt> contours, polys; vector<Vec4i> heirarchy; cnt temp;
     findContours(img, contours, heirarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
@@ -26,19 +30,25 @@ Cnts findPolys(Mat img, double distTol) {
 }
 
 vector<Fp> findFocusPoints(Cnts polys, double angleTol, double distTol) {
-    //Definitions
+#ifdef TEST
+    cout << "Running findFocusPoints..." << endl;
+#endif
+    // Definitions
     vector<Fp> out; vector< vector<cnt> > cntV;
     vector<int> done; vector<cnt> contours; int k;
     cnt poly;
 
     for(unsigned int i = 0; i < polys.contours.size(); i++) {
-        k=i; poly.clear();
-        if(!contains<vector<int>,int>(done,(int)i)){        //Check that through navigation you haven't been here before
+        k = i; poly.clear();
+        // Check that through navigation you haven't been here before
+        if(!contains<vector<int>, int>(done, (int)i)){
             done.push_back(i);
-
+#ifdef TEST
+            cout << "findFocusPoints: Navigating Heirarchy " << i << endl;
+#endif
             // Navigate the heirarchy
             while (polys.heirarchy[k][2] != -1) {
-                k=polys.heirarchy[k][2];
+                k = polys.heirarchy[k][2];
                 done.push_back(k);
                 contours.push_back(polys.contours[k]);
             }
@@ -49,10 +59,13 @@ vector<Fp> findFocusPoints(Cnts polys, double angleTol, double distTol) {
         }
     }
 
+#ifdef TEST
+    cout << "findFocusPoints: Filtering..." << endl;
+#endif
     // Filter the focus points for their innermost border
     for (unsigned int x = 0; x < cntV.size(); x++) {
-        Fp tempFp = Fp(cntV[x],angleTol,distTol);
-        if (tempFp.depth >= 0) { //Check that cntV[x] is a valid Fp
+        Fp tempFp = Fp(cntV[x], angleTol, distTol);
+        if (tempFp.depth >= 0) {  // Check that cntV[x] is a valid Fp
             out.emplace_back(tempFp.contours, tempFp.contour, tempFp.center, tempFp.depth, tempFp.shape);
         }
     }
@@ -62,6 +75,10 @@ vector<Fp> findFocusPoints(Cnts polys, double angleTol, double distTol) {
 }
 
 vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol, double distTol) {
+#ifdef TEST
+    cout << "Running getCorners..." << endl;
+    cout << "getCorners: Getting list of fours..." << endl;
+#endif
     // Make fours a list of only size four Fp's
     // vector<Fp> fours = filter(focusPoints,[](Fp z){return z.shape == 4;});
     vector<Fp> fours;
@@ -71,19 +88,22 @@ vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol, double distTol) {
             }
     }
 
+#ifdef TEST
+    cout << "getCorners: Classifying corners as having 2 right angles..." << endl;
+#endif
     // Classify corners as having 2 right angles
     vector<Fp> out;
     vector<double> a, temp;
     for (Fp f : fours) {
-        a = angs(f.center,fours);
-        //temp = filter(a,[](double d){return abs(d-90.0)<angleTol;});
+        a = angs(f.center, fours);
+        // temp = filter(a,[](double d){return abs(d-90.0)<angleTol;});
         vector<double> temp;
         for (double d : a) {
             if (abs(d-90.0) < angleTol) {
                 temp.push_back(d);
             }
         }
-        if (temp.size()>=2 && !contains<vector<Fp>,Fp>(out,f)) {
+        if (temp.size() >= 2 && !contains<vector<Fp>, Fp>(out, f)) {
             out.push_back(f);
         }
     }
@@ -95,33 +115,42 @@ vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol, double distTol) {
 }
 
 vector<Fp> sortCorners(vector<Fp> corners, Fp ref) {
+#ifdef TEST
+    cout << "Running sortCorners(vector<Fp>,Fp)..." << endl;
+#endif
     Point r = centroid(ref); vector<Fp> out = corners;
-    for(int i = 0; i < 4 && centroid(corners[0]) != r; i++) {
+    for (int i = 0; i < 4 && centroid(corners[0]) != r; i++) {
         out = rotateVec(out);
     }
     return out;
 }
 
 cnt sortCorners(cnt corners) {
-    //Variable Declaration
+#ifdef TEST
+    cout << "Running sortCorners(cnt)..." << endl;
+#endif
+    // Variable Declaration
     Point cent = centroid(corners); vector<double> polar; int n; cnt out;
 
-    //Calculate all the angles from the centroid, maintaining index
-    for (Point p : corners) {polar.push_back(angle(p,cent));}
+    // Calculate all the angles from the centroid, maintaining index
+    for (Point p : corners) {polar.push_back(angle(p, cent));}
     vector<double> sorted = polar;
-    sort(sorted.begin(),sorted.end());
+    sort(sorted.begin(), sorted.end());
 
-    //Sort "corners" by the order of sorted "polar"
+    // Sort "corners" by the order of sorted "polar"
     for (double d : sorted) {
         n = index(polar, d);
-        out.push_back(corners[n]); //Return sorted corners
+        out.push_back(corners[n]);  // Return sorted corners
     }
     return out;
 }
 
 
 Fp getRef(vector<Fp> fps) {
-    Fp maxFp = fps[0]; int max = maxFp.depth; //sets default values
+#ifdef TEST
+    cout << "Running getRef(vector<Fp>)..." << endl;
+#endif
+    Fp maxFp = fps[0]; int max = maxFp.depth;  // sets default values
     for (Fp fp : fps) {
         if (fp.depth > max) {
             maxFp = fp;
@@ -132,11 +161,14 @@ Fp getRef(vector<Fp> fps) {
 }
 
 Point getRef(cnt contour) {
+#ifdef TEST
+    cout << "Running getRef(cnt)..." << endl;
+#endif
     auto D = dists(contour); unsigned int a = 0; unsigned int b = 1;
-    while (D[a]<=D[b]){
+    while (D[a] <= D[b]) {
         a++; b++;
-        if (b>=contour.size()){b=0;}
-        if (a==contour.size()){return contour[0];}
+        if (b >= contour.size()) {b = 0;}
+        if (a == contour.size()) {return contour[0];}
     }
     return contour[a];
 }
@@ -144,6 +176,9 @@ Point getRef(cnt contour) {
 
 // ------------ Image Manipulation --------------
 Mat importFilter(Mat img, int tol1, int tol2, int wSize) {
+#ifdef TEST
+    cout << "Running importFilter..." << endl;
+#endif
     //Testing & Declarations
     Mat gray, edges;
     while(wSize%2!=1) {wSize++;}	//wSize must be an odd number
@@ -158,12 +193,15 @@ Mat importFilter(Mat img, int tol1, int tol2, int wSize) {
 }
 
 Mat outputFilter(Mat img, int wSize, int C) {
-    //Testing & Declarations
+#ifdef TEST
+    cout << "Running outputFilter..." << endl;
+#endif
+    // Testing & Declarations
     Mat gray, out;
     while(wSize%2!=1) {wSize++;}	//wSize must be an odd number
 
-    //Convert to gray if not already
-    if (isColor(img)) {cvtColor(img,gray,COLOR_RGB2GRAY);}
+    // Convert to gray if not already
+    if (isColor(img)) {cvtColor(img, gray, COLOR_RGB2GRAY);}
     else {gray = img;}
 
     adaptiveThreshold(gray, out, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, wSize, C);
@@ -171,12 +209,18 @@ Mat outputFilter(Mat img, int wSize, int C) {
 }
 
 Mat cropImage(Mat img, int R) {
+#ifdef TEST
+    cout << "Running cropImage..." << endl;
+#endif
     int sizeX = img.cols; int sizeY = img.rows;
-    Mat out = img(Rect(R,R,sizeX,sizeY));
+    Mat out = img(Rect(R, R, sizeX, sizeY));
     return out;
 }
 
 Mat fixPerspective(Mat img, vector<Fp> border, Fp ref) {
+#ifdef TEST
+    cout << "Running fixPerspective..." << endl;
+#endif
     // Declare variables
     Point tl, tr, bl, br;
     Mat out;
@@ -213,15 +257,18 @@ Mat fixPerspective(Mat img, vector<Fp> border, Fp ref) {
     Point(maxWidth - 1, 0),
     Point(maxWidth - 1, maxHeight - 1),
     Point(0, maxHeight - 1)});
-    auto src = vector<Point2f>({tl,tr,bl,br});
+    auto src = vector<Point2f>({tl, tr, bl, br});
 
-    //Return Perspective Transform
+    // Return Perspective Transform
     auto M = getPerspectiveTransform(src, dst);
     warpPerspective(img, out, M, Size(maxWidth, maxHeight));
     return out;
 }
 
 bool isColor(Mat img) {
-    if (img.channels()==3) {return true;}
+#ifdef TEST
+    cout << "Running isColor..." << endl;
+#endif
+    if (img.channels() == 3) {return true;}
     else {return false;}
 }
