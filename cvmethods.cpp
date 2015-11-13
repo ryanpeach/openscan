@@ -10,22 +10,22 @@
 
 // -------------- Feature Detection ----------------
 
-Cnts findPolys (Mat img, double distTol) {
-    //Find contours and heirarchy
+Cnts findPolys(Mat img, double distTol) {
+    // Find contours and heirarchy
     vector<cnt> contours, polys; vector<Vec4i> heirarchy; cnt temp;
     findContours(img, contours, heirarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
 
-    //Return approximate polygons
+    // Return approximate polygons
     for (unsigned int i = 0; i < contours.size(); i++) {
         approxPolyDP(contours[i], temp, distTol, true);
         polys.push_back(temp);
     }
 
-    //Return Cnts
+    // Return Cnts
     return Cnts(polys, heirarchy);
 }
 
-vector<Fp> findFocusPoints (Cnts polys, double angleTol, double distTol) {
+vector<Fp> findFocusPoints(Cnts polys, double angleTol, double distTol) {
     //Definitions
     vector<Fp> out; vector< vector<cnt> > cntV;
     vector<int> done; vector<cnt> contours; int k;
@@ -36,7 +36,7 @@ vector<Fp> findFocusPoints (Cnts polys, double angleTol, double distTol) {
         if(!contains<vector<int>,int>(done,(int)i)){        //Check that through navigation you haven't been here before
             done.push_back(i);
 
-            //Navigate the heirarchy
+            // Navigate the heirarchy
             while (polys.heirarchy[k][2] != -1) {
                 k=polys.heirarchy[k][2];
                 done.push_back(k);
@@ -44,12 +44,12 @@ vector<Fp> findFocusPoints (Cnts polys, double angleTol, double distTol) {
             }
             if (polys.heirarchy[k][2] != -1) {contours.push_back(polys.contours[k]);} //Add the last element
 
-            //Check if there are enough polys to count as a potential focus point, append them to fp
+            // Check if there are enough polys to count as a potential focus point, append them to fp
             if (poly.size() >= 5) {cntV.push_back(contours);}
         }
     }
 
-    //Filter the focus points for their innermost border
+    // Filter the focus points for their innermost border
     for (unsigned int x = 0; x < cntV.size(); x++) {
         Fp tempFp = Fp(cntV[x],angleTol,distTol);
         if (tempFp.depth >= 0) { //Check that cntV[x] is a valid Fp
@@ -57,13 +57,13 @@ vector<Fp> findFocusPoints (Cnts polys, double angleTol, double distTol) {
         }
     }
 
-    //Return the focus points
-    return out; 
+    // Return the focus points
+    return out;
 }
 
 vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol, double distTol) {
-    //Make fours a list of only size four Fp's
-    //vector<Fp> fours = filter(focusPoints,[](Fp z){return z.shape == 4;});
+    // Make fours a list of only size four Fp's
+    // vector<Fp> fours = filter(focusPoints,[](Fp z){return z.shape == 4;});
     vector<Fp> fours;
     for (Fp z : focusPoints) {
             if (z.shape == 4) {
@@ -71,7 +71,7 @@ vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol, double distTol) {
             }
     }
 
-    //Classify corners as having 2 right angles
+    // Classify corners as having 2 right angles
     vector<Fp> out;
     vector<double> a, temp;
     for (Fp f : fours) {
@@ -79,9 +79,9 @@ vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol, double distTol) {
         //temp = filter(a,[](double d){return abs(d-90.0)<angleTol;});
         vector<double> temp;
         for (double d : a) {
-        	if (abs(d-90.0)<angleTol) {
-        		temp.push_back(d);
-        	}
+            if (abs(d-90.0) < angleTol) {
+                temp.push_back(d);
+            }
         }
         if (temp.size()>=2 && !contains<vector<Fp>,Fp>(out,f)) {
             out.push_back(f);
@@ -105,12 +105,12 @@ vector<Fp> sortCorners(vector<Fp> corners, Fp ref) {
 cnt sortCorners(cnt corners) {
     //Variable Declaration
     Point cent = centroid(corners); vector<double> polar; int n; cnt out;
-   
+
     //Calculate all the angles from the centroid, maintaining index
     for (Point p : corners) {polar.push_back(angle(p,cent));}
     vector<double> sorted = polar;
     sort(sorted.begin(),sorted.end());
-    
+
     //Sort "corners" by the order of sorted "polar"
     for (double d : sorted) {
         n = index(polar, d);
@@ -143,7 +143,7 @@ Point getRef(cnt contour) {
 
 
 // ------------ Image Manipulation --------------
-Mat importFilter(Mat img, int tol1, int tol2, int wSize){
+Mat importFilter(Mat img, int tol1, int tol2, int wSize) {
     //Testing & Declarations
     Mat gray, edges;
     while(wSize%2!=1) {wSize++;}	//wSize must be an odd number
@@ -157,7 +157,7 @@ Mat importFilter(Mat img, int tol1, int tol2, int wSize){
     return edges;
 }
 
-Mat outputFilter(Mat img, int wSize, int C){
+Mat outputFilter(Mat img, int wSize, int C) {
     //Testing & Declarations
     Mat gray, out;
     while(wSize%2!=1) {wSize++;}	//wSize must be an odd number
@@ -170,19 +170,19 @@ Mat outputFilter(Mat img, int wSize, int C){
     return out;
 }
 
-Mat cropImage(Mat img, int R){
+Mat cropImage(Mat img, int R) {
     int sizeX = img.cols; int sizeY = img.rows;
     Mat out = img(Rect(R,R,sizeX,sizeY));
     return out;
 }
 
-Mat fixPerspective (Mat img, vector<Fp> border, Fp ref) {
-    //Declare variables
+Mat fixPerspective(Mat img, vector<Fp> border, Fp ref) {
+    // Declare variables
     Point tl, tr, bl, br;
     Mat out;
     int n = 0;
 
-    //Rotate the array until the reference is first
+    // Rotate the array until the reference is first
     while (border[0].center != ref.center && n < 4) {
         border = rotateVec(border);
         n++;
@@ -221,7 +221,7 @@ Mat fixPerspective (Mat img, vector<Fp> border, Fp ref) {
     return out;
 }
 
-bool isColor(Mat img){
+bool isColor(Mat img) {
     if (img.channels()==3) {return true;}
     else {return false;}
 }
