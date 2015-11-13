@@ -16,7 +16,7 @@ vector<Mat> Capture::process(Mat img, bool filter) {
     cout << "Running Capture::process..." << endl;
 #endif
     // Variable Declaration
-    Mat warp, filtered;
+    Mat warp, edges, filtered;
 
     // Intial Processing
     edges = importFilter(img, etol1, etol2, wSize);
