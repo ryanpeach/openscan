@@ -1,6 +1,7 @@
 ./saves/*
 ./.lib/*
 !./.lib/dependencies.sh
+*.jpg
 *~
 *.swp
 *.o

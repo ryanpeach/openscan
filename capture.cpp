@@ -10,7 +10,7 @@
 
 #include "capture.hpp"
 
-//Uses polyTol, angleTol, distTol, wSize, C;
+// Uses polyTol, angleTol, distTol, wSize, C;
 vector<Mat> Capture::process(Mat img, bool filter) {
     // Variable Declaration
     Mat warp, filtered;
@@ -72,7 +72,7 @@ void Capture::webCam() {
     time_t timer;
 
     cout << "here1" <<endl;
-    
+
     bool found = false;
 
     if(!cap.open(0)){
@@ -86,11 +86,11 @@ void Capture::webCam() {
     for(;;)
     {
         cout << "here2" <<endl;
-        
+
         cap >> frame;
-        if( frame.empty() ) break; // end of video stream
+        if( frame.empty() ) {break;} // end of video stream
         vector<Mat> proc = process(frame);
-        
+
         cout << "here3" <<endl;
 
         if (!proc.empty()) {
@@ -103,9 +103,9 @@ void Capture::webCam() {
             found = false;
         }
 
-        //Show and save webcam out and preview
+        // Show and save webcam out and preview
         imshow("Capture:Press and Hold 'q' to exit", drawing);
-        if (found){
+        if (found) {
             imshow("Capture:Press and Hold 's' to save", preview);
        	    if (cvWaitKey(10) == 's') {  //save
                 filename = asctime(localtime(&timer));
@@ -116,8 +116,8 @@ void Capture::webCam() {
 
         //Quit
         if (cvWaitKey(10) == 'q') {break;}
-        cap.release();
-        destroyAllWindows();
     }
+    cap.release();
+    destroyAllWindows();
 }
 #endif
