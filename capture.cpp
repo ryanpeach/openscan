@@ -71,18 +71,27 @@ void Capture::webCam() {
     string filename, filepath;
     time_t timer;
 
+    cout << "here1" <<endl;
+    
     bool found = false;
 
-    if(!cap.open(0)){return;}
+    if(!cap.open(0)){
+        cout << "Camera failed to open..." << endl;
+        return;
+    }
 
     namedWindow("Capture:Press and Hold 'q' to exit",WINDOW_NORMAL);
     namedWindow("Preview: Press 's' to save.",WINDOW_NORMAL);
 
     for(;;)
     {
+        cout << "here2" <<endl;
+        
         cap >> frame;
         if( frame.empty() ) break; // end of video stream
         vector<Mat> proc = process(frame);
+        
+        cout << "here3" <<endl;
 
         if (!proc.empty()) {
             drawing = proc[0];
