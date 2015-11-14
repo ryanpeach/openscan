@@ -181,14 +181,15 @@ Mat importFilter(Mat img, int tol1, int tol2, int wSize) {
 #endif
     //Testing & Declarations
     Mat gray, edges;
-    while(wSize%2!=1) {wSize++;}	//wSize must be an odd number
 
     //Convert to gray if not already
     if (isColor(img)) {cvtColor(img,gray,COLOR_RGB2GRAY);}
     else {gray = img;}
 
     //Return Canny Edge Detection
-    Canny(gray,edges,tol1,tol2,wSize);
+    Canny(gray,edges,tol1,tol2,wSize,false);
+
+
     return edges;
 }
 

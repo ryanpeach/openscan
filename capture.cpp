@@ -19,7 +19,10 @@ vector<Mat> Capture::process(Mat img, bool filter) {
     Mat warp, edges, filtered;
 
     // Intial Processing
-    edges = importFilter(img, etol1, etol2, wSize);
+    edges = importFilter(img, etol1, etol2, eSize);
+#ifdef TEST
+    imshow("Canny",edges);
+#endif
     polys = findPolys(edges, polyTol);
     fps = findFocusPoints(polys, angleTol, distTol);
 
@@ -68,24 +71,36 @@ vector<Mat> Capture::process(Mat img, bool filter) {
 // }
 
 #ifdef DESKTOP
-void Capture::webCam() {
+void Capture::webCam(char *avifile) {
 #ifdef TEST
     cout << "Running Capture::webCam..." << endl;
 #endif
     VideoCapture cap;
     Mat frame, preview, drawing, cropped;
     vector<Mat> proc;
-    string filename, filepath;
-    time_t timer;
+    string filename,filepath;
 
     cout << "here1" <<endl;
 
     bool found = false;
 
-    if (!cap.open(0)){
-        cout << "Camera failed to open..." << endl;
-        return;
-    }
+    if(avifile == NULL )
+	{
+	    	if(!cap.open(0))
+		{
+		cout << "Camera failed to open..." << endl;
+		return;
+		}
+	}
+	else
+	{
+		if (!cap.open(avifile))
+    		{
+        	std::cout << "!!! Failed to open file: " << avifile << std::endl;
+        	return ;
+    		}
+	}
+    
 
     namedWindow("Capture:Press and Hold 'q' to exit", WINDOW_NORMAL);
     namedWindow("Preview: Press 's' to save.", WINDOW_NORMAL);
@@ -117,9 +132,10 @@ void Capture::webCam() {
         imshow("Capture:Press and Hold 'q' to exit", drawing);
         if (found) {
             imshow("Capture:Press and Hold 's' to save", preview);
-            if (cvWaitKey(10) == 's') {                       // save
-                filename = asctime_r(localtime_r(&timer));
-                filepath = "scans/" + filename  + ".jpg";
+            if (cvWaitKey(10) == 's') {                 
+	        // save
+                filename = std::tmpnam(nullptr); 
+                filepath = "scans/" + filename + ".jpg";
                 imwrite(filepath, preview);
 #ifdef TEST
                 cout << "webCam: Saved as: " << filepath << endl;

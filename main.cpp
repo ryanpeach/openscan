@@ -7,6 +7,8 @@
 
 #include "cvmethods.hpp"
 #include "capture.hpp"
+#include<string>
+
 #define TEST
 
 #ifdef TEST 
@@ -82,11 +84,32 @@ void testGeometry(){
 }
 #endif
 
-int main() {
+int main(int argc,char *argv[]) {
 #ifdef TEST
     cout << "Running main..." << endl;
     testGeometry();
 #endif
+    if (argc == 1 )
+    { 
+cout << " Usage : " << argv[0] << " " << "filename[optional]" <<endl;
+    cout << "Use an avi file as an argument to take input from avi file." << endl;
+    cout << "If no argument is specified the input is taken from the webcam"<<endl;
+    cout << "Press Enter key to continue" << endl;
+    //char ignore;
+    cin.get();
+
     Capture C = Capture();
-    C.webCam();
+    C.webCam(NULL);
+    }
+    else if (argc == 2)
+    {
+    Capture C = Capture();
+    C.webCam(argv[1]);
+	}
+     else
+    {
+    cout << " Usage : " << argv[0] << " " << "filename[optional]" <<endl;
+    cout << "Use an avi file as an argument to take input from avi file." << endl;
+    cout << "If no argument is specified the input is taken from the webcam"<<endl;
+    }
 }
