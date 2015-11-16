@@ -62,7 +62,7 @@ class Capture {
     vector<Mat> process3(Mat img, bool filter = true);
 
 #ifdef DESKTOP
-    void webCam(char *avifile); 
+    void webCam(); 
 #endif
 
     Capture (int angleTol = 10, int distTol = 5, int polyTol = 5, int wSize = 11,

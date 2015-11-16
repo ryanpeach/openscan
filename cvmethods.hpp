@@ -13,7 +13,6 @@
 
 #include "focus.hpp"
 
-
 // -------------- Feature Detection ----------------
 // Filters the img, finds the contours, and returns the Cnts.
 Cnts findPolys(Mat img, double distTol);
