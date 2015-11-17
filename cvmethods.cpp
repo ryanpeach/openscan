@@ -95,20 +95,25 @@ vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol, double distTol) {
     vector<Fp> out;
     vector<double> a, temp;
     for (Fp f : fours) {
+        // Gets the angles between f.center and all other items in "fours"
         a = angs(f.center, fours);
-        // temp = filter(a,[](double d){return abs(d-90.0)<angleTol;});
-        vector<double> temp;
+
+        // Add to temp all items which fall within tolerance from 90 degrees.
+        vector<double> found;
         for (double d : a) {
             if (abs(d-90.0) < angleTol) {
-                temp.push_back(d);
+                found.push_back(d);
             }
         }
-        if (temp.size() >= 2 && !contains<vector<Fp>, Fp>(out, f)) {
+
+        // If f has at least two right angle relations with
+        // other items in "fours", add it to out.
+        if (found.size() >= 2 && !contains<vector<Fp>, Fp>(out, f)) {
             out.push_back(f);
         }
     }
 
-    //Return their centroids
+    // Return their centroids
     vector<Fp> rect = hasRectangle(out, angleTol, distTol);
     if (rect.size() != 4) {return vector<Fp>();}
     else {return out;}

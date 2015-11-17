@@ -116,4 +116,31 @@ bool isPoly(cnt poly, int size, bool regular, double angleTol, double distTol);
 bool isRectangle(cnt poly, bool square, double angleTol, double distTol);
 bool isSquare(cnt poly, double angleTol, double distTol);
 
+/**
+ * Iterates through all points given to see if some set of 4 points
+ *     can be ordered together to create a rectangular polygon.
+ * @param  cnt poly: A list of unordered, potentially connected points which
+ *                       might contain a rectangle.
+ * @param  double angleTol: the angle tolerance of the angle equality.
+ * @param  double distTol: the distance tolerance of the length equality.
+ * @param  int n: the max number of desired returns.
+ * @return Returns a found rectangle as a cnt.
+ * @return Returns an empty contour if none was found or if n < 1.
+ * @tested untested
+ * @complexity O(?)
+ */
+vector<cnt> hasRectangles(cnt poly, double angleTol, double distTol, int n = 1);
+cnt hasRectangle(cnt poly, double angleTol, double distTol);
+
+/**
+ * Returns all angles between x and each Point in "fours."
+ * @param  Point x:  Any point you wish to use as an origin for angle calc
+ * @param  cnt poly: Any vector of points you wish to test.
+ *                       Does not need to be ordered or assumed connected.
+ * @return True / False
+ * @complexity O(?)
+ * @tested untested
+ */
+vector<double> angs(Point x, cnt fours);
+
 #endif

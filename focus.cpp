@@ -45,10 +45,6 @@ Fp::Fp(vector<cnt> conts, double angleTol, double distTol) : contours(conts)
 
 Fp::Fp(vector<cnt> conts) {Fp(conts, 10.0, 5.0);}
 
-bool Fp::operator!=(Fp newFp) {
-    return !(*this == newFp);
-}
-
 Fp Fp::copy() {
     return Fp(contours, contour, center, depth, shape);
 }
@@ -59,13 +55,14 @@ bool Fp::operator==(Fp newFp) {
 #ifdef TEST
     cout << "Running Fp::operator==..." << endl;
 #endif
-    bool test1 = contours == newFp.contours;
-    bool test2 = contour == newFp.contour;
-    bool test3 = center == newFp.center;
-    bool test4 = depth == newFp.depth;
-    bool test5 = shape == newFp.shape;
+    bool test1 = (contours == newFp.contours);
+    bool test2 = (contour == newFp.contour);
+    bool test3 = (center == newFp.center);
+    bool test4 = (depth == newFp.depth);
+    bool test5 = (shape == newFp.shape);
     return test1 && test2 && test3 && test4 && test5;
 }
+bool Fp::operator!=(Fp newFp) {return !((*this) == newFp);}
 
 string tostr(Fp fp) {return tostr(fp.center);}
 
@@ -107,28 +104,12 @@ bool allInside(cnt poly, vector<Fp> fps) {
     return true;
 }
 
-vector<Fp> hasRectangle(vector<Fp> fps, double angleTol, double distTol) {
-#ifdef TEST
-    cout << "Running hasRectangle(vector<Fp>)..." << endl;
-#endif
-    if (fps.size()<4) {return vector<Fp>();}
-    // Check all combinations of poly
-    for (Fp a1 : fps) {
-    for (Fp a2 : fps) {
-    for (Fp a3 : fps) {
-    for (Fp a4 : fps) {
-        if (a1 != a2 && a1 != a3 && a1 != a4 && a2 != a3 && a2 != a4 && a3 != a4) {
-            if (isRectangle(cnt{a1.center, a2.center, a3.center, a4.center}, false, angleTol, distTol)) {
-                    return vector<Fp>{a1, a2, a3, a4};
-    }}}}}}
-    return vector<Fp>();
+vector<vector<Fp>> hasRectangles(vector<Fp> fps, double angleTol, double distTol, int n = 1) {
+    return hasRectangles(centroids(fps), angleTol, distTol, n);
 }
-
+vector<Fp> hasRectangle(vector<Fp> fps, double angleTol, double distTol) {
+    return hasRectangles(fps, angleTol, distTol, 1)[0];
+}
 vector<double> angs(Point x, vector<Fp> fours) {
-#ifdef TEST
-    cout << "Running angs..." << endl;
-#endif
-    vector<double> out;
-    for (Fp y : fours) {for (Fp z : fours) {if (x != y.center && y != z && x != z.center) {out.push_back(angle(x,y.center,z.center));}}}
-    return out;
+    return angs(x, centroids(fours));
 }

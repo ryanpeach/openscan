@@ -171,3 +171,39 @@ bool isPoly(cnt poly, int size, bool regular, double angleTol, double distTol) {
 }
 bool isRectangle(cnt poly, bool square, double angleTol, double distTol) {return isPoly(poly,4,square,angleTol,distTol);}
 bool isSquare(cnt poly, double angleTol, double distTol) {return isPoly(poly,4,true,angleTol,distTol);}
+
+vector<cnt> hasRectangles(cnt poly, double angleTol, double distTol, int n = 1) {
+#ifdef TEST
+    cout << "Running hasRectangles..." << endl;
+#endif
+    if (poly.size()<4 || n < 1) {return vector<cnt>();}
+
+    // Check all combinations of poly
+    vector<cnt> out;
+    for (Point a1 : poly) {
+    for (Point a2 : poly) {
+    for (Point a3 : poly) {
+    for (Point a4 : poly) {
+        if (a1 != a2 && a1 != a3 && a1 != a4 && a2 != a3 && a2 != a4 && a3 != a4) {
+            cnt found = cnt{a1, a2, a3, a4};
+            if (isRectangle(found, false, angleTol, distTol)) {
+                    out.push_back(found); n--;
+                    if (n <= 0) {return out;}
+    }}}}}}
+    return out;
+}
+cnt hasRectangle(cnt poly, double angleTol, double distTol) {
+    return hasRectangles(poly, angleTol, distTol, 1)[0];
+}
+
+vector<double> angs(Point x, cnt fours) {
+#ifdef TEST
+    cout << "Running angs..." << endl;
+#endif
+    vector<double> out;
+    for (Point y : fours) {for (Point z : fours) {
+        if (x != y && y != z && x != z) {
+            out.push_back(angle(x,y.center,z.center));
+    }}}
+    return out;
+}
