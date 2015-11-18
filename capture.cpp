@@ -25,20 +25,25 @@ vector<Mat> Capture::process(Mat img, bool filter) {
 #endif
     polys = findPolys(edges, polyTol);
     fps = findFocusPoints(polys, angleTol, distTol);
-
+    cout << "Fp's Found: " << fps.size() << endl;
     // Get border from focus points
     vector<Fp> corners = getCorners(fps, angleTol, distTol);
     if (corners.size() == 4) {
         Fp ref = getRef(fps);
-        warp = fixPerspective(img, corners, ref);
-        if (filter) {filtered = outputFilter(warp, wSize, C);}
+        if (ref.contours.size()>0){
+            warp = fixPerspective(img, corners, ref);
+            if (filter) {filtered = outputFilter(warp, wSize, C);}
+        }
+        else {return vector<Mat>();}
     } else {return vector<Mat>();}
 
-    cvtColor(warp, warp, COLOR_GRAY2RGB);
+    if(!isColor(warp)) {cvtColor(warp, warp, COLOR_GRAY2RGB);}
     Scalar color = Scalar(255, 0, 0);
     Mat drawing = warp;
-    drawContours(drawing, centroids(corners), 0, color, 3, 8);
-    return {drawing, warp, filtered};
+    drawContours(drawing, vector<cnt>{centroids(corners)}, 0, color, 3, 8);
+    vector<Mat> end = vector<Mat>{drawing, warp, filtered};
+    cout << "end" << endl;
+    return end;
 }
 
 // Processes the image without the help of corner focus points

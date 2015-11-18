@@ -7,7 +7,7 @@
  */
 
 #include "cvmethods.hpp"
-#define TEST
+//#define TEST
 
 // -------------- Feature Detection ----------------
 
@@ -39,7 +39,7 @@ vector<Fp> findFocusPoints(Cnts polys, double angleTol, double distTol) {
     cnt poly;
 
     for(unsigned int i = 0; i < polys.contours.size(); i++) {
-        k = i; poly.clear();
+        k = i; contours.clear();
         // Check that through navigation you haven't been here before
         if(!contains<vector<int>, int>(done, (int)i)){
             done.push_back(i);
@@ -55,12 +55,12 @@ vector<Fp> findFocusPoints(Cnts polys, double angleTol, double distTol) {
             if (polys.heirarchy[k][2] != -1) {contours.push_back(polys.contours[k]);} //Add the last element
 
             // Check if there are enough polys to count as a potential focus point, append them to fp
-            if (poly.size() >= 5) {cntV.push_back(contours);}
+            if (contours.size() >= 3) {cntV.push_back(contours);}
         }
     }
 
 #ifdef TEST
-    cout << "findFocusPoints: Filtering..." << endl;
+    cout << "findFocusPoints: Filtering " << cntV.size() << endl;
 #endif
     // Filter the focus points for their innermost border
     for (unsigned int x = 0; x < cntV.size(); x++) {
@@ -119,15 +119,18 @@ vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol, double distTol) {
     else {return out;}
 }
 
+//This might have a large complexity due to toFps
 vector<Fp> sortCorners(vector<Fp> corners, Fp ref) {
 #ifdef TEST
     cout << "Running sortCorners(vector<Fp>,Fp)..." << endl;
 #endif
-    Point r = centroid(ref); vector<Fp> out = corners;
-    for (int i = 0; i < 4 && centroid(corners[0]) != r; i++) {
-        out = rotateVec(out);
+    Point r = centroid(ref);
+    cnt sort = sortCorners(centroids(corners));
+
+    for (int i = 0; i < 4 && sort[0] != r; i++) {
+        sort = rotateVec(sort);
     }
-    return out;
+    return toFps(sort, corners);
 }
 
 cnt sortCorners(cnt corners) {
@@ -155,14 +158,17 @@ Fp getRef(vector<Fp> fps) {
 #ifdef TEST
     cout << "Running getRef(vector<Fp>)..." << endl;
 #endif
+    bool found = false;
     Fp maxFp = fps[0]; int max = maxFp.depth;  // sets default values
     for (Fp fp : fps) {
-        if (fp.depth > max) {
+        if (fp.depth > max && fp.depth <= max+1) {
             maxFp = fp;
             max = fp.depth;
+            found  = true;
         }
     }
-    return maxFp;
+    if (found) {return maxFp;}
+    else {return Fp();}
 }
 
 Point getRef(cnt contour) {
@@ -210,6 +216,7 @@ Mat outputFilter(Mat img, int wSize, int C) {
     if (isColor(img)) {cvtColor(img, gray, COLOR_RGB2GRAY);}
     else {gray = img;}
 
+    cout << "here" << endl;
     adaptiveThreshold(gray, out, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, wSize, C);
     return out;
 }
@@ -233,12 +240,10 @@ Mat fixPerspective(Mat img, vector<Fp> border, Fp ref) {
     int n = 0;
 
     // Rotate the array until the reference is first
-    while (border[0].center != ref.center && n < 4) {
-        border = rotateVec(border);
-        n++;
-    }
+    border = sortCorners(border,ref);
+    cout << vtostr(border) << endl;
 
-    tl = border[0].center; tr = border[1].center; br = border[2].center; bl = border[3].center;
+    tr = border[0].center; tl = border[1].center; br = border[2].center; bl = border[3].center;
 
     // compute the width of the new image, which will be the
     // maximum distance between bottom-right and bottom-left

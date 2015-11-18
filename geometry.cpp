@@ -7,7 +7,7 @@
  */
 
 #include "geometry.hpp"
-#define TEST
+//#define TEST
 
 double dist(Point a, Point b){
 #ifdef TEST
@@ -27,7 +27,8 @@ double angle(Point origin, Point a){
 #endif
     Point v = a - origin;
     double out = atan2((float)v.x,(float)v.y) * 180.0 / PI;
-
+    if (out<0) {out+=360.0;}
+    cout << "Angle: " << out << endl;
     return out;
 }
 

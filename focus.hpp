@@ -24,6 +24,7 @@ struct Fp {
     Fp (vector<cnt> conts, cnt cont, Point cent, int d, int s);
     Fp (vector<cnt> conts, double angleTol, double distTol);
     Fp (vector<cnt> conts);
+    Fp ();
 
     bool operator== (Fp newFp);
 

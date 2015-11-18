@@ -7,7 +7,7 @@
  */
 
 #include "support.hpp"
-#define TEST
+//#define TEST
 
 Cnts::Cnts(vector<cnt> polys, vector<Vec4i> heir):
     contours(polys), heirarchy(heir)

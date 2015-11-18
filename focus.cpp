@@ -7,7 +7,7 @@
  */
 
 #include "focus.hpp"
-#define TEST
+//#define TEST
 
 int Fp::findInnerBorder(vector<cnt> cnts, double angleTol, double distTol) {
 #ifdef TEST
@@ -25,6 +25,12 @@ int Fp::findInnerBorder(vector<cnt> cnts, double angleTol, double distTol) {
 Fp::Fp(vector<cnt> conts, cnt cont, Point cent, int d, int s)
     : contours(conts), contour(cont), center(cent), depth(d), shape(s)
 {}
+
+Fp::Fp() {
+    center = Point(0,0);
+    depth = 0;
+    shape = 0;
+}
 
 Fp::Fp(vector<cnt> conts, double angleTol, double distTol) : contours(conts)
 {
@@ -109,8 +115,9 @@ vector<vector<Fp>> hasRectangles(vector<Fp> fps, double angleTol, double distTol
 #ifdef TEST
     cout << "Running hasRectangles(vector<Fp>...) ..." << endl;
 #endif
-    if (fps.size()<4 || n < 1) {return vector<vector<Fp>>();}
-
+    cout << fps.size() << endl;
+    if (fps.size()<4 || n < 1) {return vector<vector<Fp>>{{}};}
+    cout << "here" << endl;
     // Check all combinations of poly
     vector<vector<Fp>> out;
     for (Fp a1 : fps) {
@@ -118,6 +125,7 @@ vector<vector<Fp>> hasRectangles(vector<Fp> fps, double angleTol, double distTol
     for (Fp a3 : fps) {
     for (Fp a4 : fps) {
     if (a1 != a2 && a1 != a3 && a1 != a4 && a2 != a3 && a2 != a4 && a3 != a4) {
+            cout << "hasRectangles: " << n << endl;
             vector<Fp> found = vector<Fp>{a1, a2, a3, a4};
             if (isRectangle(centroids(found), false, angleTol, distTol)) {
                     out.push_back(found); n--;
