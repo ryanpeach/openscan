@@ -15,7 +15,7 @@ vector<Mat> Capture::focusPointCorners(Mat img) {
     cout << "Running Capture::focusPointCorners..." << endl;
 #endif
     // Variable Declaration
-    Mat warp, edges, filtered;
+    Mat warp, edges, drawing;
 
     // Intial Processing
     edges = importFilter(img, etol1, etol2, eSize);
@@ -37,11 +37,61 @@ vector<Mat> Capture::focusPointCorners(Mat img) {
 
     if(!isColor(warp)) {cvtColor(warp, warp, COLOR_GRAY2RGB);}
     Scalar color = Scalar(255, 0, 0);
-    Mat drawing = warp;
+    drawing = warp;
+
     drawContours(drawing, vector<cnt>{centroids(corners)}, 0, color, 3, 8);
-    vector<Mat> end = vector<Mat>{drawing, warp, filtered};
+    vector<Mat> end = vector<Mat>{drawing, warp};
     cout << "end" << endl;
     return end;
+}
+
+vector<Mat> Capture::strongPageBorder(Mat img) {
+#ifdef TEST
+    cout << "Running Capture::focusPointCorners..." << endl;
+#endif
+    // Variable Declaration
+    Mat warp, edges,;
+
+    // Intial Processing
+    edges = importFilter(img, etol1, etol2, eSize);
+#ifdef TEST
+    imshow("Canny",edges);
+#endif
+    polys = findPolys(edges, polyTol);
+    vector<cnt> rects = hasRectangles(polys);
+
+    // Find only big rectangles
+    // Of the proper aspect ratio
+    vector<cnt> check;
+    for (cnt r : rects) {
+        if (contourArea(r) > sizeRatio*M.cols*M.rows
+                && isAspectRatio(r, aspectRatio)) {
+            check.push_back(sortCorners(r));
+        }
+    }
+
+    // Find any two contours who share similar corners
+    vector<cnt> pair;
+    for (int r1 = 0; r1 < check.size(); r1++) {
+        for (int r2 = 0; r2 < check.size(); r2++) {
+            bool found = true;
+            for (int i = 0; i < 4 && r1 != r2
+                && !contains(pairs, vector<vector<int>> pairs); i++) {
+                if (!(dist(check[r1][i], check[r2][i]) <= distTol)) {
+                    found = false;
+                }
+                if (found) {
+                    // Main processing and return
+                    warp = fixPerspective(img, check[r1]);
+                    drawContours(drawing, vector<cnt>{centroids(corners)}, 0, color, 3, 8);
+                    vector<Mat> end = vector<Mat>{drawing, warp};
+                    return end;
+                }
+            }
+        }
+    }
+
+    return vector<Mat>{};
 }
 
 
