@@ -40,9 +40,9 @@ class WindowManager {
 
 // ------ Video and Image Processing Methods ---------------
 
-void imageFile (char *filepath, vector<Mat> (*process)(Mat)) {
+void imageProcess (Mat frame, vector<Mat> (*process)(Mat)) {
     // Variable Declaration
-    Mat frame, drawing, preview;
+    Mat drawing, preview;
     vector<Mat> proc;
     string filename,filepath;
     bool found = false; bool saved = false;
@@ -180,6 +180,15 @@ void videoFile (char *filepath, vector<Mat> (*process)(Mat)) {
     videoProcess(cap,process);
 }
 
+void imageFile (char *filepath, vector<Mat> (*process)(Mat)) {
+    Mat cap = imread(filepath);
+    if (!cap.empty()) {
+        std::cout << "!!! Failed to open file: " << avifile << std::endl;
+        return;
+    }
+    imageProcess(cap,process);
+}
+
 #endif
 
 // ---------------- Test Methods -----------------
@@ -271,9 +280,9 @@ int main(int argc,char *argv[]) {
         cout << "Use an avi file as an argument to take input from avi file." << endl;
         cout << "If no argument is specified the input is taken from the webcam"<<endl;
     } else if (argc == 2 && *argv[1] == '-' && *argv[2] == 'v') {
-        videoFile(C.focusPointCorners, argv[3]);
+        videoFile(argv[3], C.focusPointCorners);
 	} else if (argc == 2 && *argv[1] == '-' && *argv[2] == 'i') {
-        imageFile(C.focusPointCorners, argv[3]);
+        imageFile(argv[3], C.focusPointCorners);
     } else {
         cout << " Usage : " << argv[0] << " " << "filename[optional]" <<endl;
         cout << "Use an avi file as an argument to take input from avi file." << endl;
