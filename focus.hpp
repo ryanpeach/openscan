@@ -53,5 +53,5 @@ bool allInside(cnt poly, vector<Fp> fps);
 vector<vector<Fp>> hasRectangles(vector<Fp> fps, double angleTol, double distTol, int n = 1);
 vector<Fp> hasRectangle(vector<Fp> fps, double angleTol, double distTol);
 vector<double> angs(Point x, vector<Fp> fours);
-
+vector<Fp> toFps(cnt,vector<Fp>);
 #endif

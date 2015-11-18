@@ -92,7 +92,7 @@ int main(int argc,char *argv[]) {
     if (argc == 1) {
         Capture C = Capture();
         C.webCam(NULL);
-    } else if (argc == 2 && argv[1] == "-h") {
+    } else if (argc == 2 && *argv[1] == '-' && *argv[2] == 'h') {
         cout << " Usage : " << argv[0] << " " << "filename[optional]" <<endl;
         cout << "Use an avi file as an argument to take input from avi file." << endl;
         cout << "If no argument is specified the input is taken from the webcam"<<endl;

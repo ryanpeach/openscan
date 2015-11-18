@@ -29,6 +29,7 @@ vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol, double distTol);
 // Corners must be a rectangle
 // Null-Condition: Returns corners
 vector<Fp> sortCorners(vector<Fp> corners, Fp ref);
+cnt sortCorners(cnt corners, cnt ref);
 cnt sortCorners(cnt corners);
 
 // Null-Condition: Returns fps[0]

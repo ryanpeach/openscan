@@ -104,12 +104,49 @@ bool allInside(cnt poly, vector<Fp> fps) {
     return true;
 }
 
-vector<vector<Fp>> hasRectangles(vector<Fp> fps, double angleTol, double distTol, int n = 1) {
-    return hasRectangles(centroids(fps), angleTol, distTol, n);
+//Could be a template
+vector<vector<Fp>> hasRectangles(vector<Fp> fps, double angleTol, double distTol, int n) {
+#ifdef TEST
+    cout << "Running hasRectangles(vector<Fp>...) ..." << endl;
+#endif
+    if (fps.size()<4 || n < 1) {return vector<vector<Fp>>();}
+
+    // Check all combinations of poly
+    vector<vector<Fp>> out;
+    for (Fp a1 : fps) {
+    for (Fp a2 : fps) {
+    for (Fp a3 : fps) {
+    for (Fp a4 : fps) {
+    if (a1 != a2 && a1 != a3 && a1 != a4 && a2 != a3 && a2 != a4 && a3 != a4) {
+            vector<Fp> found = vector<Fp>{a1, a2, a3, a4};
+            if (isRectangle(centroids(found), false, angleTol, distTol)) {
+                    out.push_back(found); n--;
+                    if (n <= 0) {return out;}
+    }}}}}}
+    return out;
 }
+
 vector<Fp> hasRectangle(vector<Fp> fps, double angleTol, double distTol) {
     return hasRectangles(fps, angleTol, distTol, 1)[0];
 }
+
 vector<double> angs(Point x, vector<Fp> fours) {
     return angs(x, centroids(fours));
 }
+
+vector<Fp> toFps(cnt cents, vector<Fp> set){
+    vector<Fp> out; vector<Fp> next = set;
+    for (Point x : cents) {
+        for (Fp f : set) {
+            if (f.center == x) {
+                out.push_back(f);
+                break;
+            }
+            else {next.push_back(f);}
+        }
+        set = next;
+    }
+    if (out.size() != cents.size()) {cout<<"ERROR toFps"<<endl;}
+    return out;
+}
+
