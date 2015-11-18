@@ -7,13 +7,12 @@
  */
 
 #include "capture.hpp"
-#define DESKTOP
 #define TEST
 
 // Uses polyTol, angleTol, distTol, wSize, C;
-vector<Mat> Capture::process(Mat img, bool filter) {
+vector<Mat> Capture::focusPointCorners(Mat img) {
 #ifdef TEST
-    cout << "Running Capture::process..." << endl;
+    cout << "Running Capture::focusPointCorners..." << endl;
 #endif
     // Variable Declaration
     Mat warp, edges, filtered;
@@ -32,7 +31,6 @@ vector<Mat> Capture::process(Mat img, bool filter) {
         Fp ref = getRef(fps);
         if (ref.contours.size()>0){
             warp = fixPerspective(img, corners, ref);
-            if (filter) {filtered = outputFilter(warp, wSize, C);}
         }
         else {return vector<Mat>();}
     } else {return vector<Mat>();}
@@ -45,6 +43,8 @@ vector<Mat> Capture::process(Mat img, bool filter) {
     cout << "end" << endl;
     return end;
 }
+
+
 
 // Processes the image without the help of corner focus points
 // Null-Condition: Returns {null,img}
@@ -74,84 +74,3 @@ vector<Mat> Capture::process(Mat img, bool filter) {
 //    }
 //    else {return {img, img};}
 // }
-
-#ifdef DESKTOP
-void Capture::webCam(char *avifile) {
-#ifdef TEST
-    cout << "Running Capture::webCam..." << endl;
-#endif
-    VideoCapture cap;
-    Mat frame, preview, drawing, cropped;
-    vector<Mat> proc;
-    string filename,filepath;
-
-    cout << "here1" <<endl;
-
-    bool found = false;
-
-    if(avifile == NULL )
-	{
-	    	if(!cap.open(0))
-		{
-		cout << "Camera failed to open..." << endl;
-		return;
-		}
-	}
-	else
-	{
-		if (!cap.open(avifile))
-    		{
-        	std::cout << "!!! Failed to open file: " << avifile << std::endl;
-        	return ;
-    		}
-	}
-    
-
-    namedWindow("Capture:Press and Hold 'q' to exit", WINDOW_NORMAL);
-    namedWindow("Preview: Press 's' to save.", WINDOW_NORMAL);
-
-#ifdef TEST
-    cout << "webCam: Beginning Main Loop..." << endl;
-#endif
-
-    for (;;) {
-        cap >> frame;
-        if ( frame.empty() ) {break;}  // end of video stream
-        vector<Mat> proc = process(frame);
-
-#ifdef TEST
-        cout << "webCam: Process Complete!" << endl;
-#endif
-
-        if (!proc.empty()) {
-            drawing = proc[0];
-            cropped = proc[1];
-            preview = proc[2];
-            found = true;
-        } else {
-            drawing = frame;
-            found = false;
-        }
-
-        // Show and save webcam out and preview
-        imshow("Capture:Press and Hold 'q' to exit", drawing);
-        if (found) {
-            imshow("Capture:Press and Hold 's' to save", preview);
-            if (cvWaitKey(10) == 's') {                 
-	        // save
-                filename = std::tmpnam(nullptr); 
-                filepath = "scans/" + filename + ".jpg";
-                imwrite(filepath, preview);
-#ifdef TEST
-                cout << "webCam: Saved as: " << filepath << endl;
-#endif
-            }
-        }
-
-        // Quit
-        if (cvWaitKey(10) == 'q') {break;}
-    }
-    cap.release();
-    destroyAllWindows();
-}
-#endif
