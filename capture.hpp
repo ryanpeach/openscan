@@ -17,7 +17,8 @@
 class Capture {
  private:
     // Variable Declaration
-    Mat frame;             // A variable to hold the most current processed frame
+    // These variables allow you to set global params for all process methods.
+    Mat frame, edges;      // A variable to hold the most current processed frame
     Cnts polys;            // Just a temp variable to hold the polys from the most frame
     vector<Fp> fps;        // Just a temp variable to hold the Fp's from the most recent frame
 
@@ -32,6 +33,10 @@ class Capture {
     int etol2;             //
     int eSize;             //
     int R;                 //
+
+    // Preprocessing allows each process to share data,
+    // so that nothing is calculated twice for the same image.
+    void preProcess(Mat img);
 
  public:
 

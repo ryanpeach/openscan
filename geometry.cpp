@@ -209,3 +209,14 @@ vector<double> angs(Point x, cnt fours) {
     }}}
     return out;
 }
+
+cnt largest(vector<cnt> v) {
+    cnt out; double area, max = 0;
+    for (cnt c : v) {
+        area = contourArea(c);
+        if (area > max) {
+            out = c; max = area;
+        }
+    }
+    return out;
+}

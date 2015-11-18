@@ -143,4 +143,13 @@ cnt hasRectangle(cnt poly, double angleTol, double distTol);
  */
 vector<double> angs(Point x, cnt fours);
 
+/**
+ * Returns the largest contour in a vector.
+ * @param  vector<cnt>:  Any vector of cnt's.
+ * @return cnt: largest contour
+ * @complexity O(?)
+ * @tested untested
+ */
+cnt largest(vector<cnt> v);
+
 #endif
