@@ -73,11 +73,11 @@ vector<Mat> Capture::strongPageBorder(Mat img) {
     // Find only big rectangles
     // Of the proper aspect ratio
     // And which contain all focus points
-    vector<cnt> rects = hasRectangles(polys);
+    vector<cnt> rects = hasRectangles(polys.contours, angleTol, distTol);
     vector<cnt> check;
     for (cnt r : rects) {
-        if (contourArea(r) > sizeRatio*M.cols*M.rows
-                && isAspectRatio(r, aspectRatio)) {
+        if (contourArea(r) >= sizeRatio*img.cols*img.rows
+                && isAspectRatio(r, aspectRatio, ratioTol)) {
             if (fps.size()==0 || allInside(r, fps)) {
                 check.push_back(sortCorners(r));
             }
@@ -86,11 +86,10 @@ vector<Mat> Capture::strongPageBorder(Mat img) {
 
     // Find any two contours who share similar corners
     vector<cnt> pair; vector<cnt> out;
-    for (int r1 = 0; r1 < check.size(); r1++) {
-        for (int r2 = 0; r2 < check.size(); r2++) {
+    for (unsigned int r1 = 0; r1 < check.size(); r1++) {
+        for (unsigned int r2 = 0; r2 < check.size(); r2++) {
             bool found = true;
-            for (int i = 0; i < 4 && r1 != r2
-                && !contains(pairs, vector<vector<int>> pairs); i++) {
+            for (unsigned int i = 0; i < 4 && r2 > r1; i++) {  //No duplicates
                 if (!(dist(check[r1][i], check[r2][i]) <= distTol)) {
                     found = false;
                 }
@@ -102,10 +101,11 @@ vector<Mat> Capture::strongPageBorder(Mat img) {
     }
 
     // Main processing and return
-    warp = fixPerspective(img, largest(out));
-    drawContours(drawing, vector<cnt>{centroids(corners)}, 0, color, 3, 8);
+    auto color = Scalar{0,0,255};
+    auto border = largest(out);
+    auto ref = getRef(border);
+    warp = fixPerspective(img, border, ref);
+    drawContours(drawing, border, 0, color, 3, 8);
     vector<Mat> end = vector<Mat>{drawing, warp};
     return end;
-
-    return vector<Mat>{};
 }

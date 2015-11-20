@@ -66,7 +66,7 @@ vector<Fp> findFocusPoints(Cnts polys, double angleTol, double distTol) {
     for (unsigned int x = 0; x < cntV.size(); x++) {
         Fp tempFp = Fp(cntV[x], angleTol, distTol);
         if (tempFp.depth >= 0) {  // Check that cntV[x] is a valid Fp
-            out.emplace_back(tempFp.contours, tempFp.contour, tempFp.center, tempFp.depth, tempFp.shape);
+            out.push_back(tempFp);
         }
     }
 
@@ -120,17 +120,20 @@ vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol, double distTol) {
 }
 
 //This might have a large complexity due to toFps
-vector<Fp> sortCorners(vector<Fp> corners, Fp ref) {
+cnt sortCorners(cnt corners, Point ref) {
 #ifdef TEST
     cout << "Running sortCorners(vector<Fp>,Fp)..." << endl;
 #endif
-    Point r = centroid(ref);
-    cnt sort = sortCorners(centroids(corners));
+    cnt sort = sortCorners(corners);
 
-    for (int i = 0; i < 4 && sort[0] != r; i++) {
+    for (int i = 0; i < 4 && sort[0] != ref; i++) {
         sort = rotateVec(sort);
     }
-    return toFps(sort, corners);
+    return sort;
+}
+
+vector<Fp> sortCorners(vector<Fp> corners, Fp ref) {
+    return toFps(sortCorners(centroids(corners),ref.center), corners);
 }
 
 cnt sortCorners(cnt corners) {
@@ -230,7 +233,7 @@ Mat cropImage(Mat img, int R) {
     return out;
 }
 
-Mat fixPerspective(Mat img, vector<Fp> border, Fp ref) {
+Mat fixPerspective(Mat img, cnt border, Point ref) {
 #ifdef TEST
     cout << "Running fixPerspective..." << endl;
 #endif
@@ -243,7 +246,7 @@ Mat fixPerspective(Mat img, vector<Fp> border, Fp ref) {
     border = sortCorners(border,ref);
     cout << vtostr(border) << endl;
 
-    tr = border[0].center; tl = border[1].center; br = border[2].center; bl = border[3].center;
+    tr = border[0]; tl = border[1]; br = border[2]; bl = border[3];
 
     // compute the width of the new image, which will be the
     // maximum distance between bottom-right and bottom-left
@@ -274,6 +277,9 @@ Mat fixPerspective(Mat img, vector<Fp> border, Fp ref) {
     auto M = getPerspectiveTransform(src, dst);
     warpPerspective(img, out, M, Size(maxWidth, maxHeight));
     return out;
+}
+Mat fixPerspective(Mat img, vector<Fp> border, Fp ref) {
+	return fixPerspective(img, centroids(border), ref.center);
 }
 
 bool isColor(Mat img) {

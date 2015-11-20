@@ -29,6 +29,7 @@ class Capture {
     int C;                 //
     double aspectRatio;    // The aspect ratio of the page we are looking for.
     double sizeRatio;      // The min ratio of a detected page to the size of the image
+    double ratioTol;       //
     int etol1;             //
     int etol2;             //
     int eSize;             //
@@ -56,12 +57,12 @@ class Capture {
      * @return If no border found, returns {The original image, The original image}.
      * @complexity O(?)
      */
-    vector<Mat> strongBorder(Mat img);
+    vector<Mat> strongPageBorder(Mat img);
 
     Capture (int angleTol = 10, int distTol = 5, int polyTol = 5, int wSize = 11,
-             int C = 2, double aspectRatio = 8.5/11.0, double sizeRatio = .5, int etol1 = 100, int etol2 = 200, int eSize = 3, int R = .04):
+             int C = 2, double aspectRatio = 8.5/11.0, double sizeRatio = .5, double ratioTol = .1, int etol1 = 100, int etol2 = 200, int eSize = 3, int R = .04):
                 angleTol(angleTol), distTol(distTol), polyTol(polyTol), wSize(wSize),
-                C(C), aspectRatio(aspectRatio), sizeRatio(sizeRatio), etol1(etol1), etol2(etol2), eSize(eSize), R(R)
+                C(C), aspectRatio(aspectRatio), sizeRatio(sizeRatio), ratioTol(ratioTol), etol1(etol1), etol2(etol2), eSize(eSize), R(R)
     {}
 
 };

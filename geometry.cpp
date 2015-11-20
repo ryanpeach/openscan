@@ -176,8 +176,9 @@ bool isSquare(cnt poly, double angleTol, double distTol) {return isPoly(poly,4,t
 vector<cnt> hasRectangles(cnt poly, double angleTol, double distTol, int n) {
 #ifdef TEST
     cout << "Running hasRectangles..." << endl;
+    cout << "Warning! High complexity!" << endl;
 #endif
-    if (poly.size()<4 || n < 1) {return vector<cnt>();}
+    if (poly.size()<4) {return vector<cnt>();}
 
     // Check all combinations of poly
     vector<cnt> out;
@@ -189,9 +190,19 @@ vector<cnt> hasRectangles(cnt poly, double angleTol, double distTol, int n) {
             cnt found = cnt{a1, a2, a3, a4};
             if (isRectangle(found, false, angleTol, distTol)) {
                     out.push_back(found); n--;
-                    if (n <= 0) {return out;}
+                    if (n == 0) {return out;}
     }}}}}}
     return out;
+}
+vector<cnt> hasRectangles(vector<cnt> poly, double angleTol, double distTol) {
+	vector<cnt> out;
+	bool found;
+
+	for (cnt c : poly) {
+		found = isRectangle(c, false, angleTol, distTol);
+		if (found) {out.push_back(c);}
+	}
+	return out;
 }
 cnt hasRectangle(cnt poly, double angleTol, double distTol) {
     vector<cnt> out = hasRectangles(poly, angleTol, distTol, 1);

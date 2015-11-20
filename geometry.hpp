@@ -127,9 +127,10 @@ bool isSquare(cnt poly, double angleTol, double distTol);
  * @return Returns a found rectangle as a cnt.
  * @return Returns an empty contour if none was found or if n < 1.
  * @tested untested
- * @complexity O(?)
+ * @complexity O(n*len(poly)), O(n*len(poly)^4)
  */
 vector<cnt> hasRectangles(cnt poly, double angleTol, double distTol, int n = 1);
+vector<cnt> hasRectangles(vector<cnt> poly, double angleTol, double distTol);
 cnt hasRectangle(cnt poly, double angleTol, double distTol);
 
 /**
