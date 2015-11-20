@@ -14,6 +14,7 @@ void Capture::Frame(Mat img) {
 	edges = NULL;
 	polys = NULL;
 	fps = NULL;
+	rects = NULL;
 }
 
 Mat* Capture::getEdges() {
@@ -71,26 +72,52 @@ Point* Capture::getRef() {
 	return ref;
 }
 
+vector<cnt>* Capture::getRects() {
+	if (rects == NULL) {
+		vector<cnt> r = hasRectangles((*getPolys()).contours, angleTol, distTol);
+		rects = &r;
+	}
+	return rects;
+}
+
 cnt* Capture::getBorder() {
 	switch(sel) {
-	case fpcorners:
+	case fpcorners: {
 		if (border == NULL && getFps() != NULL) {
 			vector<Fp> corners = calcCorners(*getFps(), angleTol, distTol);
-			if (border == NULL && corners.size() == 4) {
+			if (corners.size() == 4) {
 				set(corners);
 			}
-		} break;
+		}} break;
 
-	case strongborder:
-		vector<cnt> rects = hasRectangles((*getPolys()).contours, angleTol, distTol);
+	case strongborder: {
 		vector<cnt> check;
-		for (cnt r : rects) {
+		for (cnt r : (*getRects())) {
 		    if (validRect(r)) {check.push_back(r);};
 		}
 	    vector<cnt> similar = findSimilar(check, distTol);
-	    cnt corners = largest(similar);
-	    set(corners);
-	    break;
+	    if (!similar.empty()) {
+			cnt corners = largest(similar);
+			set(corners);
+	    }} break;
+
+	case regular: {
+		vector<cnt> valid;
+		for (cnt r : (*getRects())) {
+			if (validRect(r)) {valid.push_back(r);}
+		}
+		if (!valid.empty()) {
+			cnt corners = largest(valid);
+			set(corners);
+		}} break;
+
+	case automatic: {
+		sel = fpcorners;
+		if (getBorder() == NULL) {sel = strongborder;}
+		if (getBorder() == NULL) {sel = regular;}
+		getBorder();
+		sel = automatic;
+	} break;
 	}
 	return border;
 }
