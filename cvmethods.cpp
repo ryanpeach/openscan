@@ -189,41 +189,6 @@ Point getRef(cnt contour) {
 
 
 // ------------ Image Manipulation --------------
-Mat importFilter(Mat img, int tol1, int tol2, int wSize) {
-#ifdef TEST
-    cout << "Running importFilter..." << endl;
-#endif
-    //Testing & Declarations
-    Mat gray, edges;
-
-    //Convert to gray if not already
-    if (isColor(img)) {cvtColor(img,gray,COLOR_RGB2GRAY);}
-    else {gray = img;}
-
-    //Return Canny Edge Detection
-    Canny(gray,edges,tol1,tol2,wSize,false);
-
-
-    return edges;
-}
-
-Mat outputFilter(Mat img, int wSize, int C) {
-#ifdef TEST
-    cout << "Running outputFilter..." << endl;
-#endif
-    // Testing & Declarations
-    Mat gray, out;
-    while(wSize%2!=1) {wSize++;}	//wSize must be an odd number
-
-    // Convert to gray if not already
-    if (isColor(img)) {cvtColor(img, gray, COLOR_RGB2GRAY);}
-    else {gray = img;}
-
-    cout << "here" << endl;
-    adaptiveThreshold(gray, out, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, wSize, C);
-    return out;
-}
-
 Mat cropImage(Mat img, int R) {
 #ifdef TEST
     cout << "Running cropImage..." << endl;
@@ -240,7 +205,6 @@ Mat fixPerspective(Mat img, cnt border, Point ref) {
     // Declare variables
     Point tl, tr, bl, br;
     Mat out;
-    int n = 0;
 
     // Rotate the array until the reference is first
     border = sortCorners(border,ref);

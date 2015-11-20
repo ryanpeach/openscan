@@ -9,11 +9,9 @@
 #include "capture.hpp"
 #define TEST
 
-
-
 void Capture::preProcess(Mat img) {
     if (!matEq(img, frame)) {
-        edges = importFilter(img, etol1, etol2, eSize);
+        edges = edgesCanny(img,etol1,etol2,eSize);
         polys = findPolys(edges, polyTol);
         fps = findFocusPoints(polys, angleTol, distTol);
         frame = img;

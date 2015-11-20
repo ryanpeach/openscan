@@ -81,3 +81,7 @@ Point sum(cnt pts) {
     }
     return out;
 }
+
+void Odd(int *n){
+	while((*n)%2!=1) {(*n)++;}
+}

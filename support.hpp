@@ -129,4 +129,13 @@ T mean(vector<T> nums){
     return sum(nums) / nums.size();
 }
 
+/**
+ * Rounds n to the nearest odd number.
+ * @param any int
+ * @return none, modifies the int directly via pointers
+ * @complexity O(1)
+ * @tested untested
+ */
+void Odd(int *n);
+
 #endif

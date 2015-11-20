@@ -10,7 +10,7 @@
 #define CAPTURE
 #define DESKTOP
 
-#include "cvmethods.hpp"
+#include "filters.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include <ctime>
 
@@ -24,16 +24,13 @@ class Capture {
 
     int angleTol;          // The angle tolerance app-wide
     int distTol;           // The distance tolerance for small polygons (like focus pointss)
-    int polyTol;           // The distance tolerance for unversal polygons (like page borders)
-    int wSize;             //
-    int C;                 //
+    int polyTol;           // The distance tolerance for universal polygons (like page borders)
     double aspectRatio;    // The aspect ratio of the page we are looking for.
     double sizeRatio;      // The min ratio of a detected page to the size of the image
-    double ratioTol;       //
-    int etol1;             //
-    int etol2;             //
-    int eSize;             //
-    int R;                 //
+    double ratioTol;       // The tolerance for two ratios to be considered equal
+
+    //Import Parameters
+    int etol1, etol2, eSize;
 
     // Preprocessing allows each process to share data,
     // so that nothing is calculated twice for the same image.
@@ -59,10 +56,12 @@ class Capture {
      */
     vector<Mat> strongPageBorder(Mat img);
 
-    Capture (int angleTol = 10, int distTol = 5, int polyTol = 5, int wSize = 11,
-             int C = 2, double aspectRatio = 8.5/11.0, double sizeRatio = .5, double ratioTol = .1, int etol1 = 100, int etol2 = 200, int eSize = 3, int R = .04):
-                angleTol(angleTol), distTol(distTol), polyTol(polyTol), wSize(wSize),
-                C(C), aspectRatio(aspectRatio), sizeRatio(sizeRatio), ratioTol(ratioTol), etol1(etol1), etol2(etol2), eSize(eSize), R(R)
+    Capture (int angleTol = 10, int distTol = 5, int polyTol = 5,
+             double aspectRatio = 8.5/11.0, double sizeRatio = .5, double ratioTol = .1,
+             int etol1 = 100, int etol2 = 200, int eSize = 3):
+                angleTol(angleTol), distTol(distTol), polyTol(polyTol),
+                aspectRatio(aspectRatio), sizeRatio(sizeRatio), ratioTol(ratioTol),
+                etol1(etol1), etol2(etol2), eSize(eSize)
     {}
 
 };

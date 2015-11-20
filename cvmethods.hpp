@@ -40,11 +40,6 @@ Fp getRef(vector<Fp> fps);
 Point getRef(cnt contour);
 
 // ------------ Image Manipulation --------------
-// wSize must be an odd number, will be rounded up.
-Mat importFilter(Mat img, int tol1, int tol2, int wSize);
-
-Mat outputFilter(Mat img, int wSize, int C);
-
 Mat cropImage(Mat img, int R);
 
 // Reference: Modified from http://www.pyimagesearch.com/2014/08/25/4-point-opencv-getperspective-transform-example/
