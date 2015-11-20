@@ -153,4 +153,13 @@ vector<double> angs(Point x, cnt fours);
  */
 cnt largest(vector<cnt> v);
 
+/**
+ * Returns contours which are very similar, like the double edges of a line.
+ * @param  check:  Any vector of cnt's to check.
+ * @return distTol: the distance between corners to qualify as "equal".
+ * @complexity O(?)
+ * @tested untested
+ */
+vector<cnt> findSimilar(vector<cnt> check, double distTol);
+
 #endif

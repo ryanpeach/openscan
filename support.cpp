@@ -71,7 +71,7 @@ double sum(vector<double> nums) {
     return out;
 }
 
-Point sum(cnt pts) {
+Point sum(Points pts) {
 #ifdef TEST
     cout << "Running sum(vector<double>)..." << endl;
 #endif

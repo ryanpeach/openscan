@@ -231,3 +231,22 @@ cnt largest(vector<cnt> v) {
     }
     return out;
 }
+
+// Find any two contours who share similar corners
+vector<cnt> findSimilar(vector<cnt> check, double distTol) {
+	vector<cnt> pair; vector<cnt> out;
+	for (unsigned int r1 = 0; r1 < check.size(); r1++) {
+		for (unsigned int r2 = 0; r2 < check.size(); r2++) {
+			bool found = true;
+			for (unsigned int i = 0; i < 4 && r2 > r1; i++) {  //No duplicates
+				if (!(dist(check[r1][i], check[r2][i]) <= distTol)) {
+					found = false;
+				}
+				if (found) {
+					out.push_back(check[r1]);
+				}
+			}
+		}
+	}
+	return out;
+}

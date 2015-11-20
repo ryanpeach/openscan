@@ -29,7 +29,7 @@ Cnts findPolys(Mat img, double distTol) {
     return Cnts(polys, heirarchy);
 }
 
-vector<Fp> findFocusPoints(Cnts polys, double angleTol, double distTol) {
+Fps findFocusPoints(Cnts polys, double angleTol, double distTol) {
 #ifdef TEST
     cout << "Running findFocusPoints..." << endl;
 #endif
@@ -74,7 +74,7 @@ vector<Fp> findFocusPoints(Cnts polys, double angleTol, double distTol) {
     return out;
 }
 
-vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol, double distTol) {
+Fps calcCorners(Fps focusPoints, double angleTol, double distTol) {
 #ifdef TEST
     cout << "Running getCorners..." << endl;
     cout << "getCorners: Getting list of fours..." << endl;
@@ -132,7 +132,7 @@ cnt sortCorners(cnt corners, Point ref) {
     return sort;
 }
 
-vector<Fp> sortCorners(vector<Fp> corners, Fp ref) {
+Fps sortCorners(vector<Fp> corners, Fp ref) {
     return toFps(sortCorners(centroids(corners),ref.center), corners);
 }
 
@@ -157,7 +157,7 @@ cnt sortCorners(cnt corners) {
 }
 
 
-Fp getRef(vector<Fp> fps) {
+Fp calcRef(vector<Fp> fps) {
 #ifdef TEST
     cout << "Running getRef(vector<Fp>)..." << endl;
 #endif
@@ -174,7 +174,7 @@ Fp getRef(vector<Fp> fps) {
     else {return Fp();}
 }
 
-Point getRef(cnt contour) {
+Point calcRef(cnt contour) {
 #ifdef TEST
     cout << "Running getRef(cnt)..." << endl;
 #endif

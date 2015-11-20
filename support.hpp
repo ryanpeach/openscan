@@ -19,6 +19,7 @@ using namespace std;
 using namespace cv;
 
 typedef vector<Point> cnt;
+typedef vector<Point> Points; //This is an unordered cnt.
 
 struct Cnts { 
     vector<cnt> contours;
@@ -114,7 +115,7 @@ template<> string vtostr(Cnts vec);
  * @tested works
  */
 double sum(vector<double> nums);
-Point sum(cnt pts);
+Point sum(Points pts);
 
 
 /**

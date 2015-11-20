@@ -9,101 +9,121 @@
 #include "capture.hpp"
 #define TEST
 
-void Capture::preProcess(Mat img) {
-    if (!matEq(img, frame)) {
-        edges = edgesCanny(img,etol1,etol2,eSize);
-        polys = findPolys(edges, polyTol);
-        fps = findFocusPoints(polys, angleTol, distTol);
-        frame = img;
-    }
+void Capture::Frame(Mat img) {
+	frame = &img;
+	edges = NULL;
+	polys = NULL;
+	fps = NULL;
+}
+
+Mat* Capture::getEdges() {
+
+	if (edges == NULL) {
+		auto out = edgesCanny(*frame, etol1, etol2, eSize);
+		edges = &out;
+	}
+
+#ifdef TEST
+	if (edges != NULL) {imshow("Canny",*edges);}
+#endif
+
+	return edges;
+}
+
+Cnts* Capture::getPolys() {
+	if (polys == NULL && getEdges() != NULL) {
+		auto out = findPolys(*getEdges(), polyTol);
+		polys = &out;
+	}
+	return polys;
+}
+
+Fps* Capture::getFps() {
+
+	if (fps == NULL && getPolys() != NULL) {
+		auto out = findFocusPoints(*getPolys(), angleTol, distTol);
+		fps = &out;
+	}
+
+#ifdef TEST
+    cout << "Fp's Found: " << (*fps).size() << endl;
+#endif
+
+	return fps;
+}
+
+void Capture::set(cnt corners) {
+	Points cent = corners;
+	Point r = calcRef(corners); ref = &r;
+	cnt b = sortCorners(cent,*getRef()); border = &b;
+}
+
+void Capture::set(Fps corners) {
+	Points cent = centroids(corners);
+	Point r = centroid(calcRef(corners)); ref = &r;
+	cnt b = sortCorners(cent,*getRef()); border = &b;
+}
+
+Point* Capture::getRef() {
+	if (ref == NULL) {
+		getBorder();
+	}
+	return ref;
+}
+
+cnt* Capture::getBorder() {
+	switch(sel) {
+	case fpcorners:
+		if (border == NULL && getFps() != NULL) {
+			vector<Fp> corners = calcCorners(*getFps(), angleTol, distTol);
+			if (border == NULL && corners.size() == 4) {
+				set(corners);
+			}
+		} break;
+
+	case strongborder:
+		vector<cnt> rects = hasRectangles((*getPolys()).contours, angleTol, distTol);
+		vector<cnt> check;
+		for (cnt r : rects) {
+		    if (validRect(r)) {check.push_back(r);};
+		}
+	    vector<cnt> similar = findSimilar(check, distTol);
+	    cnt corners = largest(similar);
+	    set(corners);
+	    break;
+	}
+	return border;
 }
 
 // Uses polyTol, angleTol, distTol, wSize, C;
-vector<Mat> Capture::focusPointCorners(Mat img) {
+vector<Mat*> Capture::process() {
 #ifdef TEST
-    cout << "Running Capture::focusPointCorners..." << endl;
+    cout << "Running Capture::process..." << endl;
 #endif
+    // Variable Declaration
+    Mat warp, drawing;
+    vector<Mat*> out;
 
-    Mat warp, drawing;  // Variable Declaration
+    if (getBorder() != NULL && getRef() != NULL) {
+		// Get border from focus points and warp
+		warp = fixPerspective(*frame, *getBorder(), *getRef());
 
-    preProcess(img);  // Intial Processing
+		warp = toColor(warp);
 
-#ifdef TEST
-    imshow("Canny",edges);
-    cout << "Fp's Found: " << fps.size() << endl;
-#endif
+		Scalar color = Scalar(255, 0, 0);
+		drawing = warp;
 
-    // Get border from focus points
-    vector<Fp> corners = getCorners(fps, angleTol, distTol);
-    if (corners.size() == 4) {
-        Fp ref = getRef(fps);
-        if (ref.contours.size()>0){
-            warp = fixPerspective(img, corners, ref);
-        }
-        else {return vector<Mat>();}
-    } else {return vector<Mat>();}
-
-    if(!isColor(warp)) {cvtColor(warp, warp, COLOR_GRAY2RGB);}
-    Scalar color = Scalar(255, 0, 0);
-    drawing = warp;
-
-    drawContours(drawing, vector<cnt>{centroids(corners)}, 0, color, 3, 8);
-    vector<Mat> end = vector<Mat>{drawing, warp};
-    cout << "end" << endl;
-    return end;
+		drawContours(drawing, *getBorder(), 0, color, 3, 8);
+		out = vector<Mat*>{&drawing, &warp};
+		return out;
+    } else {
+    	out = vector<Mat*>{frame,NULL};
+    	return out;
+    }
 }
 
-
-
-vector<Mat> Capture::strongPageBorder(Mat img) {
-#ifdef TEST
-    cout << "Running Capture::focusPointCorners..." << endl;
-#endif
-
-    Mat warp, drawing;  // Variable Declaration
-
-    preProcess(img);  // Intial Processing
-
-#ifdef TEST
-    imshow("Canny",edges);
-#endif
-
-    // Find only big rectangles
-    // Of the proper aspect ratio
-    // And which contain all focus points
-    vector<cnt> rects = hasRectangles(polys.contours, angleTol, distTol);
-    vector<cnt> check;
-    for (cnt r : rects) {
-        if (contourArea(r) >= sizeRatio*img.cols*img.rows
-                && isAspectRatio(r, aspectRatio, ratioTol)) {
-            if (fps.size()==0 || allInside(r, fps)) {
-                check.push_back(sortCorners(r));
-            }
-        }
-    }
-
-    // Find any two contours who share similar corners
-    vector<cnt> pair; vector<cnt> out;
-    for (unsigned int r1 = 0; r1 < check.size(); r1++) {
-        for (unsigned int r2 = 0; r2 < check.size(); r2++) {
-            bool found = true;
-            for (unsigned int i = 0; i < 4 && r2 > r1; i++) {  //No duplicates
-                if (!(dist(check[r1][i], check[r2][i]) <= distTol)) {
-                    found = false;
-                }
-                if (found) {
-                    out.push_back(check[r1]);
-                }
-            }
-        }
-    }
-
-    // Main processing and return
-    auto color = Scalar{0,0,255};
-    auto border = largest(out);
-    auto ref = getRef(border);
-    warp = fixPerspective(img, border, ref);
-    drawContours(drawing, border, 0, color, 3, 8);
-    vector<Mat> end = vector<Mat>{drawing, warp};
-    return end;
+bool Capture::validRect(cnt r) {
+    return contourArea(r) >= sizeRatio*(*frame).cols*(*frame).rows
+            && isAspectRatio(r, aspectRatio, ratioTol)
+    		&& ((*fps).size()==0 || allInside(r, *fps));
 }
