@@ -13,33 +13,30 @@ void Capture::Frame(Mat img) {
 #ifdef TEST
 	cout << "Running Capture::Frame..." << endl;
 #endif
-	cout << &frame << " " << &edges << " " << endl;
-	if (frame != 0) {delete frame; frame = 0;}
-	if (edges != 0) {delete edges; edges = 0;}
-
 	polys = Cnts(); cout << 3 << endl;
 	fps.clear();
 	rects.clear();
 	border.clear();
 	ref = Point();
-	frame = new Mat(img);
+	frame = img;
+	edges = Mat();
 }
 
-Mat * Capture::getEdges() {
+Mat Capture::getEdges() {
 #ifdef TEST
 	cout << "Running Capture::getEdges..." << endl;
 	cout << frame << endl;
 #endif
 	Mat out;
-	if (edges == nullptr) {
-		out = edgesCanny(frame, etol1, etol2, eSize);
-		if (!out.empty()) {edges = new Mat(out);}
+	if (edges.empty()) {
+		out = edgesCanny(&frame, etol1, etol2, eSize);
+		if (!out.empty()) {edges = out;}
 	}
 
 #ifdef TEST
-	if (edges != nullptr) {
+	if (edges.empty()) {
 		cout << edges << endl;
- 		imshow("Canny",*edges);}
+ 		imshow("Canny",edges);}
 #endif
 
 	return edges;
@@ -49,8 +46,8 @@ Cnts Capture::getPolys() {
 #ifdef TEST
 	cout << "Running Capture::getPolys..." << endl;
 #endif
-	if (polys.empty() && getEdges() == nullptr) {
-		polys = findPolys(getEdges(), polyTol);
+	if (polys.empty() && getEdges().empty()) {
+		polys = findPolys(&edges, polyTol);
 	}
 	return polys;
 }
@@ -166,28 +163,28 @@ cnt Capture::getBorder() {
 }
 
 // Uses polyTol, angleTol, distTol, wSize, C;
-vector<Mat*> Capture::process() {
+vector<Mat> Capture::process() {
 #ifdef TEST
 	cout << "Running Capture::process..." << endl;
 #endif
 	// Variable Declaration
-	Mat *warp, *drawing;
-	vector<Mat*> out;
+	Mat warp, drawing;
+	vector<Mat> out;
 	cout << getBorder()  << endl;
 	if (getBorder().empty() && getRef() != Point()) {
 		// Get border from focus points and warp
-		warp = new Mat(fixPerspective(frame, getBorder(), getRef()));
+		warp = fixPerspective(&frame, getBorder(), getRef());
 
-		Color(warp);
+		Color(&warp);
 
 		Scalar color = Scalar(255, 0, 0);
-		drawing = new Mat(*warp);
+		drawing = Mat(warp);
 
-		drawContours(*drawing, getBorder(), 0, color, 3, 8);
-		out = vector<Mat*>({&drawing, &warp});
+		drawContours(drawing, getBorder(), 0, color, 3, 8);
+		out = vector<Mat>{drawing, warp};
 		return out;
 	} else {
-		out = vector<Mat*>({frame,nullptr});
+		out = vector<Mat>{frame,Mat()};
 		return out;
 	}
 }
@@ -196,7 +193,7 @@ bool Capture::validRect(cnt r) {
 #ifdef TEST
 	cout << "Capture::getBorder: validRect... " << endl;
 #endif
-	bool out = sizeRatio*((*frame).cols)*((*frame).rows)
+	bool out = sizeRatio*((frame).cols)*((frame).rows)
 			&& isAspectRatio(r, aspectRatio, ratioTol)
 			&& ((fps).size()==0 || allInside(r, fps));
 #ifdef TEST
