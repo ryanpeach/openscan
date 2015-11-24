@@ -6,109 +6,193 @@
  * @version v0.1
  */
 
-#define DESKTOP
-
 #include "capture.hpp"
+#define TEST
 
-//Uses polyTol, angleTol, distTol, wSize, C;
-vector<Mat> Capture::process(Mat img, bool filter) {
-    // Variable Declaration
-    Mat warp, filtered;
-
-    // Intial Processing
-    polys = findPolys(img, polyTol);
-    fps = findFocusPoints(polys, angleTol, distTol);
-
-    // Get border from focus points
-    vector<Fp> corners = getCorners(fps, angleTol, distTol);
-    if (corners.size() == 4) {
-        Fp ref = getRef(fps);
-        warp = fixPerspective(img, corners, ref);
-        if (filter) {filtered = outputFilter(warp, wSize, C);}
-    } else {return vector<Mat>();}
-
-    cvtColor(warp, warp, COLOR_GRAY2RGB);
-    Scalar color = Scalar(255,0,0);
-    Mat drawing = warp;
-    drawContours(drawing, centroids(corners), 0, color, 3, 8);
-    return {drawing, warp, filtered};
-}
-
-// Processes the image without the help of corner focus points
-// Null-Condition: Returns {null,img}
-// vector<Mat> Capture::process2(Mat img) {
-//    // Get the largest rectangular border from polys which contains all focus points.
-//    // If no focus points exist, then simply return the largest border.
-//    cnt largest; int size = 0;
-//    for (int i = 0; i < polys.size(); i++) {
-//        if (isRectangle(polys[i]) && contourArea(polys[i]) > size) {
-//            if ((fps.size() != 0 && allInside(polys[i],fps)) || fps.size() == 0) {
-//                largest = polys[i]; size = contourArea(polys[i]);
-//            }
-//        }
-//    }
-//
-//    // If one is found, return the processed image. If exception or none found, return null.
-//    if (size > 0) {
-//        Point ref = getRef(largest);
-//        vector<Fp> sort = sortCorners(largest, ref);
-//        Mat warp = fixPerspective(img, sort, ref, aspectRatio);
-//        Mat crop = cropImage(warp, R*warp.cols);
-//        Mat out = outputFilter(crop, wSize, C);
-//
-//        // Draw and return
-//        Mat drawing = drawContour(img, largest, color = {255,0,0}, thickness = 1);
-//        return {cvtColor(out, out, COLOR_GRAY2RGB), drawing};
-//    }
-//    else {return {img, img};}
-// }
-
-#ifdef DESKTOP
-void Capture::webCam() {
-    VideoCapture cap;
-    Mat frame, preview, drawing, cropped;
-    vector<Mat> proc;
-    string filename, filepath;
-    time_t timer;
-
-    bool found = false;
-
-    if(!cap.open(0)){return;}
-
-    namedWindow("Capture:Press and Hold 'q' to exit",WINDOW_NORMAL);
-    namedWindow("Preview: Press 's' to save.",WINDOW_NORMAL);
-
-    for(;;)
-    {
-        cap >> frame;
-        if( frame.empty() ) break; // end of video stream
-        vector<Mat> proc = process(frame);
-
-        if (!proc.empty()) {
-            drawing = proc[0];
-            cropped = proc[1];
-            preview = proc[2];
-            found = true;
-        } else {
-            drawing = frame;
-            found = false;
-        }
-
-        //Show and save webcam out and preview
-        imshow("Capture:Press and Hold 'q' to exit", drawing);
-        if (found){
-            imshow("Capture:Press and Hold 's' to save", preview);
-       	    if (cvWaitKey(10) == 's') {  //save
-                filename = asctime(localtime(&timer));
-                filepath = "scans/" + filename  + ".jpg";
-                imwrite(filepath,preview);
-            }
-        }
-
-        //Quit
-        if (cvWaitKey(10) == 'q') {break;}
-        cap.release();
-        destroyAllWindows();
-    }
-}
+void Capture::Frame(Mat img) {
+#ifdef TEST
+	cout << "Running Capture::Frame..." << endl;
 #endif
+	fps.clear();
+	rects.clear();
+	border.clear();
+	polys = Cnts();
+	ref = Point();
+	frame = img;
+	edges = Mat();
+}
+
+Mat Capture::getEdges() {
+#ifdef TEST
+	cout << "Running Capture::getEdges..." << endl;
+#endif
+	if (edges.empty()) {
+		edges = edgesCanny(&frame, etol1, etol2, eSize);
+	}
+
+
+	return edges;
+}
+
+Cnts Capture::getPolys() {
+#ifdef TEST
+	cout << "Running Capture::getPolys..." << endl;
+#endif
+	if (edges.empty()) {getEdges();}
+	if (polys.empty() && !edges.empty()) {
+		polys = findPolys(&edges, polyTol);
+	}
+#ifdef TEST
+	Mat draw = Mat::zeros(edges.rows, edges.cols, edges.type());
+	const auto white = Scalar(255,255,255);
+	for (int i = 0; i<polys.contours.size();i++) {drawContours(draw,polys.contours,i,white,2,8);}
+	imshow("Edges", draw);
+#endif
+	return polys;
+}
+
+Fps Capture::getFps() {
+#ifdef TEST
+	cout << "Running Capture::getFps..." << endl;
+#endif
+	if (polys.empty()) {getPolys();}
+	if (fps.empty() && !polys.empty()) {
+		fps = findFocusPoints(polys, angleTol, distTol);
+	}
+
+#ifdef TEST
+	cout << "Fp's Found: " << (fps).size() << endl;
+#endif
+
+	return fps;
+}
+
+void Capture::set(cnt corners) {
+#ifdef TEST
+	cout << "Running Capture::set(cnt)..." << endl;
+#endif
+	Points cent = corners;
+	ref = calcRef(corners);
+	border = sortCorners(cent,ref);
+}
+
+void Capture::set(Fps corners) {
+#ifdef TEST
+	cout << "Running Capture::set(Fps)..." << endl;
+#endif
+	Points cent = centroids(corners);
+	ref = centroid(calcRef(corners));
+	border = sortCorners(cent,ref);
+}
+
+vector<cnt> Capture::getRects() {
+#ifdef TEST
+	cout << "Running Capture::getRects..." << endl;
+#endif
+	if (polys.empty()) {getPolys();}
+	if (rects.empty() && !polys.empty()) {
+		rects = hasRectangles(polys.contours, angleTol, distTol);
+	}
+	return rects;
+}
+
+cnt Capture::getBorder() {
+#ifdef TEST
+	cout << "Running Capture::getBorder..." << endl;
+#endif
+	switch(sel) {
+	case fpcorners: {
+#ifdef TEST
+		cout << "Capture::getBorder: fpcorners..." << endl;
+#endif
+		if (fps.empty()) {getFps();}
+		if (border.empty() && !fps.empty()) {
+			vector<Fp> corners = calcCorners(fps, angleTol, distTol);
+			if (corners.size() == 4) {
+				set(corners);
+			}
+		}} cout << border << endl; break;
+
+	case strongborder: {
+#ifdef TEST
+		cout << "Capture::getBorder: strongborder..." << endl;
+#endif
+		vector<cnt> check;
+		for (cnt r : (getRects())) {
+			if (validRect(r)) {check.push_back(r);}
+		}
+		vector<cnt> similar = findSimilar(check, distTol);
+		if (!similar.empty()) {
+			cnt corners = largest(similar);
+			set(corners);
+		}} break;
+
+	case regular: {
+#ifdef TEST
+		cout << "Capture::getBorder: regular..." << endl;
+#endif
+		vector<cnt> valid;
+		for (cnt r : (getRects())) {
+			if (validRect(r)) {valid.push_back(r);}
+		}
+		if (!valid.empty()) {
+			cnt corners = largest(valid);
+			set(corners);
+		}} break;
+
+	case automatic: {
+#ifdef TEST
+		cout << "Capture::getBorder: automatic..." << endl;
+#endif
+		sel = fpcorners;
+		if (getBorder().empty()) {sel = strongborder;
+		if (getBorder().empty()) {sel = regular;
+		getBorder();}}
+		sel = automatic;
+	} break;
+	}
+	return border;
+}
+
+// Uses polyTol, angleTol, distTol, wSize, C;
+vector<Mat> Capture::process() {
+#ifdef TEST
+	cout << "Running Capture::process..." << endl;
+#endif
+	// Variable Declaration
+	Mat warp, drawing;
+	vector<Mat> out;
+	if (border.empty()) {getBorder();}
+	if (!border.empty() && ref != Point()) {
+		// Get border from focus points and warp
+		warp = fixPerspective(&frame, border, ref);
+
+		Color(&warp);
+
+		Scalar color = Scalar(255, 0, 0);
+		drawing = frame.clone();
+
+		vector<cnt> conts{border};
+		drawContours(drawing, conts, 0, color, 3, 8);
+		out = vector<Mat>{drawing, warp};
+		return out;
+	} else {
+		out = vector<Mat>{};
+		return out;
+	}
+}
+
+bool Capture::validRect(cnt r) {
+#ifdef TEST
+	cout << "Capture::getBorder: validRect... " << endl;
+#endif
+	double area1 = sizeRatio*((frame).cols)*((frame).rows);
+	double area2 = contourArea(r);
+	bool size = area1 < area2;
+	bool ratio = isAspectRatio(r, aspectRatio, ratioTol);
+	bool inside = ((fps).size()==0 || allInside(r, fps));
+#ifdef TEST
+	cout << "Capture::getBorder: validRect = " << size << ratio << inside << " " << area1 << "<" << area2 << endl;
+#endif
+	return size && ratio;
+}

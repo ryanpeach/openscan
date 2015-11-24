@@ -112,8 +112,54 @@ bool isAspectRatio(cnt border, double aspectRatio, double ratioTol);
  * @complexity O(?)
  * @tested works
  */
-bool isPoly(cnt poly, int size, bool regular, double angleTol, double distTol);
+bool isPoly(cnt poly, int size, bool regularA, bool regularL, double angleTol, double distTol);
 bool isRectangle(cnt poly, bool square, double angleTol, double distTol);
 bool isSquare(cnt poly, double angleTol, double distTol);
+
+/**
+ * Iterates through all points given to see if some set of 4 points
+ *     can be ordered together to create a rectangular polygon.
+ * @param  cnt poly: A list of unordered, potentially connected points which
+ *                       might contain a rectangle.
+ * @param  double angleTol: the angle tolerance of the angle equality.
+ * @param  double distTol: the distance tolerance of the length equality.
+ * @param  int n: the max number of desired returns.
+ * @return Returns a found rectangle as a cnt.
+ * @return Returns an empty contour if none was found or if n < 1.
+ * @tested untested
+ * @complexity O(n*len(poly)), O(n*len(poly)^4)
+ */
+vector<cnt> hasRectangles(cnt poly, double angleTol, double distTol, int n = 1);
+vector<cnt> hasRectangles(vector<cnt> poly, double angleTol, double distTol);
+cnt hasRectangle(cnt poly, double angleTol, double distTol);
+
+/**
+ * Returns all angles between x and each Point in "fours."
+ * @param  Point x:  Any point you wish to use as an origin for angle calc
+ * @param  cnt poly: Any vector of points you wish to test.
+ *                       Does not need to be ordered or assumed connected.
+ * @return True / False
+ * @complexity O(?)
+ * @tested untested
+ */
+vector<double> angs(Point x, cnt fours);
+
+/**
+ * Returns the largest contour in a vector.
+ * @param  vector<cnt>:  Any vector of cnt's.
+ * @return cnt: largest contour
+ * @complexity O(?)
+ * @tested untested
+ */
+cnt largest(vector<cnt> v);
+
+/**
+ * Returns contours which are very similar, like the double edges of a line.
+ * @param  check:  Any vector of cnt's to check.
+ * @return distTol: the distance between corners to qualify as "equal".
+ * @complexity O(?)
+ * @tested untested
+ */
+vector<cnt> findSimilar(vector<cnt> check, double distTol);
 
 #endif

@@ -14,29 +14,32 @@
 #include "geometry.hpp"
 
 struct Fp {
-	vector<cnt> contours;
-	cnt contour;
-	Point center;
-	int depth, shape;
+    vector<cnt> contours;
+    cnt contour;
+    Point center;
+    int depth, shape;
 
-	int findInnerBorder(vector<cnt> cnts, double angleTol, double distTol);
+    int findInnerBorder(vector<cnt> cnts, double angleTol, double distTol);
 
-	Fp (vector<cnt> conts, cnt cont, Point cent, int d, int s);
-	Fp (vector<cnt> conts, double angleTol, double distTol);
-	Fp (vector<cnt> conts);
+    Fp (vector<cnt> conts, cnt cont, Point cent, int d, int s);
+    Fp (vector<cnt> conts, double angleTol, double distTol);
+    Fp (vector<cnt> conts);
+    Fp ();
 
-	bool operator== (Fp newFp);
+    bool operator== (Fp newFp);
 
-	bool operator!= (Fp newFp);
+    bool operator!= (Fp newFp);
 
-        bool isValid ();
+    bool isValid ();
 
-	Fp copy ();
+    Fp copy ();
 };
 
-Point centroid (vector<Fp> fps);
-Point centroid (Fp f);
-cnt centroids (vector<Fp> fps);
+typedef vector<Fp> Fps;
+
+Point centroid(vector<Fp> fps);
+Point centroid(Fp f);
+cnt centroids(vector<Fp> fps);
 
 string tostr(Fp fp);
 
@@ -49,18 +52,9 @@ string tostr(Fp fp);
  */
 bool allInside(cnt poly, vector<Fp> fps);
 
-/**
- * Iterates through all Fp's given to see if some set of 4 Fp's can be ordered together to create a rectangular polygon.
- * @param  vector<Fp> fps: a list of Fp's of any size >= 4.
- * @param  double angleTol: the angle tolerance of the angle equality.
- * @param  double distTol: the distance tolerance of the length equality.
- * @return Returns a found rectangle as a cnt.
- * @return Returns an empty contour if none was found.
- * @issues isPoly should have consistent angle-testing if regular among all sizes of polys.
- * @complexity O(?)
- */
+// Extended from geometry.cpp for easy Fp processing
+vector<vector<Fp>> hasRectangles(vector<Fp> fps, double angleTol, double distTol, int n = 1);
 vector<Fp> hasRectangle(vector<Fp> fps, double angleTol, double distTol);
-
-vector<double> angs (Point x, vector<Fp> fours);
-
+vector<double> angs(Point x, vector<Fp> fours);
+vector<Fp> toFps(cnt,vector<Fp>);
 #endif

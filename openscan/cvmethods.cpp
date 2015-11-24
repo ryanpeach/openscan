@@ -7,63 +7,81 @@
  */
 
 #include "cvmethods.hpp"
+//#define TEST
 
 // -------------- Feature Detection ----------------
 
-Cnts findPolys (Mat img, double distTol) {
-    //Find contours and heirarchy
+Cnts findPolys(Mat * img, double distTol) {
+#ifdef TEST
+        cout << "Running findPolys..." << endl;
+#endif
+    // Find contours and heirarchy
     vector<cnt> contours, polys; vector<Vec4i> heirarchy; cnt temp;
-    findContours(img, contours, heirarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
+    findContours(*img, contours, heirarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
 
-    //Return approximate polygons
+    // Return approximate polygons
     for (unsigned int i = 0; i < contours.size(); i++) {
+    	//double epsilon = distTol*arcLength(contours[i],true);
         approxPolyDP(contours[i], temp, distTol, true);
         polys.push_back(temp);
     }
 
-    //Return Cnts
+    // Return Cnts
     return Cnts(polys, heirarchy);
 }
 
-vector<Fp> findFocusPoints (Cnts polys, double angleTol, double distTol) {
-    //Definitions
+Fps findFocusPoints(Cnts polys, double angleTol, double distTol) {
+#ifdef TEST
+    cout << "Running findFocusPoints..." << endl;
+#endif
+    // Definitions
     vector<Fp> out; vector< vector<cnt> > cntV;
     vector<int> done; vector<cnt> contours; int k;
     cnt poly;
 
     for(unsigned int i = 0; i < polys.contours.size(); i++) {
-        k=i; poly.clear();
-        if(!contains<vector<int>,int>(done,(int)i)){        //Check that through navigation you haven't been here before
+        k = i; contours.clear();
+        // Check that through navigation you haven't been here before
+        if(!contains<vector<int>, int>(done, (int)i)){
             done.push_back(i);
-
-            //Navigate the heirarchy
+#ifdef TEST
+            cout << "findFocusPoints: Navigating Heirarchy " << i << endl;
+#endif
+            // Navigate the heirarchy
             while (polys.heirarchy[k][2] != -1) {
-                k=polys.heirarchy[k][2];
+                k = polys.heirarchy[k][2];
                 done.push_back(k);
                 contours.push_back(polys.contours[k]);
             }
             if (polys.heirarchy[k][2] != -1) {contours.push_back(polys.contours[k]);} //Add the last element
 
-            //Check if there are enough polys to count as a potential focus point, append them to fp
-            if (poly.size() >= 5) {cntV.push_back(contours);}
+            // Check if there are enough polys to count as a potential focus point, append them to fp
+            if (contours.size() >= 3) {cntV.push_back(contours);}
         }
     }
 
-    //Filter the focus points for their innermost border
+#ifdef TEST
+    cout << "findFocusPoints: Filtering " << cntV.size() << endl;
+#endif
+    // Filter the focus points for their innermost border
     for (unsigned int x = 0; x < cntV.size(); x++) {
-        Fp tempFp = Fp(cntV[x],angleTol,distTol);
-        if (tempFp.depth >= 0) { //Check that cntV[x] is a valid Fp
-            out.emplace_back(tempFp.contours, tempFp.contour, tempFp.center, tempFp.depth, tempFp.shape);
+        Fp tempFp = Fp(cntV[x], angleTol, distTol);
+        if (tempFp.depth >= 0) {  // Check that cntV[x] is a valid Fp
+            out.push_back(tempFp);
         }
     }
 
-    //Return the focus points
-    return out; 
+    // Return the focus points
+    return out;
 }
 
-vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol, double distTol) {
-    //Make fours a list of only size four Fp's
-    //vector<Fp> fours = filter(focusPoints,[](Fp z){return z.shape == 4;});
+Fps calcCorners(Fps focusPoints, double angleTol, double distTol) {
+#ifdef TEST
+    cout << "Running getCorners..." << endl;
+    cout << "getCorners: Getting list of fours..." << endl;
+#endif
+    // Make fours a list of only size four Fp's
+    // vector<Fp> fours = filter(focusPoints,[](Fp z){return z.shape == 4;});
     vector<Fp> fours;
     for (Fp z : focusPoints) {
             if (z.shape == 4) {
@@ -71,124 +89,129 @@ vector<Fp> getCorners(vector<Fp> focusPoints, double angleTol, double distTol) {
             }
     }
 
-    //Classify corners as having 2 right angles
+#ifdef TEST
+    cout << "getCorners: Classifying corners as having 2 right angles..." << endl;
+#endif
+    // Classify corners as having 2 right angles
     vector<Fp> out;
     vector<double> a, temp;
     for (Fp f : fours) {
-        a = angs(f.center,fours);
-        //temp = filter(a,[](double d){return abs(d-90.0)<angleTol;});
-        vector<double> temp;
+        // Gets the angles between f.center and all other items in "fours"
+        a = angs(f.center, fours);
+
+        // Add to temp all items which fall within tolerance from 90 degrees.
+        vector<double> found;
         for (double d : a) {
-        	if (abs(d-90.0)<angleTol) {
-        		temp.push_back(d);
-        	}
+            if (abs(d-90.0) < angleTol) {
+                found.push_back(d);
+            }
         }
-        if (temp.size()>=2 && !contains<vector<Fp>,Fp>(out,f)) {
+
+        // If f has at least two right angle relations with
+        // other items in "fours", add it to out.
+        if (found.size() >= 2 && !contains<vector<Fp>, Fp>(out, f)) {
             out.push_back(f);
         }
     }
 
-    //Return their centroids
+    // Return their centroids
     vector<Fp> rect = hasRectangle(out, angleTol, distTol);
     if (rect.size() != 4) {return vector<Fp>();}
     else {return out;}
 }
 
-vector<Fp> sortCorners(vector<Fp> corners, Fp ref) {
-    Point r = centroid(ref); vector<Fp> out = corners;
-    for(int i = 0; i < 4 && centroid(corners[0]) != r; i++) {
-        out = rotateVec(out);
+//This might have a large complexity due to toFps
+cnt sortCorners(cnt corners, Point ref) {
+#ifdef TEST
+    cout << "Running sortCorners(vector<Fp>,Fp)..." << endl;
+#endif
+    cnt sort = sortCorners(corners);
+
+    for (int i = 0; i < 4 && sort[0] != ref; i++) {
+        sort = rotateVec(sort);
     }
-    return out;
+    return sort;
+}
+
+Fps sortCorners(vector<Fp> corners, Fp ref) {
+    return toFps(sortCorners(centroids(corners),ref.center), corners);
 }
 
 cnt sortCorners(cnt corners) {
-    //Variable Declaration
+#ifdef TEST
+    cout << "Running sortCorners(cnt)..." << endl;
+#endif
+    // Variable Declaration
     Point cent = centroid(corners); vector<double> polar; int n; cnt out;
-   
-    //Calculate all the angles from the centroid, maintaining index
-    for (Point p : corners) {polar.push_back(angle(p,cent));}
+
+    // Calculate all the angles from the centroid, maintaining index
+    for (Point p : corners) {polar.push_back(angle(p, cent));}
     vector<double> sorted = polar;
-    sort(sorted.begin(),sorted.end());
-    
-    //Sort "corners" by the order of sorted "polar"
+    sort(sorted.begin(), sorted.end());
+
+    // Sort "corners" by the order of sorted "polar"
     for (double d : sorted) {
         n = index(polar, d);
-        out.push_back(corners[n]); //Return sorted corners
+        out.push_back(corners[n]);  // Return sorted corners
     }
     return out;
 }
 
 
-Fp getRef(vector<Fp> fps) {
-    Fp maxFp = fps[0]; int max = maxFp.depth; //sets default values
+Fp calcRef(vector<Fp> fps) {
+#ifdef TEST
+    cout << "Running getRef(vector<Fp>)..." << endl;
+#endif
+    bool found = false;
+    Fp maxFp = fps[0]; int max = maxFp.depth;  // sets default values
     for (Fp fp : fps) {
-        if (fp.depth > max) {
+        if (fp.depth > max && fp.depth <= max+1) {
             maxFp = fp;
             max = fp.depth;
+            found  = true;
         }
     }
-    return maxFp;
+    if (found) {return maxFp;}
+    else {return Fp();}
 }
 
-Point getRef(cnt contour) {
+Point calcRef(cnt contour) {
+#ifdef TEST
+    cout << "Running getRef(cnt)..." << endl;
+#endif
     auto D = dists(contour); unsigned int a = 0; unsigned int b = 1;
-    while (D[a]<=D[b]){
+    while (D[a] <= D[b]) {
         a++; b++;
-        if (b>=contour.size()){b=0;}
-        if (a==contour.size()){return contour[0];}
+        if (b >= contour.size()) {b = 0;}
+        if (a == contour.size()) {return contour[0];}
     }
     return contour[a];
 }
 
 
 // ------------ Image Manipulation --------------
-Mat importFilter(Mat img, int tol1, int tol2, int wSize){
-    //Testing & Declarations
-    Mat gray, edges;
-    while(wSize%2!=1) {wSize++;}	//wSize must be an odd number
-
-    //Convert to gray if not already
-    if (isColor(img)) {cvtColor(img,gray,COLOR_RGB2GRAY);}
-    else {gray = img;}
-
-    //Return Canny Edge Detection
-    Canny(gray,edges,tol1,tol2,wSize);
-    return edges;
-}
-
-Mat outputFilter(Mat img, int wSize, int C){
-    //Testing & Declarations
-    Mat gray, out;
-    while(wSize%2!=1) {wSize++;}	//wSize must be an odd number
-
-    //Convert to gray if not already
-    if (isColor(img)) {cvtColor(img,gray,COLOR_RGB2GRAY);}
-    else {gray = img;}
-
-    adaptiveThreshold(gray, out, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, wSize, C);
+Mat cropImage(Mat * img, int R) {
+#ifdef TEST
+    cout << "Running cropImage..." << endl;
+#endif
+    int sizeX = (*img).cols; int sizeY = (*img).rows;
+    Mat out = (*img)(Rect(R, R, sizeX, sizeY));
     return out;
 }
 
-Mat cropImage(Mat img, int R){
-    int sizeX = img.cols; int sizeY = img.rows;
-    Mat out = img(Rect(R,R,sizeX,sizeY));
-    return out;
-}
-
-Mat fixPerspective (Mat img, vector<Fp> border, Fp ref) {
-    //Declare variables
+Mat fixPerspective(Mat * img, cnt border, Point ref) {
+#ifdef TEST
+    cout << "Running fixPerspective..." << endl;
+#endif
+    // Declare variables
     Point tl, tr, bl, br;
     Mat out;
-    int n = 0;
 
-    //Rotate the array until the reference is first
-    while (border[0].center != ref.center && n < 4) {
-        border = rotateVec(border);
-        n++;
-    }
+    // Rotate the array until the reference is first
+    border = sortCorners(border,ref);
+    cout << vtostr(border) << endl;
 
-    tl = border[0].center; tr = border[1].center; br = border[2].center; bl = border[3].center;
+    tr = border[0]; tl = border[1]; br = border[2]; bl = border[3];
 
     // compute the width of the new image, which will be the
     // maximum distance between bottom-right and bottom-left
@@ -213,15 +236,21 @@ Mat fixPerspective (Mat img, vector<Fp> border, Fp ref) {
     Point(maxWidth - 1, 0),
     Point(maxWidth - 1, maxHeight - 1),
     Point(0, maxHeight - 1)});
-    auto src = vector<Point2f>({tl,tr,bl,br});
+    auto src = vector<Point2f>({tl, tr, bl, br});
 
-    //Return Perspective Transform
+    // Return Perspective Transform
     auto M = getPerspectiveTransform(src, dst);
-    warpPerspective(img, out, M, Size(maxWidth, maxHeight));
+    warpPerspective(*img, out, M, Size(maxWidth, maxHeight));
     return out;
 }
+Mat fixPerspective(Mat * img, vector<Fp> border, Fp ref) {
+	return fixPerspective(img, centroids(border), ref.center);
+}
 
-bool isColor(Mat img){
-    if (img.channels()==3) {return true;}
+bool isColor(Mat * img) {
+#ifdef TEST
+    cout << "Running isColor..." << endl;
+#endif
+    if ((*img).channels() == 3) {return true;}
     else {return false;}
 }

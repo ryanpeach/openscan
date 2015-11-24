@@ -1,45 +1,73 @@
+/**
+ * support.cpp
+ *
+ * @date Oct 31, 2015
+ * @author Ryan Peach
+ * @version v0.1
+ */
+
 #include "support.hpp"
+//#define TEST
 
 Cnts::Cnts(vector<cnt> polys, vector<Vec4i> heir):
     contours(polys), heirarchy(heir)
 {}
 
-Cnts::Cnts(){}
+Cnts::Cnts() {}
+
+bool Cnts::empty() {
+	return contours.empty();
+}
 
 bool matEq(Mat a, Mat b) {
-    return countNonZero(a!=b)==0;
+#ifdef TEST
+    cout << "Running matEq..." << endl;
+#endif
+    return countNonZero(a != b) == 0;
 }
 
 string tostr(double p) {
-	stringstream out;
-	out << p;
-	return out.str();
+#ifdef TEST
+    cout << "Running tostr(double)..." << endl;
+#endif
+    stringstream out;
+    out << p;
+    return out.str();
 }
 
 string tostr(Point p) {
-	stringstream out;
-	out << "(";
-	out << (double)p.x << ", ";
-	out << (double)p.y << ")";
-	return out.str();
+#ifdef TEST
+    cout << "Running tostr(Point)..." << endl;
+#endif
+    stringstream out;
+    out << "(";
+    out << (double)p.x << ", ";
+    out << (double)p.y << ")";
+    return out.str();
 }
 
 string tostr(cnt contour) {
-	stringstream out;
-	for (Point p : contour) {
-		out << tostr(p);
-		out << ", ";
-	}
-	return out.str();
+#ifdef TEST
+    cout << "Running tostr(cnt)..." << endl;
+#endif
+    stringstream out;
+    for (Point p : contour) {
+        out << tostr(p);
+        out << ", ";
+    }
+    return out.str();
 }
 
 template<>
 string vtostr(Cnts vec) {
-	return vtostr(vec.contours);
+    return vtostr(vec.contours);
 }
 
 
-double sum(vector<double> nums){
+double sum(vector<double> nums) {
+#ifdef TEST
+    cout << "Running sum(vector<double>)..." << endl;
+#endif
     double out = 0;
     for (unsigned int i = 0; i < nums.size(); i++) {
         out += nums[i];
@@ -47,10 +75,17 @@ double sum(vector<double> nums){
     return out;
 }
 
-Point sum(cnt pts) {
-    Point out = Point(0,0);
+Point sum(Points pts) {
+#ifdef TEST
+    cout << "Running sum(vector<double>)..." << endl;
+#endif
+    Point out = Point(0, 0);
     for (unsigned int i = 0; i < pts.size(); i++) {
         out += pts[i];
     }
     return out;
+}
+
+void Odd(int *n){
+	while((*n)%2!=1) {(*n)++;}
 }

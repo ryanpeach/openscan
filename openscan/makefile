@@ -5,8 +5,8 @@ CFLAGS  = -g -Wall -std=c++11
 
 all: openscan
 
-openscan: main.o capture.o cvmethods.o focus.o geometry.o support.o
-	$(CC) $(CFLAGS) main.o capture.o cvmethods.o focus.o geometry.o support.o `pkg-config opencv --cflags --libs` -o openscan.run
+openscan: main.o capture.o cvmethods.o focus.o geometry.o support.o filters.o
+	$(CC) $(CFLAGS) main.o capture.o cvmethods.o focus.o geometry.o support.o filters.o `pkg-config opencv --cflags --libs` -o openscan.run
 
 main.o: main.cpp
 	$(CC) $(CFLAGS) -c main.cpp
@@ -25,6 +25,9 @@ geometry.o: geometry.cpp geometry.hpp
 
 support.o: support.cpp support.hpp
 	$(CC) $(CFLAGS) -c support.cpp
+
+filters.o: filters.cpp filters.hpp
+	$(CC) $(CFLAGS) -c filters.cpp
 
 clear: 
 	rm *.o

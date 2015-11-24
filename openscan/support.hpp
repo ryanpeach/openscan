@@ -19,6 +19,7 @@ using namespace std;
 using namespace cv;
 
 typedef vector<Point> cnt;
+typedef vector<Point> Points; //This is an unordered cnt.
 
 struct Cnts { 
     vector<cnt> contours;
@@ -26,6 +27,7 @@ struct Cnts {
     
     Cnts(vector<cnt> polys, vector<Vec4i> heir);
     Cnts();
+    bool empty();
 };
 
 bool matEq(Mat m1, Mat m2);
@@ -114,7 +116,7 @@ template<> string vtostr(Cnts vec);
  * @tested works
  */
 double sum(vector<double> nums);
-Point sum(cnt pts);
+Point sum(Points pts);
 
 
 /**
@@ -128,5 +130,14 @@ template <typename T>
 T mean(vector<T> nums){
     return sum(nums) / nums.size();
 }
+
+/**
+ * Rounds n to the nearest odd number.
+ * @param any int
+ * @return none, modifies the int directly via pointers
+ * @complexity O(1)
+ * @tested untested
+ */
+void Odd(int *n);
 
 #endif
