@@ -112,7 +112,7 @@ bool isAspectRatio(cnt border, double aspectRatio, double ratioTol);
  * @complexity O(?)
  * @tested works
  */
-bool isPoly(cnt poly, int size, bool regular, double angleTol, double distTol);
+bool isPoly(cnt poly, int size, bool regularA, bool regularL, double angleTol, double distTol);
 bool isRectangle(cnt poly, bool square, double angleTol, double distTol);
 bool isSquare(cnt poly, double angleTol, double distTol);
 

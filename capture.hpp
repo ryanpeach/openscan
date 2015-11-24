@@ -61,8 +61,8 @@ class Capture {
      */
     vector<Mat> process();
 
-    Capture (int angleTol = 10, int distTol = 5, int polyTol = 5,
-             double aspectRatio = 8.5/11.0, double sizeRatio = .5, double ratioTol = .1,
+    Capture (int angleTol = 20, int distTol = 20, int polyTol = 5,
+             double aspectRatio = 8.5/11.0, double sizeRatio = .25, double ratioTol = .1,
              int etol1 = 100, int etol2 = 200, int eSize = 3, Method sel = fpcorners):
                 angleTol(angleTol), distTol(distTol), polyTol(polyTol),
                 aspectRatio(aspectRatio), sizeRatio(sizeRatio), ratioTol(ratioTol),
@@ -72,5 +72,4 @@ class Capture {
     void Frame(Mat img);
 
 };
-
 #endif

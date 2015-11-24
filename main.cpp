@@ -246,9 +246,9 @@ void testGeometry() {
     cout << "Square all same length? " << allSameLength(square, (double)0.0) << endl;
 
     // isPoly
-    bool test1 = isPoly(tri, 3, false, 0, 0);  // True
-    bool test2 = isPoly(tri, 3, true, 0, 0);  // False
-    bool test3 = isPoly(tri, 4, false, 0, 0);  // False
+    bool test1 = isPoly(tri, 3, false, false, 0, 0);  // True
+    bool test2 = isPoly(tri, 3, true, true, 0, 0);  // False
+    bool test3 = isPoly(tri, 4, false, false, 0, 0);  // False
     bool test4 = isRectangle(rect, false, 0, 0);  // True
     bool test5 = isRectangle(rect, true, 0, 0);  // False
     bool test6 = isSquare(square, 0, 0);  // True

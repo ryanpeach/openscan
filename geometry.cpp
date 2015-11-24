@@ -114,6 +114,7 @@ bool allSameLength(cnt poly, double distTol){
     cout << "Running allSameLength" << endl;
 #endif
     vector<vector<Point>> pairs; vector<double> lengths, error; vector<bool> test; unsigned int i = 0; int mean = 0;
+    //double epsilon = distTol*arcLength(poly,true);
 
     //Get a list of all lines in poly
     pairs.push_back({poly[poly.size()-1],poly[0]});                                          //Add the first pair to the list
@@ -158,20 +159,20 @@ bool isAspectRatio(cnt border, double aspectRatio, double ratioTol) {
     return test1 <= ratioTol || test2 <= ratioTol || test3 <= ratioTol || test4 <= ratioTol;
 }
 
-bool isPoly(cnt poly, int size, bool regular, double angleTol, double distTol) {
+bool isPoly(cnt poly, int size, bool regularA, bool regularL, double angleTol, double distTol) {
 #ifdef TEST
     cout << "Running isPoly..." << endl;
 #endif
     if (poly.size() == (unsigned int)size && isContourConvex(poly)) {
-        if (regular) {
-            return allSameLength(poly, distTol) && regularAngles(poly, angleTol);
+        if (regularA || regularL) {
+            return (!regularL || allSameLength(poly, distTol)) && (!regularA || regularAngles(poly, angleTol));
         }
         else {return true;}
     }
     else {return false;}
 }
-bool isRectangle(cnt poly, bool square, double angleTol, double distTol) {return isPoly(poly,4,square,angleTol,distTol);}
-bool isSquare(cnt poly, double angleTol, double distTol) {return isPoly(poly,4,true,angleTol,distTol);}
+bool isRectangle(cnt poly, bool square, double angleTol, double distTol) {return isPoly(poly,4,true,square,angleTol,distTol);}
+bool isSquare(cnt poly, double angleTol, double distTol) {return isPoly(poly,4,true,true,angleTol,distTol);}
 
 vector<cnt> hasRectangles(cnt poly, double angleTol, double distTol, int n) {
 #ifdef TEST

@@ -30,9 +30,6 @@ Mat Capture::getEdges() {
 		edges = edgesCanny(&frame, etol1, etol2, eSize);
 	}
 
-#ifdef TEST
-	if (!edges.empty()) {imshow("Canny",edges);}
-#endif
 
 	return edges;
 }
@@ -45,6 +42,12 @@ Cnts Capture::getPolys() {
 	if (polys.empty() && !edges.empty()) {
 		polys = findPolys(&edges, polyTol);
 	}
+#ifdef TEST
+	Mat draw = Mat::zeros(edges.rows, edges.cols, edges.type());
+	const auto white = Scalar(255,255,255);
+	for (int i = 0; i<polys.contours.size();i++) {drawContours(draw,polys.contours,i,white,2,8);}
+	imshow("Edges", draw);
+#endif
 	return polys;
 }
 
@@ -183,11 +186,13 @@ bool Capture::validRect(cnt r) {
 #ifdef TEST
 	cout << "Capture::getBorder: validRect... " << endl;
 #endif
-	bool out = sizeRatio*((frame).cols)*((frame).rows) < contourArea(r)
-			&& isAspectRatio(r, aspectRatio, ratioTol);
-			//&& ((fps).size()==0 || allInside(r, fps));
+	double area1 = sizeRatio*((frame).cols)*((frame).rows);
+	double area2 = contourArea(r);
+	bool size = area1 < area2;
+	bool ratio = isAspectRatio(r, aspectRatio, ratioTol);
+	bool inside = ((fps).size()==0 || allInside(r, fps));
 #ifdef TEST
-	cout << "Capture::getBorder: validRect = " << out << endl;
+	cout << "Capture::getBorder: validRect = " << size << ratio << inside << " " << area1 << "<" << area2 << endl;
 #endif
-	return out;
+	return size && ratio;
 }

@@ -21,6 +21,7 @@ Cnts findPolys(Mat * img, double distTol) {
 
     // Return approximate polygons
     for (unsigned int i = 0; i < contours.size(); i++) {
+    	//double epsilon = distTol*arcLength(contours[i],true);
         approxPolyDP(contours[i], temp, distTol, true);
         polys.push_back(temp);
     }
