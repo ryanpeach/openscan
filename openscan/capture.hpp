@@ -51,6 +51,8 @@ class Capture {
     void set(Fps corners);
     bool validRect(cnt r);
 
+    void drawInfo();
+
  public:
 
     /**
