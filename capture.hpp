@@ -18,12 +18,12 @@ class Capture {
  private:
     // Variable Declaration
     // These variables allow you to set global params for all process methods.
-    Mat *frame, *edges;    // A variable to hold the most current processed frame
-    Cnts *polys;           // Just a temp variable to hold the polys from the most frame
-    Fps *fps;              // Just a temp variable to hold the Fp's from the most recent frame
-    Point *ref;            // The reference corner's location
-    cnt *border;           // The border of the scan
-    vector<cnt> *rects;    // Rectangles identified in the image
+    Mat *frame = 0; Mat *edges = 0;    // A variable to hold the most current processed frame
+    Cnts polys;           // Just a temp variable to hold the polys from the most frame
+    Fps fps;              // Just a temp variable to hold the Fp's from the most recent frame
+    Point ref;            // The reference corner's location
+    cnt border;           // The border of the scan
+    vector<cnt> rects;    // Rectangles identified in the image
 
     int angleTol;          // The angle tolerance app-wide
     int distTol;           // The distance tolerance for small polygons (like focus pointss)
@@ -39,13 +39,13 @@ class Capture {
 
     // Preprocessing allows each process to share data,
     // so that nothing is calculated twice for the same image.
-    Mat* getEdges();
-    Cnts* getPolys();
-    Fps* getFps();
-    vector<cnt>* getRects();
+    Mat * getEdges();
+    Cnts getPolys();
+    Fps getFps();
+    vector<cnt> getRects();
 
-    Point* getRef();
-    cnt* getBorder();
+    Point getRef();
+    cnt getBorder();
 
     void set(cnt corners);
     void set(Fps corners);

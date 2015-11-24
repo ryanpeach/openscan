@@ -16,7 +16,7 @@
 
 // -------------- Feature Detection ----------------
 // Filters the img, finds the contours, and returns the Cnts.
-Cnts findPolys(Mat img, double distTol);
+Cnts findPolys(Mat * img, double distTol);
 
 // Find all the focus points within an image.
 Fps findFocusPoints(Cnts polys, double angleTol, double distTol);
@@ -40,12 +40,12 @@ Fp calcRef(Fps fps);
 Point calcRef(cnt contour);
 
 // ------------ Image Manipulation --------------
-Mat cropImage(Mat img, int R);
+Mat cropImage(Mat * img, int R);
 
 // Reference: Modified from http://www.pyimagesearch.com/2014/08/25/4-point-opencv-getperspective-transform-example/
-Mat fixPerspective(Mat img, cnt border, Point ref);
-Mat fixPerspective(Mat img, Fps border, Fp ref);
+Mat fixPerspective(Mat * img, cnt border, Point ref);
+Mat fixPerspective(Mat * img, Fps border, Fp ref);
 
-bool isColor(Mat img);
+bool isColor(Mat * img);
 
 #endif

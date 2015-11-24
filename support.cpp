@@ -15,6 +15,10 @@ Cnts::Cnts(vector<cnt> polys, vector<Vec4i> heir):
 
 Cnts::Cnts() {}
 
+bool Cnts::empty() {
+	return contours.empty();
+}
+
 bool matEq(Mat a, Mat b) {
 #ifdef TEST
     cout << "Running matEq..." << endl;

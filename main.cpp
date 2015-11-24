@@ -90,7 +90,7 @@ void videoProcess(VideoCapture * cap, Capture * c) {
     cout << "Running Capture::webCam..." << endl;
 #endif
     // Variable Declaration
-    Mat frame, drawing, preview;
+    Mat drawing, preview;
     vector<Mat*> proc;
     string filename, filepath;
     bool found = false; bool saved = false;
@@ -102,12 +102,18 @@ void videoProcess(VideoCapture * cap, Capture * c) {
         "Preview: Press 's' to save."};
     WindowManager win = WindowManager(images, names);
 
+    if(!(*cap).isOpened()){  // check if we succeeded
+        cout << "Camera failed to open!" << endl;
+	return;
+    }
+
 #ifdef TEST
     cout << "Video: Beginning Main Loop..." << endl;
 #endif
 
     for (;;) {
         // Process Frame
+	Mat frame;
         (*cap) >> frame;
         if ( frame.empty() ) {break;}  // end of video stream
         c->Frame(frame);

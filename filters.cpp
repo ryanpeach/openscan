@@ -1,26 +1,40 @@
 #include "filters.hpp"
 
-Mat toGray(Mat img) {
+Mat toGray(Mat * img) {
 #ifdef TEST
     cout << "Running toGray..." << endl;
 #endif
 	Mat gray;
-	if (isColor(img)) {cvtColor(img, gray, COLOR_RGB2GRAY);}
-	else {gray = img;}
+	if (isColor(img)) {cvtColor(*img, gray, COLOR_RGB2GRAY);}
+	else {gray = *img;}
 	return gray;
 }
 
-Mat toColor(Mat img) {
+Mat toColor(Mat * img) {
 #ifdef TEST
     cout << "Running toColor..." << endl;
 #endif
 	Mat out;
-	if (!isColor(img)) {cvtColor(img, out, COLOR_GRAY2RGB);}
-	else {out = img;}
+	if (!isColor(img)) {cvtColor(*img, out, COLOR_GRAY2RGB);}
+	else {out = *img;}
 	return out;
 }
 
-Mat edgesCanny(Mat img, int tol1, int tol2, int wSize) {
+void Gray(Mat * img) {
+#ifdef TEST
+    cout << "Running Gray..." << endl;
+#endif
+	if (isColor(img)) {cvtColor(*img, *img, COLOR_RGB2GRAY);}
+}
+
+void Color(Mat * img) {
+#ifdef TEST
+    cout << "Running Color..." << endl;
+#endif
+	if (!isColor(img)) {cvtColor(*img, *img, COLOR_GRAY2RGB);}
+}
+
+Mat edgesCanny(Mat * img, int tol1, int tol2, int wSize) {
 #ifdef TEST
     cout << "Running edgesCanny..." << endl;
 #endif
@@ -30,7 +44,7 @@ Mat edgesCanny(Mat img, int tol1, int tol2, int wSize) {
 	return edges;
 }
 
-Mat adaptiveGaussian(Mat img, int wSize, int C) {
+Mat adaptiveGaussian(Mat * img, int wSize, int C) {
 #ifdef TEST
     cout << "Running outputFilter..." << endl;
 #endif

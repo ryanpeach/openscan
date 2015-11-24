@@ -13,51 +13,58 @@ void Capture::Frame(Mat img) {
 #ifdef TEST
 	cout << "Running Capture::Frame..." << endl;
 #endif
-	frame = &img;
-	edges = NULL;
-	polys = NULL;
-	fps = NULL;
-	rects = NULL;
+	cout << &frame << " " << &edges << " " << endl;
+	if (frame != 0) {delete frame; frame = 0;}
+	if (edges != 0) {delete edges; edges = 0;}
+
+	polys = Cnts(); cout << 3 << endl;
+	fps.clear();
+	rects.clear();
+	border.clear();
+	ref = Point();
+	frame = new Mat(img);
 }
 
-Mat* Capture::getEdges() {
+Mat * Capture::getEdges() {
 #ifdef TEST
 	cout << "Running Capture::getEdges..." << endl;
+	cout << frame << endl;
 #endif
-	if (edges == NULL) {
-		auto out = edgesCanny(*frame, etol1, etol2, eSize);
-		edges = &out;
+	Mat out;
+	if (edges == nullptr) {
+		out = edgesCanny(frame, etol1, etol2, eSize);
+		if (!out.empty()) {edges = new Mat(out);}
 	}
 
 #ifdef TEST
-	if (edges != NULL) {imshow("Canny",*edges);}
+	if (edges != nullptr) {
+		cout << edges << endl;
+ 		imshow("Canny",*edges);}
 #endif
 
 	return edges;
 }
 
-Cnts* Capture::getPolys() {
+Cnts Capture::getPolys() {
 #ifdef TEST
 	cout << "Running Capture::getPolys..." << endl;
 #endif
-	if (polys == NULL && getEdges() != NULL) {
-		auto out = findPolys(*getEdges(), polyTol);
-		polys = &out;
+	if (polys.empty() && getEdges() == nullptr) {
+		polys = findPolys(getEdges(), polyTol);
 	}
 	return polys;
 }
 
-Fps* Capture::getFps() {
+Fps Capture::getFps() {
 #ifdef TEST
 	cout << "Running Capture::getFps..." << endl;
 #endif
-	if (fps == NULL && getPolys() != NULL) {
-		auto out = findFocusPoints(*getPolys(), angleTol, distTol);
-		fps = &out;
+	if (fps.empty() && !getPolys().empty()) {
+		fps = findFocusPoints(getPolys(), angleTol, distTol);
 	}
 
 #ifdef TEST
-	cout << "Fp's Found: " << (*fps).size() << endl;
+	cout << "Fp's Found: " << (fps).size() << endl;
 #endif
 
 	return fps;
@@ -68,8 +75,8 @@ void Capture::set(cnt corners) {
 	cout << "Running Capture::set(cnt)..." << endl;
 #endif
 	Points cent = corners;
-	Point r = calcRef(corners); ref = &r;
-	cnt b = sortCorners(cent,*getRef()); border = &b;
+	ref = calcRef(corners);
+	border = sortCorners(cent,getRef());
 }
 
 void Capture::set(Fps corners) {
@@ -77,32 +84,31 @@ void Capture::set(Fps corners) {
 	cout << "Running Capture::set(Fps)..." << endl;
 #endif
 	Points cent = centroids(corners);
-	Point r = centroid(calcRef(corners)); ref = &r;
-	cnt b = sortCorners(cent,*getRef()); border = &b;
+	ref = centroid(calcRef(corners));
+	border = sortCorners(cent,getRef());
 }
 
-Point* Capture::getRef() {
+Point Capture::getRef() {
 #ifdef TEST
 	cout << "Running Capture::getRef..." << endl;
 #endif
-	if (ref == NULL) {
+	if (ref == Point()) {
 		getBorder();
 	}
 	return ref;
 }
 
-vector<cnt>* Capture::getRects() {
+vector<cnt> Capture::getRects() {
 #ifdef TEST
 	cout << "Running Capture::getRects..." << endl;
 #endif
-	if (rects == NULL) {
-		vector<cnt> r = hasRectangles((*getPolys()).contours, angleTol, distTol);
-		rects = &r;
+	if (rects.empty()) {
+		rects = hasRectangles(getPolys().contours, angleTol, distTol);
 	}
 	return rects;
 }
 
-cnt* Capture::getBorder() {
+cnt Capture::getBorder() {
 #ifdef TEST
 	cout << "Running Capture::getBorder..." << endl;
 #endif
@@ -111,8 +117,8 @@ cnt* Capture::getBorder() {
 #ifdef TEST
 		cout << "Capture::getBorder: fpcorners..." << endl;
 #endif
-		if (border == NULL && getFps() != NULL) {
-			vector<Fp> corners = calcCorners(*getFps(), angleTol, distTol);
+		if (border.empty() && !getFps().empty()) {
+			vector<Fp> corners = calcCorners(getFps(), angleTol, distTol);
 			if (corners.size() == 4) {
 				set(corners);
 			}
@@ -123,7 +129,7 @@ cnt* Capture::getBorder() {
 		cout << "Capture::getBorder: strongborder..." << endl;
 #endif
 		vector<cnt> check;
-		for (cnt r : (*getRects())) {
+		for (cnt r : (getRects())) {
 			if (validRect(r)) {check.push_back(r);}
 		}
 		vector<cnt> similar = findSimilar(check, distTol);
@@ -137,7 +143,7 @@ cnt* Capture::getBorder() {
 		cout << "Capture::getBorder: regular..." << endl;
 #endif
 		vector<cnt> valid;
-		for (cnt r : (*getRects())) {
+		for (cnt r : (getRects())) {
 			if (validRect(r)) {valid.push_back(r);}
 		}
 		if (!valid.empty()) {
@@ -150,9 +156,9 @@ cnt* Capture::getBorder() {
 		cout << "Capture::getBorder: automatic..." << endl;
 #endif
 		sel = fpcorners;
-		if (getBorder() == NULL) {sel = strongborder;}
-		if (getBorder() == NULL) {sel = regular;}
-		getBorder();
+		if (getBorder().empty()) {sel = strongborder;
+		if (getBorder().empty()) {sel = regular;
+		getBorder();}}
 		sel = automatic;
 	} break;
 	}
@@ -165,23 +171,23 @@ vector<Mat*> Capture::process() {
 	cout << "Running Capture::process..." << endl;
 #endif
 	// Variable Declaration
-	Mat warp, drawing;
+	Mat *warp, *drawing;
 	vector<Mat*> out;
-
-	if (getBorder() != NULL && getRef() != NULL) {
+	cout << getBorder()  << endl;
+	if (getBorder().empty() && getRef() != Point()) {
 		// Get border from focus points and warp
-		warp = fixPerspective(*frame, *getBorder(), *getRef());
+		warp = new Mat(fixPerspective(frame, getBorder(), getRef()));
 
-		warp = toColor(warp);
+		Color(warp);
 
 		Scalar color = Scalar(255, 0, 0);
-		drawing = warp;
+		drawing = new Mat(*warp);
 
-		drawContours(drawing, *getBorder(), 0, color, 3, 8);
-		out = vector<Mat*>{&drawing, &warp};
+		drawContours(*drawing, getBorder(), 0, color, 3, 8);
+		out = vector<Mat*>({&drawing, &warp});
 		return out;
 	} else {
-		out = vector<Mat*>{frame,NULL};
+		out = vector<Mat*>({frame,nullptr});
 		return out;
 	}
 }
@@ -190,9 +196,9 @@ bool Capture::validRect(cnt r) {
 #ifdef TEST
 	cout << "Capture::getBorder: validRect... " << endl;
 #endif
-	bool out = sizeRatio*(*frame).cols*(*frame).rows
+	bool out = sizeRatio*((*frame).cols)*((*frame).rows)
 			&& isAspectRatio(r, aspectRatio, ratioTol)
-			&& ((*fps).size()==0 || allInside(r, *fps));
+			&& ((fps).size()==0 || allInside(r, fps));
 #ifdef TEST
 	cout << "Capture::getBorder: validRect = " << out << endl;
 #endif

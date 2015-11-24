@@ -11,13 +11,13 @@
 
 // -------------- Feature Detection ----------------
 
-Cnts findPolys(Mat img, double distTol) {
+Cnts findPolys(Mat * img, double distTol) {
 #ifdef TEST
         cout << "Running findPolys..." << endl;
 #endif
     // Find contours and heirarchy
     vector<cnt> contours, polys; vector<Vec4i> heirarchy; cnt temp;
-    findContours(img, contours, heirarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
+    findContours(*img, contours, heirarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
 
     // Return approximate polygons
     for (unsigned int i = 0; i < contours.size(); i++) {
@@ -189,16 +189,16 @@ Point calcRef(cnt contour) {
 
 
 // ------------ Image Manipulation --------------
-Mat cropImage(Mat img, int R) {
+Mat cropImage(Mat * img, int R) {
 #ifdef TEST
     cout << "Running cropImage..." << endl;
 #endif
-    int sizeX = img.cols; int sizeY = img.rows;
-    Mat out = img(Rect(R, R, sizeX, sizeY));
+    int sizeX = (*img).cols; int sizeY = (*img).rows;
+    Mat out = (*img)(Rect(R, R, sizeX, sizeY));
     return out;
 }
 
-Mat fixPerspective(Mat img, cnt border, Point ref) {
+Mat fixPerspective(Mat * img, cnt border, Point ref) {
 #ifdef TEST
     cout << "Running fixPerspective..." << endl;
 #endif
@@ -239,17 +239,17 @@ Mat fixPerspective(Mat img, cnt border, Point ref) {
 
     // Return Perspective Transform
     auto M = getPerspectiveTransform(src, dst);
-    warpPerspective(img, out, M, Size(maxWidth, maxHeight));
+    warpPerspective(*img, out, M, Size(maxWidth, maxHeight));
     return out;
 }
-Mat fixPerspective(Mat img, vector<Fp> border, Fp ref) {
+Mat fixPerspective(Mat * img, vector<Fp> border, Fp ref) {
 	return fixPerspective(img, centroids(border), ref.center);
 }
 
-bool isColor(Mat img) {
+bool isColor(Mat * img) {
 #ifdef TEST
     cout << "Running isColor..." << endl;
 #endif
-    if (img.channels() == 3) {return true;}
+    if ((*img).channels() == 3) {return true;}
     else {return false;}
 }
