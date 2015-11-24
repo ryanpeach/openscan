@@ -1,5 +1,6 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:opencv="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#0099cc"
@@ -11,16 +12,7 @@
          TextureView, etc.
     -->
 
-    <TextView
-        android:id="@+id/fullscreen_content"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:keepScreenOn="true"
-        android:text="@string/dummy_content"
-        android:textColor="#33b5e5"
-        android:textSize="50sp"
-        android:textStyle="bold" />
+
 
     <!--
          This FrameLayout insets its children based on system windows using
@@ -32,10 +24,30 @@
         android:layout_height="match_parent"
         android:fitsSystemWindows="true" >
 
+        <!-- 
+        	The primary buttons and preview layout.
+        -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="top" >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+                <!-- 
+        		The main image display.
+        		Source: http://docs.opencv.org/2.4/doc/tutorials/introduction/android_binary_package/dev_with_OCV_on_Android.html#using-opencv-library-within-your-android-project
+       			-->
+       			<org.opencv.android.JavaCameraView
+                    android:id="@+id/capture_main"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:visibility="gone"
+                    opencv:camera_id="any"
+                    opencv:show_fps="true" />
+            </LinearLayout>
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -44,7 +56,7 @@
                 android:gravity="bottom" >
 
                 <ImageView
-                    android:id="@+id/imageView2"
+                    android:id="@+id/capture_preview"
                     android:layout_width="85dp"
                     android:layout_height="110dp"
                     android:layout_alignParentBottom="true"
@@ -53,7 +65,7 @@
                     android:layout_marginLeft="@dimen/margin_size" />
 
                 <ImageButton
-                    android:id="@+id/imageButton1"
+                    android:id="@+id/actionButton1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentBottom="true"
@@ -64,22 +76,11 @@
 
             </RelativeLayout>
 
-        <ImageView android:id="@+id/imageView1" android:layout_width="wrap_content" android:layout_height="wrap_content" /></RelativeLayout>
+        	
 
         
-
-        <LinearLayout
-            android:id="@+id/fullscreen_content_controls"
-            style="?metaButtonBarStyle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center_horizontal"
-            android:background="@color/black_overlay"
-            android:orientation="horizontal"
-            tools:ignore="UselessParent" >
-        </LinearLayout>
-
         
+        </RelativeLayout>        
 
     </FrameLayout>
 
