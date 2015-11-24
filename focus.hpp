@@ -35,6 +35,8 @@ struct Fp {
     Fp copy ();
 };
 
+typedef vector<Fp> Fps;
+
 Point centroid(vector<Fp> fps);
 Point centroid(Fp f);
 cnt centroids(vector<Fp> fps);

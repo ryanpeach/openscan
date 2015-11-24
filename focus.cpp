@@ -16,7 +16,7 @@ int Fp::findInnerBorder(vector<cnt> cnts, double angleTol, double distTol) {
     cnt c;
     for (int x = cnts.size()-1; x > 0; x--) {
         c = cnts[x];
-        if (isPoly(c, 4, true, angleTol, distTol)) {return x;}
+        if (isPoly(c, 4, true, true, angleTol, distTol)) {return x;}
     }
 
     return -1;

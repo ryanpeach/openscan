@@ -15,6 +15,10 @@ Cnts::Cnts(vector<cnt> polys, vector<Vec4i> heir):
 
 Cnts::Cnts() {}
 
+bool Cnts::empty() {
+	return contours.empty();
+}
+
 bool matEq(Mat a, Mat b) {
 #ifdef TEST
     cout << "Running matEq..." << endl;
@@ -71,7 +75,7 @@ double sum(vector<double> nums) {
     return out;
 }
 
-Point sum(cnt pts) {
+Point sum(Points pts) {
 #ifdef TEST
     cout << "Running sum(vector<double>)..." << endl;
 #endif
@@ -80,4 +84,8 @@ Point sum(cnt pts) {
         out += pts[i];
     }
     return out;
+}
+
+void Odd(int *n){
+	while((*n)%2!=1) {(*n)++;}
 }
