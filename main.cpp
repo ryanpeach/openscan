@@ -19,18 +19,17 @@
 
 class WindowManager {
  private:
-    vector<Mat*> OUT;
+	vector<Mat*> OUT;
     vector<string> NAMES;
  public:
-    WindowManager(vector<Mat*> inputs, vector<string> names) :
-        OUT(inputs), NAMES(names) {
+    WindowManager(vector<Mat*> out, vector<string> names) : OUT(out), NAMES(names) {
         for (string n : names) {
             namedWindow(n, WINDOW_NORMAL);
         }
     }
     void update() {
         for (unsigned int i = 0; i < OUT.size(); i++) {
-            imshow(NAMES[i], *OUT[i]);
+            if(!(*OUT[i]).empty()) {imshow(NAMES[i], *(OUT[i]));}
         }
     }
     void close() {
@@ -40,11 +39,10 @@ class WindowManager {
 
 // ------ Video and Image Processing Methods ---------------
 
-void imageProcess (Mat * frame, Capture * c) {
+void imageProcess (Mat frame, Capture c) {
     // Variable Declaration
     Mat drawing, preview;
     string filename,filepath;
-    bool saved = false;
 
     // Create Windows
     vector<Mat*> images = vector<Mat*>{&drawing, &preview};
@@ -53,12 +51,12 @@ void imageProcess (Mat * frame, Capture * c) {
         "Preview: Press 's' to save."};
     WindowManager win = WindowManager(images, names);
 
-    vector<Mat*> proc = c->process();
+    vector<Mat> proc = c.process();
 
     // Save processed frame to appropriate outputs
     if (!proc.empty()) {
-        drawing = *proc[0];
-        preview = *proc[2];
+        drawing = proc[0];
+        preview = proc[1];
     } else {
         cout << "No scan found." << endl;
         win.close();
@@ -85,13 +83,13 @@ void imageProcess (Mat * frame, Capture * c) {
     win.close();
 }
 
-void videoProcess(VideoCapture * cap, Capture * c) {
+void videoProcess(VideoCapture cap, Capture c) {
 #ifdef TEST
     cout << "Running Capture::webCam..." << endl;
 #endif
     // Variable Declaration
     Mat drawing, preview;
-    vector<Mat*> proc;
+    vector<Mat> proc;
     string filename, filepath;
     bool found = false; bool saved = false;
 
@@ -102,7 +100,7 @@ void videoProcess(VideoCapture * cap, Capture * c) {
         "Preview: Press 's' to save."};
     WindowManager win = WindowManager(images, names);
 
-    if(!(*cap).isOpened()){  // check if we succeeded
+    if(!cap.isOpened()){  // check if we succeeded
         cout << "Camera failed to open!" << endl;
 	return;
     }
@@ -113,11 +111,11 @@ void videoProcess(VideoCapture * cap, Capture * c) {
 
     for (;;) {
         // Process Frame
-	Mat frame;
-        (*cap) >> frame;
+    	Mat frame;
+        cap >> frame;
         if ( frame.empty() ) {break;}  // end of video stream
-        c->Frame(frame);
-        proc = c->process();
+        c.Frame(frame);
+        proc = c.process();
 
 #ifdef TEST
         cout << "webCam: Process Complete!" << endl;
@@ -125,8 +123,8 @@ void videoProcess(VideoCapture * cap, Capture * c) {
 
         // Save processed frame to appropriate outputs
         if (!proc.empty()) {
-            drawing = *proc[0];
-            preview = *proc[2];
+            drawing = proc[0];
+            preview = proc[1];
             found = true;
             saved = false;
         } else {
@@ -150,36 +148,36 @@ void videoProcess(VideoCapture * cap, Capture * c) {
         // Quit
         if (cvWaitKey(10) == 'q') {break;}
     }
-    (*cap).release();
+    cap.release();
     win.close();
 }
 
 // ---------- Derivative Video Methods -------------
-void webCam (Capture * c) {
+void webCam (Capture c) {
     VideoCapture cap(0);
     if(!cap.open(0)) {
         cout << "Camera failed to open..." << endl;
         return;
     }
-    videoProcess(&cap, c);
+    videoProcess(cap, c);
 }
 
-void videoFile (char *filepath, Capture * c) {
+void videoFile (char *filepath, Capture c) {
     VideoCapture cap(filepath);
     if (!cap.open(filepath)) {
         std::cout << "!!! Failed to open file: " << filepath << std::endl;
         return;
     }
-    videoProcess(&cap, c);
+    videoProcess(cap, c);
 }
 
-void imageFile (char *filepath, Capture * c) {
+void imageFile (char *filepath, Capture c) {
     Mat cap = imread(filepath);
     if (!cap.empty()) {
         std::cout << "!!! Failed to open file: " << filepath << std::endl;
         return;
     }
-    imageProcess(&cap, c);
+    imageProcess(cap, c);
 }
 
 #endif
@@ -267,15 +265,15 @@ int main(int argc,char *argv[]) {
 #endif
     Capture C;
     if (argc == 1) {
-        webCam(&C);
+        webCam(C);
     } else if (argc == 2 && *argv[1] == '-' && *argv[2] == 'h') {
         cout << " Usage : " << argv[0] << " " << "filename[optional]" <<endl;
         cout << "Use an avi file as an argument to take input from avi file." << endl;
         cout << "If no argument is specified the input is taken from the webcam"<<endl;
     } else if (argc == 2 && *argv[1] == '-' && *argv[2] == 'v') {
-        videoFile(argv[3], &C);
+        videoFile(argv[3], C);
 	} else if (argc == 2 && *argv[1] == '-' && *argv[2] == 'i') {
-        imageFile(argv[3], &C);
+        imageFile(argv[3], C);
     } else {
         cout << " Usage : " << argv[0] << " " << "filename[optional]" <<endl;
         cout << "Use an avi file as an argument to take input from avi file." << endl;

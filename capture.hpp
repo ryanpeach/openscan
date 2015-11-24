@@ -14,6 +14,7 @@
 #include "opencv2/highgui/highgui.hpp"
 #include <ctime>
 
+
 class Capture {
  private:
     // Variable Declaration
@@ -44,7 +45,6 @@ class Capture {
     Fps getFps();
     vector<cnt> getRects();
 
-    Point getRef();
     cnt getBorder();
 
     void set(cnt corners);
@@ -63,7 +63,7 @@ class Capture {
 
     Capture (int angleTol = 10, int distTol = 5, int polyTol = 5,
              double aspectRatio = 8.5/11.0, double sizeRatio = .5, double ratioTol = .1,
-             int etol1 = 100, int etol2 = 200, int eSize = 3, Method sel = automatic):
+             int etol1 = 100, int etol2 = 200, int eSize = 3, Method sel = fpcorners):
                 angleTol(angleTol), distTol(distTol), polyTol(polyTol),
                 aspectRatio(aspectRatio), sizeRatio(sizeRatio), ratioTol(ratioTol),
                 etol1(etol1), etol2(etol2), eSize(eSize), sel(sel)
