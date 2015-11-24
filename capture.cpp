@@ -26,6 +26,7 @@ Mat Capture::getEdges() {
 #ifdef TEST
     cout << "Running Capture::getEdges..." << endl;
 #endif
+    checkChanged();
     if (edges.empty()) {
         edges = edgesCanny(&frame, etol1, etol2, eSize);
     }
@@ -38,6 +39,7 @@ Cnts Capture::getPolys() {
 #ifdef TEST
     cout << "Running Capture::getPolys..." << endl;
 #endif
+    checkChanged();
     if (edges.empty()) {getEdges();}
     if (polys.empty() && !edges.empty()) {
         polys = findPolys(&edges, polyTol);
@@ -84,6 +86,7 @@ Fps Capture::getFps() {
 #ifdef TEST
     cout << "Running Capture::getFps..." << endl;
 #endif
+    checkChanged();
     if (polys.empty()) {getPolys();}
     if (fps.empty() && !polys.empty()) {
         fps = findFocusPoints(polys, angleTol, distTol);
@@ -114,10 +117,17 @@ void Capture::set(Fps corners) {
     border = sortCorners(cent,ref);
 }
 
+void Capture::checkChanged() {
+    if (changed) {
+        Frame(frame);
+    }
+}
+
 vector<cnt> Capture::getRects() {
 #ifdef TEST
     cout << "Running Capture::getRects..." << endl;
 #endif
+    checkChanged();
     if (polys.empty()) {getPolys();}
     if (rects.empty() && !polys.empty()) {
         rects = hasRectangles(polys.contours, angleTol, distTol);
@@ -129,7 +139,8 @@ cnt Capture::getBorder() {
 #ifdef TEST
     cout << "Running Capture::getBorder..." << endl;
 #endif
-    switch(sel) {
+    checkChanged();
+    switch (sel) {
     case fpcorners: {
 #ifdef TEST
         cout << "Capture::getBorder: fpcorners..." << endl;
@@ -188,6 +199,7 @@ vector<Mat> Capture::process() {
 #ifdef TEST
     cout << "Running Capture::process..." << endl;
 #endif
+    checkChanged();
     // Variable Declaration
     Mat warp; Mat drawing = frame.clone();
     vector<Mat> out;
