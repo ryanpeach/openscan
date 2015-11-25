@@ -13,6 +13,7 @@
 #include "filters.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include <ctime>
+#include <array>
 
 
 class Capture {
@@ -50,13 +51,14 @@ class Capture {
     void set(Fps corners);
     bool validRect(cnt r);
 
-    void drawInfo();
+    Mat drawInfo();
     void checkChanged();
 
  public:
 
     enum Method {fpcorners, strongborder, regular, automatic} sel;
     enum PageType {automatic, letter};
+    enum Param {ANGLETOL, DISTTOL, POLYTOL, ASPECTRATIO, SIZERATIO, RATIOTOL, ETOL1, ETOL2, ESIZE, METHOD};
 
 
     /**
@@ -79,14 +81,23 @@ class Capture {
 
     void Frame(Mat img);
 
-    void setAngleTol(double angleTol) : angleTol(angleTol) {changed = true;}
-    void setDistTol(double distTol) : distTol(distTol) {changed = true;}
-    void setPolyTol(double polyTol) : polyTol(polyTol) {changed = true;}
-    void setSizeRatio(double sizeRatio) : sizeRatio(sizeRatio) {changed = true;}
-    void setETol1(int etol1) : etol1(etol1) {changed = true;}
-    void setETol2(int etol2) : etol2(etol2) {changed = true;}
-    void setESize(int eSize) : eSize(eSize) {changed = true;}
-    void changeMethod(Method sel = fpcorners) : sel(sel) {changed = true;}
+    void setValue(Param param, double value) {
+    	changed = true;
+    	switch(param) {
+    	case ANGLETOL: angleTol = (int)value; break;
+    	case DISTTOL: distTol = (int)value; break;
+    	case POLYTOL: polyTol = (int)value; break;
+    	case ASPECTRATIO: setAspectRatio((PageType)((int)value)); break;
+    	case SIZERATIO: sizeRatio = value; break;
+    	case RATIOTOL: ratioTol = value; break;
+    	case ETOL1: etol1 = (int)value; break;
+    	case ETOL2: etol2 = (int)value; break;
+    	case ESIZE: eSize = (int)eSize; break;
+    	case METHOD: sel = (Method)((int)value); break;
+    	case default: changed = false; break;
+    	}
+    }
+
     void setAspectRatio(PageType type = letter) {
         changed = true;
         switch (type) {

@@ -28,6 +28,7 @@ struct Cnts {
     Cnts(vector<cnt> polys, vector<Vec4i> heir);
     Cnts();
     bool empty();
+    int size();
 };
 
 bool matEq(Mat m1, Mat m2);
