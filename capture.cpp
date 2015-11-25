@@ -53,7 +53,7 @@ Cnts Capture::getPolys() {
 
 Mat Capture::drawInfo() {
     // Declare Variables
-    Mat out = Mat::zeros(img.rows, img.cols, img.type());
+    Mat out = Mat::zeros(frame.rows, frame.cols, frame.type());
 
     // Declare Colors
     const auto white = Scalar(255, 255, 255);

@@ -19,6 +19,10 @@ bool Cnts::empty() {
 	return contours.empty();
 }
 
+int Cnts::size() {
+	return contours.size();
+}
+
 bool matEq(Mat a, Mat b) {
 #ifdef TEST
     cout << "Running matEq..." << endl;
