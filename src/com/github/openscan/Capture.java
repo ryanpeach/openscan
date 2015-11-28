@@ -1,4 +1,4 @@
-package org.github.openscan
+package com.github.openscan;
 
 import org.opencv.core.Mat;
 
@@ -36,7 +36,7 @@ public class Capture {
     public Mat[] process() {
     	long matptr = runProcess(ptr_);
 
-    	Mat[] out = [getMat(matptr),getMat(matptr+1),getMat(matptr+2)];
+    	Mat[] out = [getMat(matptr),getMat(matptr+1)];
     	return out;
     }
     

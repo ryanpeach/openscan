@@ -22,13 +22,8 @@ import android.view.View;
 //Source: http://docs.opencv.org/2.4/doc/tutorials/introduction/android_binary_package/dev_with_OCV_on_Android.html#using-opencv-library-within-your-android-project
 public class Camera extends Activity implements CvCameraViewListener {
 	
-	static {
-	    if (!OpenCVLoader.initDebug()) {
-	        // Handle initialization error
-	    } else {
-	        System.loadLibrary("openscan_jni");
-	    }
-	}
+	private Capture C;
+	private Mat Preview;
     
 	private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -65,6 +60,9 @@ public class Camera extends Activity implements CvCameraViewListener {
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.capture_main);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
+        
+        //Initialize Capture
+        C = new Capture();
     }
 
     @Override
@@ -79,6 +77,9 @@ public class Camera extends Activity implements CvCameraViewListener {
         super.onDestroy();
         if (mOpenCvCameraView != null)
             mOpenCvCameraView.disableView();
+        
+        //Destroy Capture
+        C.destroy();
     }
 
     public void onCameraViewStarted(int width, int height) {
@@ -88,7 +89,13 @@ public class Camera extends Activity implements CvCameraViewListener {
     }
 
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
-        return inputFrame.rgba();
+    	//Get the frame output from Capture
+    	C.frame(inputFrame.rgba());
+    	Mat[] out = C.process();
+    	
+    	//Set preview to out[2] is not empty
+    	if (!out[2].empty()) {Preview = out[2];}
+        return out[0];
     }
     
     
