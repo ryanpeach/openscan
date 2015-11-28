@@ -93,9 +93,12 @@ public class Camera extends Activity implements CvCameraViewListener {
     	C.frame(inputFrame.rgba());
     	Mat[] out = C.process();
     	
-    	//Set preview to out[2] is not empty
-    	if (!out[2].empty()) {Preview = out[2];}
-        return out[0];
+    	//Set preview to out[1] if is not null
+    	if (out[1] != null) {
+            Preview = out[2];
+            return out[0];
+        }
+        else {return inputFrame.rgba();} 
     }
     
     

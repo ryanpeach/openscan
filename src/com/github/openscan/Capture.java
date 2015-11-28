@@ -3,7 +3,7 @@ package com.github.openscan;
 import org.opencv.core.Mat;
 
 public class Capture {
-	private long ptr_;
+    private long ptr_;
 	
     private native long createCapture();
     private native void destroyCapture(long ptr);
@@ -35,7 +35,7 @@ public class Capture {
     
     public Mat[] process() {
     	long matptr = runProcess(ptr_);
-
+        if (matprt == -1) {return [null,null];}
     	Mat[] out = [getMat(matptr),getMat(matptr+1)];
     	return out;
     }

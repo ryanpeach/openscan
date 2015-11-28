@@ -21,6 +21,7 @@ void setFrame(long ptr, Mat frame) {
 long runProcess(long ptr) {
 	Capture *c = ((Capture*)ptr);
 	vector<Mat> outV = new vector<Mat>(c->process());
+        if (outV.empty()) {return -1;}
 	return &(outV[0]);
 }
 
