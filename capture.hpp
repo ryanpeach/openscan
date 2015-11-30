@@ -16,6 +16,15 @@
 #include <array>
 
 
+namespace OPT {
+const double VSCALE = 1000.0;
+enum Method {fpcorners, strongborder, regular, automatic};
+enum PageType {detect, letter};
+enum Par {ANGLETOL, DISTTOL, POLYTOL, ASPECTRATIO, SIZERATIO, RATIOTOL, ETOL1, ETOL2, ESIZE, METHOD};
+}
+
+using namespace OPT;
+
 class Capture {
  private:
     // Variable Declaration
@@ -40,10 +49,12 @@ class Capture {
     // Preprocessing allows each process to share data,
     // so that nothing is calculated twice for the same image.
     bool changed = false;
+    Method sel;
     Mat getEdges();
     Cnts getPolys();
     Fps getFps();
     vector<cnt> getRects();
+    vector<Point> getCorners();
 
     cnt getBorder();
 
@@ -51,15 +62,17 @@ class Capture {
     void set(Fps corners);
     bool validRect(cnt r);
 
-    Mat drawInfo();
     void checkChanged();
 
  public:
 
-    enum Method {fpcorners, strongborder, regular, automatic} sel;
-    enum PageType {automatic, letter};
-    enum Param {ANGLETOL, DISTTOL, POLYTOL, ASPECTRATIO, SIZERATIO, RATIOTOL, ETOL1, ETOL2, ESIZE, METHOD};
-
+    Mat drawInfo();
+    Mat drawPolys(Mat img, Scalar color);
+    Mat drawRects(Mat img, Scalar color);
+    Mat drawFps(Mat img, Scalar color);
+    Mat drawCorners(Mat img, Scalar color);
+    Mat drawBorder(Mat img, Scalar color);
+    Mat drawOutline(Mat img, Scalar color);
 
     /**
      * The main process. Finds the border of the page, filters it, warps it, returns the scan.
@@ -68,9 +81,10 @@ class Capture {
      * @complexity O(?)
      */
     vector<Mat> process();
+    vector<Mat> test();
 
     Capture (int angleTol = 20, int distTol = 20, int polyTol = 5,
-             PageType aspectRatio = automatic, double sizeRatio = .25, double ratioTol = .1,
+             PageType aspectRatio = letter, double sizeRatio = .25, double ratioTol = .1,
              int etol1 = 100, int etol2 = 200, int eSize = 3, Method sel = fpcorners):
                 angleTol(angleTol), distTol(distTol), polyTol(polyTol),
                 sizeRatio(sizeRatio), ratioTol(ratioTol),
@@ -81,20 +95,21 @@ class Capture {
 
     void Frame(Mat img);
 
-    void setValue(Param param, double value) {
+    void setValue(Par param, int value) {
+        function<int (int)> toDouble = [](int v) {return ((double)v)/VSCALE;};
     	changed = true;
     	switch(param) {
-    	case ANGLETOL: angleTol = (int)value; break;
-    	case DISTTOL: distTol = (int)value; break;
-    	case POLYTOL: polyTol = (int)value; break;
-    	case ASPECTRATIO: setAspectRatio((PageType)((int)value)); break;
-    	case SIZERATIO: sizeRatio = value; break;
-    	case RATIOTOL: ratioTol = value; break;
-    	case ETOL1: etol1 = (int)value; break;
-    	case ETOL2: etol2 = (int)value; break;
-    	case ESIZE: eSize = (int)eSize; break;
-    	case METHOD: sel = (Method)((int)value); break;
-    	case default: changed = false; break;
+    	case ANGLETOL: angleTol = value; break;
+    	case DISTTOL: distTol = value; break;
+    	case POLYTOL: polyTol = value; break;
+    	case ASPECTRATIO: setAspectRatio((PageType)value); break;
+    	case SIZERATIO: sizeRatio = toDouble(value); break;
+    	case RATIOTOL: ratioTol = toDouble(value); break;
+    	case ETOL1: etol1 = value; break;
+    	case ETOL2: etol2 = value; break;
+    	case ESIZE: eSize = eSize; break;
+    	case METHOD: sel = (Method)value; break;
+    	default: changed = false; break;
     	}
     }
 
@@ -104,7 +119,7 @@ class Capture {
             case letter:
                 aspectRatio = 8.5/11.0;
                 break;
-            case automatic:
+            case detect:
                 aspectRatio = 0;
                 break;
         }

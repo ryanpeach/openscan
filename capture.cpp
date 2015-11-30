@@ -9,6 +9,12 @@
 #include "capture.hpp"
 #define TEST
 
+// Declare Colors
+const auto white = Scalar(255, 255, 255);
+const auto red = Scalar(255, 0, 0);
+const auto green = Scalar(0, 255, 0);
+const auto blue = Scalar(0, 0, 255);
+
 void Capture::Frame(Mat img) {
 #ifdef TEST
     cout << "Running Capture::Frame..." << endl;
@@ -30,8 +36,6 @@ Mat Capture::getEdges() {
     if (edges.empty()) {
         edges = edgesCanny(&frame, etol1, etol2, eSize);
     }
-
-
     return edges;
 }
 
@@ -44,10 +48,6 @@ Cnts Capture::getPolys() {
     if (polys.empty() && !edges.empty()) {
         polys = findPolys(&edges, polyTol);
     }
-#ifdef TEST
-    Mat draw = drawInfo();
-    imshow("Info", draw);
-#endif
     return polys;
 }
 
@@ -55,30 +55,59 @@ Mat Capture::drawInfo() {
     // Declare Variables
     Mat out = Mat::zeros(frame.rows, frame.cols, frame.type());
 
-    // Declare Colors
-    const auto white = Scalar(255, 255, 255);
-    const auto red = Scalar(255, 0, 0);
-    const auto green = Scalar(0, 255, 0);
-    const auto blue = Scalar(0, 0, 255);
+    drawPolys(out, white);  // Print all polys
+    drawRects(out, red);  // Print Rectangles
+    drawFps(out, green);  // Print Fps
 
-    // Print all polys
-    for (int i = 0; i < polys.size(); i++) {
-        drawContours(out, polys.contours, i, white, 2, 8);
+    return out;
+}
+
+Mat Capture::drawPolys(Mat img, Scalar color) {
+    Mat out = img;
+    for (unsigned int i = 0; i < getPolys().size(); i++) {
+        drawContours(out, polys.contours, i, color, 2, 8);
     }
+    return out;
+}
 
-    // Print Rectangles
-    for (int i = 0; i < polys.size(); i++) {
-        if (polys.contours[i].size() == 4) {
-            drawContours(out,polys.contours, i, red, 2, 8);
-        }
+Mat Capture::drawRects(Mat img, Scalar color) {
+    Mat out = img;
+    for (unsigned int i = 0; i < getRects().size(); i++) {
+        drawContours(out,rects, i, color, 2, 8);
     }
+    return out;
+}
 
-    // Print Fps
-    for (int i = 0; i < fps.size(); i++) {
+Mat Capture::drawFps(Mat img, Scalar color) {
+    Mat out = img;
+    for (unsigned int i = 0; i < getFps().size(); i++) {
         vector<cnt> poly{fps[i].contour};
-        drawContours(out, poly, 0, blue, 2, 8);
+        drawContours(out, poly, 0, color, 2, 8);
     }
+    return out;
+}
 
+//Not implemented
+Mat Capture::drawCorners(Mat img, Scalar color) {
+    Mat out = img;
+    return out;
+}
+
+Mat Capture::drawBorder(Mat img, Scalar color) {
+    Mat out = img;
+    vector<cnt> conts{getBorder()};
+    drawContours(out, conts, 0, color, 2, 8);
+    return out;
+}
+
+//Not implemented
+Mat Capture::drawOutline(Mat img, Scalar color) {
+    return drawBorder(img,color);
+}
+
+//Not implemented
+vector<Point> Capture::getCorners() {
+    vector<Point> out;
     return out;
 }
 
@@ -218,8 +247,7 @@ vector<Mat> Capture::process() {
 
         color = Scalar(255, 0, 0);
 
-        vector<cnt> conts{border};
-        drawContours(drawing, conts, 0, color, 3, 8);
+        drawBorder(drawing, color);
         out = vector<Mat>{drawing, warp};
         return out;
     } else {

@@ -29,7 +29,7 @@ class WindowManager {
     }
     void update() {
         for (unsigned int i = 0; i < OUT.size(); i++) {
-            if(!OUT[i]==nullptr && !(*OUT[i]).empty()) {imshow(NAMES[i], *(OUT[i]));}
+            if(OUT[i]!=nullptr && !(*OUT[i]).empty()) {imshow(NAMES[i], *(OUT[i]));}
             else if (OUT[i]==nullptr) {imshow(NAMES[i],Mat());}
         }
     }
@@ -38,21 +38,7 @@ class WindowManager {
     }
 };
 
-Capture C;
-double angleTol, distTol, polyTol;
-double angleTol_max = 360;
-double distTol_max = 100;
-double polyTol_max = 100;
-double sizeRatio, ratioTol;
-double sizeRatio_max = 1.0;
-double ratioTol_max = .1;
-
-function<void (int, void*)> on_valueChange(Param sel, double param) {
-    return [](int, void*) {
-        C.setValue(param, angleTol);
-    };
-}
-
+int toInt(double v) {return (int)(v*VSCALE);}
 
 // ------ Video and Image Processing Methods ---------------
 
@@ -100,22 +86,38 @@ void imageProcess (Mat frame, Capture c) {
     win.close();
 }
 
+void setTrackBar(int v, void* userdata){
+    long *data = (long*)userdata;
+    Capture *c = (Capture*)(data);
+    data = data + 1;
+    Par param = (Par)((int)(*data));
+    (*c).setValue(param, v);
+}
+
+//This is complicated, these pointers are passed via the last pointer in createTracker as void* in setTrackBar
+//Then they are unpacked to show the capture method and the selected parameter
+void createTrackbar(String vname, String wname, int* v, int maxv, Capture c, Par param) {
+    long p[] = {(long)&c, (long)param};
+    createTrackbar(vname, wname, v, maxv, &setTrackBar, &p);
+}
+
 void videoProcess(VideoCapture cap, Capture c) {
 #ifdef TEST
     cout << "Running Capture::webCam..." << endl;
 #endif
     // Variable Declaration
-    Mat drawing, preview;
+    Mat drawing, preview, canny, aprox;
     vector<Mat> proc;
     string filename, filepath;
     bool found = false; bool saved = false;
 
     // Create Windows
-    vector<Mat*> images = vector<Mat*>{&drawing, &preview, nullptr};
+    vector<Mat*> images = vector<Mat*>{&drawing, &preview, &canny, &aprox};
     vector<string> names = vector<string>{
         "Frame: Press 'q' to exit.",
-        "Preview: Press 's' to save."
-        "Settings"};
+        "Preview: Press 's' to save.",
+        "Canny Edge Detection",
+        "Approx Polys"};
     WindowManager win = WindowManager(images, names);
 
     if(!cap.isOpened()){  // check if we succeeded
@@ -124,15 +126,15 @@ void videoProcess(VideoCapture cap, Capture c) {
     }
 
     //Create Trackbars
-    int N = 5;
-    String[N] trackbarNames = {"angleTol", "distTol", "polyTol", "sizeRatio", "ratioTol"};
-    double*[N] trackbarValues = {&angleTol, &distTol, &polyTol, &sizeRatio, &ratioTol};
-    double[N] trackbarMax = {angleTol_max, distTol_max, polyTol_max, sizeRatio_max, ratioTol_max};
-    Params[N] params = {ANGLETOL, DISTTOL, POLYTOL, SIZERATIO, RATIOTOL};
-    for (int i = 0; i < N; i++) {
-        createTrackbar(trackbarNames[i], "Settings", trackbarValues[i], trackbarMax[i], 
-                onValueChange(params[i],trackbarValues[i]);
-    }
+    //Canny
+    int etol1, etol2, eSize, polyTol;
+    createTrackbar("eTol1", "Canny Edge Detection", &etol1, 255, c, ETOL1);
+    createTrackbar("eTol2", "Canny Edge Detection", &etol2, 255, c, ETOL2); 
+    createTrackbar("eSize", "Canny Edge Detection", &eSize, 21, c, ESIZE);
+
+    //Poly Approx
+    createTrackbar("polyTol", "Approx Polys", &polyTol, 200, c, POLYTOL);
+
 
 #ifdef TEST
     cout << "Video: Beginning Main Loop..." << endl;
@@ -293,6 +295,7 @@ int main(int argc,char *argv[]) {
     cout << "Running main..." << endl;
     testGeometry();
 #endif
+    Capture C;
     if (argc == 1) {
         webCam(C);
     } else if (argc == 2 && *argv[1] == '-' && *argv[2] == 'h') {
