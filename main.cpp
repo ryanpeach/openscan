@@ -19,7 +19,7 @@
 
 class WindowManager {
  private:
-	vector<Mat*> OUT;
+    vector<Mat*> OUT;
     vector<string> NAMES;
  public:
     WindowManager(vector<Mat*> out, vector<string> names) : OUT(out), NAMES(names) {
@@ -29,13 +29,30 @@ class WindowManager {
     }
     void update() {
         for (unsigned int i = 0; i < OUT.size(); i++) {
-            if(!(*OUT[i]).empty()) {imshow(NAMES[i], *(OUT[i]));}
+            if(!OUT[i]==nullptr && !(*OUT[i]).empty()) {imshow(NAMES[i], *(OUT[i]));}
+            else if (OUT[i]==nullptr) {imshow(NAMES[i],Mat());}
         }
     }
     void close() {
         destroyAllWindows();
     }
 };
+
+Capture C;
+double angleTol, distTol, polyTol;
+double angleTol_max = 360;
+double distTol_max = 100;
+double polyTol_max = 100;
+double sizeRatio, ratioTol;
+double sizeRatio_max = 1.0;
+double ratioTol_max = .1;
+
+function<void (int, void*)> on_valueChange(Param sel, double param) {
+    return [](int, void*) {
+        C.setValue(param, angleTol);
+    };
+}
+
 
 // ------ Video and Image Processing Methods ---------------
 
@@ -94,15 +111,27 @@ void videoProcess(VideoCapture cap, Capture c) {
     bool found = false; bool saved = false;
 
     // Create Windows
-    vector<Mat*> images = vector<Mat*>{&drawing, &preview};
+    vector<Mat*> images = vector<Mat*>{&drawing, &preview, nullptr};
     vector<string> names = vector<string>{
         "Frame: Press 'q' to exit.",
-        "Preview: Press 's' to save."};
+        "Preview: Press 's' to save."
+        "Settings"};
     WindowManager win = WindowManager(images, names);
 
     if(!cap.isOpened()){  // check if we succeeded
         cout << "Camera failed to open!" << endl;
 	return;
+    }
+
+    //Create Trackbars
+    int N = 5;
+    String[N] trackbarNames = {"angleTol", "distTol", "polyTol", "sizeRatio", "ratioTol"};
+    double*[N] trackbarValues = {&angleTol, &distTol, &polyTol, &sizeRatio, &ratioTol};
+    double[N] trackbarMax = {angleTol_max, distTol_max, polyTol_max, sizeRatio_max, ratioTol_max};
+    Params[N] params = {ANGLETOL, DISTTOL, POLYTOL, SIZERATIO, RATIOTOL};
+    for (int i = 0; i < N; i++) {
+        createTrackbar(trackbarNames[i], "Settings", trackbarValues[i], trackbarMax[i], 
+                onValueChange(params[i],trackbarValues[i]);
     }
 
 #ifdef TEST
@@ -258,12 +287,12 @@ void testGeometry() {
 
 // ------------------ Main Method --------------
 
+
 int main(int argc,char *argv[]) {
 #ifdef TEST
     cout << "Running main..." << endl;
     testGeometry();
 #endif
-    Capture C;
     if (argc == 1) {
         webCam(C);
     } else if (argc == 2 && *argv[1] == '-' && *argv[2] == 'h') {
@@ -272,7 +301,7 @@ int main(int argc,char *argv[]) {
         cout << "If no argument is specified the input is taken from the webcam"<<endl;
     } else if (argc == 2 && *argv[1] == '-' && *argv[2] == 'v') {
         videoFile(argv[3], C);
-	} else if (argc == 2 && *argv[1] == '-' && *argv[2] == 'i') {
+    } else if (argc == 2 && *argv[1] == '-' && *argv[2] == 'i') {
         imageFile(argv[3], C);
     } else {
         cout << " Usage : " << argv[0] << " " << "filename[optional]" <<endl;
