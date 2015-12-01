@@ -96,7 +96,7 @@ class Capture {
     void Frame(Mat img);
 
     void setValue(Par param, int value) {
-        function<int (int)> toDouble = [](int v) {return ((double)v)/VSCALE;};
+        auto toDouble = [](int v) {return ((double)v)/VSCALE;};
     	changed = true;
     	switch(param) {
     	case ANGLETOL: angleTol = value; break;
