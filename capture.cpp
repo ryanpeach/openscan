@@ -9,7 +9,6 @@
 #include "capture.hpp"
 #define TEST
 
-
 void Capture::Frame(Mat img) {
 #ifdef TEST
     cout << "Running Capture::Frame..." << endl;
@@ -17,18 +16,22 @@ void Capture::Frame(Mat img) {
     fps.clear();
     rects.clear();
     border.clear();
+    outline.clear();
+    corners.clear();
     polys = Cnts();
     ref = Point();
     frame = img;
     edges = Mat();
 }
 
+// ------------ Get Methods --------
 Mat Capture::getEdges() {
 #ifdef TEST
     cout << "Running Capture::getEdges..." << endl;
 #endif
     if (edges.empty()) {
-        edges = edgesCanny(&frame, etol1, etol2, eSize);
+    	cout << "getEdges: empty..." << endl;
+        edges = edgesCanny(&frame, etol1, etol2, eSize, false);
     }
     return edges;
 }
@@ -44,66 +47,29 @@ Cnts Capture::getPolys() {
     return polys;
 }
 
-Mat Capture::drawInfo() {
-    // Declare Variables
-    Mat out = Mat::zeros(frame.rows, frame.cols, frame.type());
+//Source: http://docs.opencv.org/2.4/doc/tutorials/features2d/trackingmotion/harris_detector/harris_detector.html
+Points Capture::getCorners() {
+	if (corners.empty()) {
+		Mat gray = toGray(frame);
+		Mat dst, dst_norm, dst_norm_scaled;
 
-    drawPolys(out, white);  // Print all polys
-    drawRects(out, red);  // Print Rectangles
-    drawFps(out, green);  // Print Fps
+		// Detecting corners
+		cornerHarris(gray, dst, cBlock, cSize, k, BORDER_DEFAULT );
 
-    return out;
-}
+		// Normalizing
+		normalize( dst, dst_norm, 0, 255, NORM_MINMAX, CV_32FC1, Mat() );
+		convertScaleAbs( dst_norm, dst_norm_scaled );
 
-Mat Capture::drawPolys(Mat img, Scalar color) {
-    Mat out = img;
-    unsigned int N = getPolys().size();
-    for (unsigned int i = 0; i < N; i++) {
-        drawContours(out, polys.contours, i, color, 2, 8);
-    }
-    return out;
-}
-
-Mat Capture::drawRects(Mat img, Scalar color) {
-    Mat out = img;
-    unsigned int N = getRects().size();
-    for (unsigned int i = 0; i < N; i++) {
-        drawContours(out,rects, i, color, 2, 8);
-    }
-    return out;
-}
-
-Mat Capture::drawFps(Mat img, Scalar color) {
-    Mat out = img;
-    for (unsigned int i = 0; i < getFps().size(); i++) {
-        vector<cnt> poly{fps[i].contour};
-        drawContours(out, poly, 0, color, 2, 8);
-    }
-    return out;
-}
-
-//Not implemented
-Mat Capture::drawCorners(Mat img, Scalar color) {
-    Mat out = img;
-    return out;
-}
-
-Mat Capture::drawBorder(Mat img, Scalar color) {
-    Mat out = img;
-    vector<cnt> conts{getBorder()};
-    drawContours(out, conts, 0, color, 2, 8);
-    return out;
-}
-
-//Not implemented
-Mat Capture::drawOutline(Mat img, Scalar color) {
-    return drawBorder(img,color);
-}
-
-//Not implemented
-vector<Point> Capture::getCorners() {
-    vector<Point> out;
-    return out;
+		// Convert to Points
+		for (int j = 0; j < dst_norm.rows; j++) {
+			for (int i = 0; i < dst_norm.cols; i++) {
+				if((int) dst_norm.at<float>(j,i) >= cThresh) {
+					corners.push_back(Point(j,i));
+				}
+			}
+		}
+	}
+    return corners;
 }
 
 Fps Capture::getFps() {
@@ -122,24 +88,6 @@ Fps Capture::getFps() {
     return fps;
 }
 
-void Capture::set(cnt corners) {
-#ifdef TEST
-    cout << "Running Capture::set(cnt)..." << endl;
-#endif
-    Points cent = corners;
-    ref = calcRef(corners);
-    border = sortCorners(cent,ref);
-}
-
-void Capture::set(Fps corners) {
-#ifdef TEST
-    cout << "Running Capture::set(Fps)..." << endl;
-#endif
-    Points cent = centroids(corners);
-    ref = centroid(calcRef(corners));
-    border = sortCorners(cent,ref);
-}
-
 vector<cnt> Capture::getRects() {
 #ifdef TEST
     cout << "Running Capture::getRects..." << endl;
@@ -149,6 +97,27 @@ vector<cnt> Capture::getRects() {
         rects = hasRectangles(polys.contours, angleTol, distTol);
     }
     return rects;
+}
+
+cnt Capture::getOutline() {
+	if (outline.empty()) {
+		Point cent = Point(frame.cols/2,frame.rows/2);
+		cnt boundary{Point(0,0), Point(frame.cols,0), Point(frame.cols, frame.rows), Point(0, frame.rows)};
+		double totalArea = contourArea(boundary);
+		double outlineArea = sizeRatio*totalArea;
+
+		// W is the small length, L is the large length
+		// Aspect Ratio assumed < 1
+		double W = sqrt(outlineArea / aspectRatio);
+		double L = W*aspectRatio;
+
+		outline.push_back(Point(cent.x+W/2, cent.y-L/2));
+		outline.push_back(Point(cent.x+W/2, cent.y+L/2));
+		outline.push_back(Point(cent.x-W/2, cent.y+L/2));
+		outline.push_back(Point(cent.x-W/2, cent.y-L/2));
+		cout << "getOutline: Area = " << contourArea(outline) << " Expected = " << outlineArea << endl;
+	}
+	return outline;
 }
 
 cnt Capture::getBorder() {
@@ -209,6 +178,95 @@ cnt Capture::getBorder() {
     return border;
 }
 
+// ----------- Draw Methods -------------
+Mat Capture::drawInfo() {
+    // Declare Variables
+    Mat out = Mat::zeros(frame.rows, frame.cols, frame.type());
+
+    drawPolys(out, white);  // Print all polys
+    drawRects(out, red);    // Print Rectangles
+    drawFps(out, green);    // Print Fps
+    drawCorners(out, blue); // Print all corners
+
+    return out;
+}
+
+Mat Capture::drawEdges() {
+	return getEdges();
+}
+
+Mat Capture::drawPolys(Mat img, Scalar color) {
+    Mat out = img;
+    unsigned int N = getPolys().size();
+    for (unsigned int i = 0; i < N; i++) {
+        drawContours(out, polys.contours, i, color, 2, 8);
+    }
+    return out;
+}
+
+Mat Capture::drawRects(Mat img, Scalar color) {
+    Mat out = img;
+    unsigned int N = getRects().size();
+    for (unsigned int i = 0; i < N; i++) {
+        drawContours(out,rects, i, color, 2, 8);
+    }
+    return out;
+}
+
+Mat Capture::drawFps(Mat img, Scalar color) {
+    Mat out = img;
+    for (unsigned int i = 0; i < getFps().size(); i++) {
+        vector<cnt> poly{fps[i].contour};
+        drawContours(out, poly, 0, color, 2, 8);
+    }
+    return out;
+}
+
+//Not implemented
+Mat Capture::drawCorners(Mat img, Scalar color) {
+    Mat out = img;
+    if (corners.empty()) {getCorners();}
+    /// Drawing a circle around corners
+    for(unsigned int j = 0; j < corners.size(); j++ ) {
+    	circle(out, corners[j], 5, color, 2, 8, 0);
+    }
+    return out;
+}
+
+Mat Capture::drawBorder(Mat img, Scalar color) {
+    Mat out = img;
+    vector<cnt> conts{getBorder()};
+    drawContours(out, conts, 0, color, 2, 8);
+    return out;
+}
+
+//Not implemented
+Mat Capture::drawOutline(Mat img, Scalar color) {
+    Mat out = img;
+    vector<cnt> conts{getOutline()};
+    drawContours(out, conts, 0, color, 2, 8);
+    return out;
+}
+
+
+void Capture::set(cnt corners) {
+#ifdef TEST
+    cout << "Running Capture::set(cnt)..." << endl;
+#endif
+    Points cent = corners;
+    ref = calcRef(corners);
+    border = sortCorners(cent,ref);
+}
+
+void Capture::set(Fps corners) {
+#ifdef TEST
+    cout << "Running Capture::set(Fps)..." << endl;
+#endif
+    Points cent = centroids(corners);
+    ref = centroid(calcRef(corners));
+    border = sortCorners(cent,ref);
+}
+
 // Uses polyTol, angleTol, distTol, wSize, C;
 vector<Mat> Capture::process() {
 #ifdef TEST
@@ -219,10 +277,9 @@ vector<Mat> Capture::process() {
     vector<Mat> out;
 
     if (border.empty()) {getBorder();}
-    for (Fp f : fps) {
-        vector<cnt> conts{f.contour};
-        drawContours(drawing, conts, 0, blue, 3, 8);
-    }
+    drawFps(drawing,blue);
+    drawRects(drawing,green);
+    drawOutline(drawing,yellow);
     if (!border.empty() && ref != Point()) {
         // Get border from focus points and warp
         warp = fixPerspective(&frame, border, ref);
@@ -233,7 +290,7 @@ vector<Mat> Capture::process() {
         out = vector<Mat>{drawing, warp};
         return out;
     } else {
-        out = vector<Mat>{};
+        out = vector<Mat>{drawing};
         return out;
     }
 }
@@ -242,7 +299,7 @@ bool Capture::validRect(cnt r) {
 #ifdef TEST
     cout << "Capture::getBorder: validRect... " << endl;
 #endif
-    double area1 = sizeRatio*((frame).cols)*((frame).rows);
+    double area1 = contourArea(getOutline());
     double area2 = contourArea(r);
     bool size = area1 < area2;
     bool ratio = isAspectRatio(r, aspectRatio, ratioTol);

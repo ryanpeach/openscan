@@ -11,8 +11,8 @@
  * @complexity O(1)
  * @tested works
  */
-Mat toGray(Mat *img);
-Mat toColor(Mat *img);
+Mat toGray(Mat img);
+Mat toColor(Mat img);
 void Gray(Mat *img);
 void Color(Mat *img);
 
@@ -26,7 +26,7 @@ void Color(Mat *img);
  * @complexity O(1)
  * @tested works
  */
-Mat edgesCanny(Mat *img, int tol1 = 100, int tol2 = 200, int wSize = 3);
+Mat edgesCanny(Mat *img, int tol1 = 100, int tol2 = 200, int wSize = 3, bool l2grad = false);
 
 /**
  * @brief Returns the adaptive gaussian of an image, ideal for black and white pencil drawings.

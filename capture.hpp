@@ -20,13 +20,17 @@ const auto white = Scalar(255, 255, 255);
 const auto red = Scalar(255, 0, 0);
 const auto green = Scalar(0, 255, 0);
 const auto blue = Scalar(0, 0, 255);
+const auto yellow = Scalar(255, 255, 0);
+const auto purple = Scalar(255, 0, 255);
+const auto cyan = Scalar(0, 255, 255);
 }
 
 namespace OPT {
 const double VSCALE = 1000.0;
 enum Method {fpcorners, strongborder, regular, automatic};
 enum PageType {detect, letter};
-enum Par {ANGLETOL, DISTTOL, POLYTOL, ASPECTRATIO, SIZERATIO, RATIOTOL, ETOL1, ETOL2, ESIZE, METHOD};
+enum Par {ANGLETOL, DISTTOL, POLYTOL, ASPECTRATIO, SIZERATIO, RATIOTOL, ETOL1, ETOL2, ESIZE, METHOD,
+			CBLOCK, CSIZE, K, CTHRESH};
 }
 
 using namespace OPT;
@@ -40,18 +44,20 @@ class Capture {
     Cnts polys;           // Just a temp variable to hold the polys from the most frame
     Fps fps;              // Just a temp variable to hold the Fp's from the most recent frame
     Point ref;            // The reference corner's location
-    cnt border;           // The border of the scan
+    cnt border, outline;  // The border of the scan
     vector<cnt> rects;    // Rectangles identified in the image
+    Points corners;
 
     int angleTol;          // The angle tolerance app-wide
     int distTol;           // The distance tolerance for small polygons (like focus pointss)
     int polyTol;           // The distance tolerance for universal polygons (like page borders)
-    double aspectRatio;    // The aspect ratio of the page we are looking for.
+    double aspectRatio;    // The aspect ratio of the page we are looking for. Always < 1.0
     double sizeRatio;      // The min ratio of a detected page to the size of the image
     double ratioTol;       // The tolerance for two ratios to be considered equal
 
     //Import Parameters
-    int etol1, etol2, eSize;
+    int etol1, etol2, eSize;         // Used in edge detection
+    int cBlock, cSize, k, cThresh;   // Used in corner detection
 
     // Preprocessing allows each process to share data,
     // so that nothing is calculated twice for the same image.
@@ -60,9 +66,10 @@ class Capture {
     Cnts getPolys();
     Fps getFps();
     vector<cnt> getRects();
-    vector<Point> getCorners();
+    Points getCorners();
 
     cnt getBorder();
+    cnt getOutline();
 
     void set(cnt corners);
     void set(Fps corners);
@@ -73,14 +80,13 @@ class Capture {
  public:
 
     Mat drawInfo();
-    Mat drawEdges(Mat img, Scalar color);
-    Mat drawPolys(Mat img, Scalar color);
-    Mat drawRects(Mat img, Scalar color);
-    Mat drawFps(Mat img, Scalar color);
-    Mat drawCorners(Mat img, Scalar color);
-    Mat drawBorder(Mat img, Scalar color);
-    Mat drawOutline(Mat img, Scalar color);
-    Mat drawEdges() {return getEdges();}
+    Mat drawEdges();
+    Mat drawPolys(Mat img, Scalar color = white);
+    Mat drawRects(Mat img, Scalar color = red);
+    Mat drawFps(Mat img, Scalar color = green);
+    Mat drawCorners(Mat img, Scalar color = blue);
+    Mat drawBorder(Mat img, Scalar color = blue);
+    Mat drawOutline(Mat img, Scalar color = yellow);
 
     /**
      * The main process. Finds the border of the page, filters it, warps it, returns the scan.
@@ -92,10 +98,12 @@ class Capture {
 
     Capture (int angleTol = 20, int distTol = 20, int polyTol = 5,
              PageType aspectRatio = letter, double sizeRatio = .25, double ratioTol = .1,
-             int etol1 = 100, int etol2 = 200, int eSize = 3, Method sel = fpcorners):
+             int etol1 = 100, int etol2 = 200, int eSize = 3,
+             int cBlock = 2, int cSize = 3, int k = .04, int cThresh = 200, Method sel = fpcorners):
                 angleTol(angleTol), distTol(distTol), polyTol(polyTol),
                 sizeRatio(sizeRatio), ratioTol(ratioTol),
-                etol1(etol1), etol2(etol2), eSize(eSize), sel(sel)
+                etol1(etol1), etol2(etol2), eSize(eSize),
+                cBlock(cBlock), cSize(cSize), k(k), cThresh(cThresh), sel(sel)
     {
         setValue(ASPECTRATIO,(int)aspectRatio);
     }
@@ -105,7 +113,7 @@ class Capture {
     void setValue(Par param, int value) {
         auto toDouble = [](int v) {return ((double)v)/VSCALE;};
     	bool changed = true;
-            switch(param) {
+        switch(param) {
             case ANGLETOL: angleTol = value; break;
             case DISTTOL: distTol = value; break;
             case POLYTOL: polyTol = value; break;
@@ -115,6 +123,10 @@ class Capture {
             case ETOL1: etol1 = value; break;
             case ETOL2: etol2 = value; break;
             case ESIZE: eSize = value; break;
+            case CBLOCK: cBlock = value; break;
+            case CSIZE: cSize = value; break;
+            case K: k = value; break;
+            case CTHRESH: cThresh = value; break;
             case METHOD: sel = (Method)value; break;
             default: changed = false; break;
     	}

@@ -11,7 +11,7 @@
 
 // -------------- Feature Detection ----------------
 
-Cnts findPolys(Mat * img, double distTol) {
+Cnts findPolys(Mat* img, double distTol) {
 #ifdef TEST
         cout << "Running findPolys..." << endl;
 #endif
