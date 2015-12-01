@@ -9,11 +9,6 @@
 #include "capture.hpp"
 #define TEST
 
-// Declare Colors
-const auto white = Scalar(255, 255, 255);
-const auto red = Scalar(255, 0, 0);
-const auto green = Scalar(0, 255, 0);
-const auto blue = Scalar(0, 0, 255);
 
 void Capture::Frame(Mat img) {
 #ifdef TEST
@@ -32,7 +27,6 @@ Mat Capture::getEdges() {
 #ifdef TEST
     cout << "Running Capture::getEdges..." << endl;
 #endif
-    checkChanged();
     if (edges.empty()) {
         edges = edgesCanny(&frame, etol1, etol2, eSize);
     }
@@ -43,8 +37,7 @@ Cnts Capture::getPolys() {
 #ifdef TEST
     cout << "Running Capture::getPolys..." << endl;
 #endif
-    checkChanged();
-    if (edges.empty()) {getEdges();}
+    if(edges.empty()) {getEdges();}
     if (polys.empty() && !edges.empty()) {
         polys = findPolys(&edges, polyTol);
     }
@@ -64,7 +57,8 @@ Mat Capture::drawInfo() {
 
 Mat Capture::drawPolys(Mat img, Scalar color) {
     Mat out = img;
-    for (unsigned int i = 0; i < getPolys().size(); i++) {
+    unsigned int N = getPolys().size();
+    for (unsigned int i = 0; i < N; i++) {
         drawContours(out, polys.contours, i, color, 2, 8);
     }
     return out;
@@ -72,7 +66,8 @@ Mat Capture::drawPolys(Mat img, Scalar color) {
 
 Mat Capture::drawRects(Mat img, Scalar color) {
     Mat out = img;
-    for (unsigned int i = 0; i < getRects().size(); i++) {
+    unsigned int N = getRects().size();
+    for (unsigned int i = 0; i < N; i++) {
         drawContours(out,rects, i, color, 2, 8);
     }
     return out;
@@ -115,7 +110,6 @@ Fps Capture::getFps() {
 #ifdef TEST
     cout << "Running Capture::getFps..." << endl;
 #endif
-    checkChanged();
     if (polys.empty()) {getPolys();}
     if (fps.empty() && !polys.empty()) {
         fps = findFocusPoints(polys, angleTol, distTol);
@@ -146,17 +140,10 @@ void Capture::set(Fps corners) {
     border = sortCorners(cent,ref);
 }
 
-void Capture::checkChanged() {
-    if (changed) {
-        Frame(frame);
-    }
-}
-
 vector<cnt> Capture::getRects() {
 #ifdef TEST
     cout << "Running Capture::getRects..." << endl;
 #endif
-    checkChanged();
     if (polys.empty()) {getPolys();}
     if (rects.empty() && !polys.empty()) {
         rects = hasRectangles(polys.contours, angleTol, distTol);
@@ -168,7 +155,6 @@ cnt Capture::getBorder() {
 #ifdef TEST
     cout << "Running Capture::getBorder..." << endl;
 #endif
-    checkChanged();
     switch (sel) {
     case fpcorners: {
 #ifdef TEST
@@ -228,16 +214,14 @@ vector<Mat> Capture::process() {
 #ifdef TEST
     cout << "Running Capture::process..." << endl;
 #endif
-    checkChanged();
     // Variable Declaration
     Mat warp; Mat drawing = frame.clone();
     vector<Mat> out;
-    Scalar color = Scalar(0, 0, 255);
 
     if (border.empty()) {getBorder();}
     for (Fp f : fps) {
         vector<cnt> conts{f.contour};
-        drawContours(drawing, conts, 0, color, 3, 8);
+        drawContours(drawing, conts, 0, blue, 3, 8);
     }
     if (!border.empty() && ref != Point()) {
         // Get border from focus points and warp
@@ -245,9 +229,7 @@ vector<Mat> Capture::process() {
 
         Color(&warp);
 
-        color = Scalar(255, 0, 0);
-
-        drawBorder(drawing, color);
+        drawBorder(drawing, red);
         out = vector<Mat>{drawing, warp};
         return out;
     } else {

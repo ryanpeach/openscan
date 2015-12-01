@@ -15,6 +15,12 @@
 #include <ctime>
 #include <array>
 
+namespace COLORS {
+const auto white = Scalar(255, 255, 255);
+const auto red = Scalar(255, 0, 0);
+const auto green = Scalar(0, 255, 0);
+const auto blue = Scalar(0, 0, 255);
+}
 
 namespace OPT {
 const double VSCALE = 1000.0;
@@ -24,6 +30,7 @@ enum Par {ANGLETOL, DISTTOL, POLYTOL, ASPECTRATIO, SIZERATIO, RATIOTOL, ETOL1, E
 }
 
 using namespace OPT;
+using namespace COLORS;
 
 class Capture {
  private:
@@ -48,7 +55,6 @@ class Capture {
 
     // Preprocessing allows each process to share data,
     // so that nothing is calculated twice for the same image.
-    bool changed = false;
     Method sel;
     Mat getEdges();
     Cnts getPolys();
@@ -67,12 +73,14 @@ class Capture {
  public:
 
     Mat drawInfo();
+    Mat drawEdges(Mat img, Scalar color);
     Mat drawPolys(Mat img, Scalar color);
     Mat drawRects(Mat img, Scalar color);
     Mat drawFps(Mat img, Scalar color);
     Mat drawCorners(Mat img, Scalar color);
     Mat drawBorder(Mat img, Scalar color);
     Mat drawOutline(Mat img, Scalar color);
+    Mat drawEdges() {return getEdges();}
 
     /**
      * The main process. Finds the border of the page, filters it, warps it, returns the scan.
@@ -81,7 +89,6 @@ class Capture {
      * @complexity O(?)
      */
     vector<Mat> process();
-    vector<Mat> test();
 
     Capture (int angleTol = 20, int distTol = 20, int polyTol = 5,
              PageType aspectRatio = letter, double sizeRatio = .25, double ratioTol = .1,
@@ -90,31 +97,33 @@ class Capture {
                 sizeRatio(sizeRatio), ratioTol(ratioTol),
                 etol1(etol1), etol2(etol2), eSize(eSize), sel(sel)
     {
-        setAspectRatio(aspectRatio);
+        setValue(ASPECTRATIO,(int)aspectRatio);
     }
 
     void Frame(Mat img);
 
     void setValue(Par param, int value) {
         auto toDouble = [](int v) {return ((double)v)/VSCALE;};
-    	changed = true;
-    	switch(param) {
-    	case ANGLETOL: angleTol = value; break;
-    	case DISTTOL: distTol = value; break;
-    	case POLYTOL: polyTol = value; break;
-    	case ASPECTRATIO: setAspectRatio((PageType)value); break;
-    	case SIZERATIO: sizeRatio = toDouble(value); break;
-    	case RATIOTOL: ratioTol = toDouble(value); break;
-    	case ETOL1: etol1 = value; break;
-    	case ETOL2: etol2 = value; break;
-    	case ESIZE: eSize = eSize; break;
-    	case METHOD: sel = (Method)value; break;
-    	default: changed = false; break;
+    	bool changed = true;
+            switch(param) {
+            case ANGLETOL: angleTol = value; break;
+            case DISTTOL: distTol = value; break;
+            case POLYTOL: polyTol = value; break;
+            case ASPECTRATIO: setAspectRatio((PageType)value); break;
+            case SIZERATIO: sizeRatio = toDouble(value); break;
+            case RATIOTOL: ratioTol = toDouble(value); break;
+            case ETOL1: etol1 = value; break;
+            case ETOL2: etol2 = value; break;
+            case ESIZE: eSize = value; break;
+            case METHOD: sel = (Method)value; break;
+            default: changed = false; break;
     	}
+        if (changed) {
+            Frame(frame);
+        }
     }
 
     void setAspectRatio(PageType type = letter) {
-        changed = true;
         switch (type) {
             case letter:
                 aspectRatio = 8.5/11.0;

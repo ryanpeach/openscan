@@ -15,6 +15,8 @@
 
 #ifdef DESKTOP
 
+Capture C;
+
 // -------------- Window Manager Class -------------
 
 class WindowManager {
@@ -42,7 +44,7 @@ int toInt(double v) {return (int)(v*VSCALE);}
 
 // ------ Video and Image Processing Methods ---------------
 
-void imageProcess (Mat frame, Capture c) {
+void imageProcess (Mat frame, Capture* c) {
     // Variable Declaration
     Mat drawing, preview;
     string filename,filepath;
@@ -54,7 +56,7 @@ void imageProcess (Mat frame, Capture c) {
         "Preview: Press 's' to save."};
     WindowManager win = WindowManager(images, names);
 
-    vector<Mat> proc = c.process();
+    vector<Mat> proc = c->process();
 
     // Save processed frame to appropriate outputs
     if (!proc.empty()) {
@@ -86,38 +88,46 @@ void imageProcess (Mat frame, Capture c) {
     win.close();
 }
 
+struct udata {
+    Capture *capt;
+    Par param;
+} token;
+
 void setTrackBar(int v, void* userdata){
-    long *data = (long*)userdata;
-    Capture *c = (Capture*)(data);
-    data = data + 1;
-    Par param = (Par)((int)(*data));
-    (*c).setValue(param, v);
+#ifdef TEST
+    cout << "Running setTrackBar..." << endl;
+#endif
+    udata token = *((udata*)(userdata));
+#ifdef TEST
+    cout << token.param << " " << v << endl;
+#endif
+    (token.capt)->setValue((token.param), v);
 }
 
 //This is complicated, these pointers are passed via the last pointer in createTracker as void* in setTrackBar
 //Then they are unpacked to show the capture method and the selected parameter
-void createTrackbar(String vname, String wname, int* v, int maxv, Capture c, Par param) {
-    long p[] = {(long)&c, (long)param};
-    createTrackbar(vname, wname, v, maxv, &setTrackBar, &p);
+void createTrackbar(String vname, String wname, int* v, int maxv, Capture* c, Par param) {
+    token = {c, param}; 
+    createTrackbar(vname, wname, v, maxv, &setTrackBar, &token);
 }
 
-void videoProcess(VideoCapture cap, Capture c) {
+void videoProcess(VideoCapture cap, Capture* c) {
 #ifdef TEST
     cout << "Running Capture::webCam..." << endl;
 #endif
     // Variable Declaration
-    Mat drawing, preview, canny, aprox;
+    Mat drawing, preview, canny, info;
     vector<Mat> proc;
     string filename, filepath;
     bool found = false; bool saved = false;
 
     // Create Windows
-    vector<Mat*> images = vector<Mat*>{&drawing, &preview, &canny, &aprox};
+    vector<Mat*> images = vector<Mat*>{&drawing, &preview, &canny, &info};
     vector<string> names = vector<string>{
         "Frame: Press 'q' to exit.",
         "Preview: Press 's' to save.",
         "Canny Edge Detection",
-        "Approx Polys"};
+        "Polys, Rects, & Fps"};
     WindowManager win = WindowManager(images, names);
 
     if(!cap.isOpened()){  // check if we succeeded
@@ -133,7 +143,7 @@ void videoProcess(VideoCapture cap, Capture c) {
     createTrackbar("eSize", "Canny Edge Detection", &eSize, 21, c, ESIZE);
 
     //Poly Approx
-    createTrackbar("polyTol", "Approx Polys", &polyTol, 200, c, POLYTOL);
+    createTrackbar("polyTol", "Polys, Rects, & Fps", &polyTol, 200, c, POLYTOL);
 
 
 #ifdef TEST
@@ -145,8 +155,8 @@ void videoProcess(VideoCapture cap, Capture c) {
     	Mat frame;
         cap >> frame;
         if ( frame.empty() ) {break;}  // end of video stream
-        c.Frame(frame);
-        proc = c.process();
+        c->Frame(frame);
+        proc = c->process();
 
 #ifdef TEST
         cout << "webCam: Process Complete!" << endl;
@@ -161,6 +171,10 @@ void videoProcess(VideoCapture cap, Capture c) {
         } else {
             drawing = frame;
         }
+        canny = Mat::zeros(frame.rows, frame.cols, frame.type());
+        info = Mat::zeros(frame.rows, frame.cols, frame.type());
+        canny = c->drawEdges();
+        info = c->drawInfo();
 
         // Show frame out and preview
         win.update();
@@ -184,7 +198,7 @@ void videoProcess(VideoCapture cap, Capture c) {
 }
 
 // ---------- Derivative Video Methods -------------
-void webCam (Capture c) {
+void webCam (Capture* c) {
     VideoCapture cap(0);
     if(!cap.open(0)) {
         cout << "Camera failed to open..." << endl;
@@ -193,7 +207,7 @@ void webCam (Capture c) {
     videoProcess(cap, c);
 }
 
-void videoFile (char *filepath, Capture c) {
+void videoFile (char* filepath, Capture* c) {
     VideoCapture cap(filepath);
     if (!cap.open(filepath)) {
         std::cout << "!!! Failed to open file: " << filepath << std::endl;
@@ -202,7 +216,7 @@ void videoFile (char *filepath, Capture c) {
     videoProcess(cap, c);
 }
 
-void imageFile (char *filepath, Capture c) {
+void imageFile (char *filepath, Capture* c) {
     Mat cap = imread(filepath);
     if (!cap.empty()) {
         std::cout << "!!! Failed to open file: " << filepath << std::endl;
@@ -295,17 +309,16 @@ int main(int argc,char *argv[]) {
     cout << "Running main..." << endl;
     testGeometry();
 #endif
-    Capture C;
     if (argc == 1) {
-        webCam(C);
+        webCam(&C);
     } else if (argc == 2 && *argv[1] == '-' && *argv[2] == 'h') {
         cout << " Usage : " << argv[0] << " " << "filename[optional]" <<endl;
         cout << "Use an avi file as an argument to take input from avi file." << endl;
         cout << "If no argument is specified the input is taken from the webcam"<<endl;
     } else if (argc == 2 && *argv[1] == '-' && *argv[2] == 'v') {
-        videoFile(argv[3], C);
+        videoFile(argv[3], &C);
     } else if (argc == 2 && *argv[1] == '-' && *argv[2] == 'i') {
-        imageFile(argv[3], C);
+        imageFile(argv[3], &C);
     } else {
         cout << " Usage : " << argv[0] << " " << "filename[optional]" <<endl;
         cout << "Use an avi file as an argument to take input from avi file." << endl;
