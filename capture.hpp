@@ -31,7 +31,10 @@ enum Method {fpcorners, strongborder, regular, automatic};
 enum PageType {detect, letter};
 enum Par {ANGLETOL, DISTTOL, POLYTOL, ASPECTRATIO, SIZERATIO, RATIOTOL, ETOL1, ETOL2, ESIZE, METHOD,
 			CBLOCK, CSIZE, K, CTHRESH};
-}
+};
+
+int PtoInt(double v);
+double PtoDouble(int v);
 
 using namespace OPT;
 using namespace COLORS;
@@ -76,6 +79,7 @@ class Capture {
     bool validRect(cnt r);
 
     void checkChanged();
+    void setAspectRatio(PageType type = letter);
 
  public:
 
@@ -110,41 +114,8 @@ class Capture {
 
     void Frame(Mat img);
 
-    void setValue(Par param, int value) {
-        auto toDouble = [](int v) {return ((double)v)/VSCALE;};
-    	bool changed = true;
-        switch(param) {
-            case ANGLETOL: angleTol = value; break;
-            case DISTTOL: distTol = value; break;
-            case POLYTOL: polyTol = value; break;
-            case ASPECTRATIO: setAspectRatio((PageType)value); break;
-            case SIZERATIO: sizeRatio = toDouble(value); break;
-            case RATIOTOL: ratioTol = toDouble(value); break;
-            case ETOL1: etol1 = value; break;
-            case ETOL2: etol2 = value; break;
-            case ESIZE: eSize = value; break;
-            case CBLOCK: cBlock = value; break;
-            case CSIZE: cSize = value; break;
-            case K: k = value; break;
-            case CTHRESH: cThresh = value; break;
-            case METHOD: sel = (Method)value; break;
-            default: changed = false; break;
-    	}
-        if (changed) {
-            Frame(frame);
-        }
-    }
-
-    void setAspectRatio(PageType type = letter) {
-        switch (type) {
-            case letter:
-                aspectRatio = 8.5/11.0;
-                break;
-            case detect:
-                aspectRatio = 0;
-                break;
-        }
-    }
+    void setValue(Par param, int value);
+    int getValue(Par param);
 
 };
 #endif

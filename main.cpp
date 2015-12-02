@@ -6,6 +6,7 @@
  */
 
 #include "tests.hpp"
+#include "sliders.hpp"
 
 #define DESKTOP
 #define TEST
@@ -35,40 +36,7 @@ class WindowManager {
     }
 };
 
-int toInt(double v) {return (int)(v*VSCALE);}
-
 // ------ Video and Image Processing Methods ---------------
-
-// Global Variables
-// Note: Main should use pointers to communicate data references,
-// These variables are global only that we can ensure the reference is persistent.
-struct udata {
-    Capture *capt;
-    Par param;
-} token;
-
-Capture C;
-int etol1, etol2, eSize, polyTol;
-int cBlock, cSize, k, cThresh;
-
-// Sets the value of a variable on a change of trackbar value
-void setTrackBar(int v, void* userdata){
-#ifdef TEST
-    cout << "Running setTrackBar..." << endl;
-#endif
-    udata t = *((udata*)(userdata));
-#ifdef TEST
-    cout << t.param << " " << v << endl;
-#endif
-    (t.capt)->setValue((t.param), v);
-}
-
-//This is complicated, these pointers are passed via the last pointer in createTracker as void* in setTrackBar
-//Then they are unpacked to show the capture method and the selected parameter
-void createTrackbar(String vname, String wname, int* v, int maxv, Capture* c, Par param) {
-    token = {c, param}; 
-    createTrackbar(vname, wname, v, maxv, &setTrackBar, &token);
-}
 
 void videoProcess(VideoCapture cap, Capture* c) {
 #ifdef TEST
@@ -86,7 +54,7 @@ void videoProcess(VideoCapture cap, Capture* c) {
         "Frame: Press 'q' to exit.",
         "Preview: Press 's' to save.",
         "Canny Edge Detection",
-        "Polys, Rects, & Fps"};
+        "Data"};
     WindowManager win = WindowManager(images, names);
 
     if(!cap.isOpened()){  // check if we succeeded
@@ -96,19 +64,21 @@ void videoProcess(VideoCapture cap, Capture* c) {
 
     //Create Trackbars
     //Canny
-    createTrackbar("eTol1", "Canny Edge Detection", &etol1, 255, c, ETOL1);
-    createTrackbar("eTol2", "Canny Edge Detection", &etol2, 255, c, ETOL2); 
-    createTrackbar("eSize", "Canny Edge Detection", &eSize, 21, c, ESIZE);
+    Slider e1("eTol1", "Canny Edge Detection", ETOL1, c, 255);
+    Slider e2("eTol2", "Canny Edge Detection", ETOL2, c, 255);
+    Slider es("eSize", "Canny Edge Detection", ESIZE, c, 21);
 
     //Poly Approx
-    createTrackbar("polyTol", "Polys, Rects, & Fps", &polyTol, 200, c, POLYTOL);
+    Slider pt("polyTol", "Data", POLYTOL, c, 200);
 
     //Corners
-    createTrackbar("cBlock", "Polys, Rects, & Fps", &cBlock, 21, c, CBLOCK);
-    createTrackbar("cSize", "Polys, Rects, & Fps", &cSize, 21, c, CSIZE);
-    createTrackbar("k", "Polys, Rects, & Fps", &k, 21, c, K);
-    createTrackbar("cThresh", "Polys, Rects, & Fps", &cThresh, 255, c, CTHRESH);
+    Slider cb("cBlock", "Data", CBLOCK, c, 21);
+    Slider cs("cSize", "Data", CSIZE, c, 21);
+    Slider kk("k", "Data", K, c, 21);
+    Slider ct("cThresh", "Data", CTHRESH, c, 255);
 
+    // SizeRatio
+    Slider sr("sizeRatio", "Frame: Press 'q' to exit.", SIZERATIO, c, PtoInt(1.0));
 
 #ifdef TEST
     cout << "Video: Beginning Main Loop..." << endl;
@@ -185,14 +155,15 @@ int main(int argc,char *argv[]) {
     cout << "Running main..." << endl;
     testGeometry();
 #endif
+    Capture *C = new Capture();
     if (argc == 1) {
-        webCam(&C);
+        webCam(C);
     } else if (argc == 2 && *argv[1] == '-' && *argv[2] == 'h') {
         cout << " Usage : " << argv[0] << " " << "filename[optional]" <<endl;
         cout << "Use an avi file as an argument to take input from avi file." << endl;
         cout << "If no argument is specified the input is taken from the webcam"<<endl;
     } else if (argc == 2 && *argv[1] == '-' && *argv[2] == 'v') {
-        videoFile(argv[3], &C);
+        videoFile(argv[3], C);
     } else if (argc == 2 && *argv[1] == '-' && *argv[2] == 'i') {
         //imageFile(argv[3], &C);
     } else {
@@ -200,6 +171,7 @@ int main(int argc,char *argv[]) {
         cout << "Use an avi file as an argument to take input from avi file." << endl;
         cout << "If no argument is specified the input is taken from the webcam"<<endl;
     }
+    delete C;
 }
 
 #endif

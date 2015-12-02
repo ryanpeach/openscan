@@ -9,6 +9,9 @@
 #include "capture.hpp"
 #define TEST
 
+int PtoInt(double v) {return (int)(v*VSCALE);}
+double PtoDouble(int v) {return ((double)v)/VSCALE;}
+
 void Capture::Frame(Mat img) {
 #ifdef TEST
     cout << "Running Capture::Frame..." << endl;
@@ -22,6 +25,67 @@ void Capture::Frame(Mat img) {
     ref = Point();
     frame = img;
     edges = Mat();
+}
+
+void Capture::setValue(Par param, int value) {
+#ifdef TEST
+	cout << "Running Capture::setValue... param = " << param << ", value = " << value << endl;
+#endif
+	bool changed = true;
+    switch(param) {
+        case ANGLETOL: angleTol = value; break;
+        case DISTTOL: distTol = value; break;
+        case POLYTOL: polyTol = value; break;
+        case ASPECTRATIO: setAspectRatio((PageType)value); break;
+        case SIZERATIO: sizeRatio = PtoDouble(value); break;
+        case RATIOTOL: ratioTol = PtoDouble(value); break;
+        case ETOL1: etol1 = value; break;
+        case ETOL2: etol2 = value; break;
+        case ESIZE: eSize = value; break;
+        case CBLOCK: cBlock = value; break;
+        case CSIZE: cSize = value; break;
+        case K: k = value; break;
+        case CTHRESH: cThresh = value; break;
+        case METHOD: sel = (Method)value; break;
+        default: changed = false; break;
+	}
+    if (changed) {
+        Frame(frame);
+    }
+}
+
+int Capture::getValue(Par param) {
+#ifdef TEST
+	cout << "Running Capture::getValue... param = " << param << endl;
+#endif
+    switch(param) {
+        case ANGLETOL: return angleTol;
+        case DISTTOL: return distTol;
+        case POLYTOL: return polyTol;
+        case ASPECTRATIO: return aspectRatio;
+        case SIZERATIO: return PtoInt(sizeRatio);
+        case RATIOTOL: return PtoInt(ratioTol);
+        case ETOL1: return etol1;
+        case ETOL2: return etol2;
+        case ESIZE: return eSize;
+        case CBLOCK: return cBlock;
+        case CSIZE: return cSize;
+        case K: return k;
+        case CTHRESH: return cThresh;
+        case METHOD: return sel;
+        default: return -1;
+	}
+}
+
+void Capture::setAspectRatio(PageType type) {
+    switch (type) {
+        case letter:
+            aspectRatio = 8.5/11.0;
+            break;
+        case detect:
+            aspectRatio = 0;
+            break;
+    }
 }
 
 // ------------ Get Methods --------
