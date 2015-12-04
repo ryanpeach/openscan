@@ -41,6 +41,15 @@ double angle(Point origin, Point a);
  */
 double angle(Point origin, Point c2, Point c3);
 
+/*
+ * Finds if any of the three points can form the given angle.
+ * @param Any three points.
+ * @return the existing contour with the angle in the middle
+ * @return empty contour if none exists
+ * @complexity WARNING: O(1), O(N^3)
+ */
+cnt anyAng(Point a, Point b, Point c, double v, double angTol);
+
 /**
  * Returns the angles line-angle-line between all neighboring triplets in poly.
  * @param  cnt poly: Any contour.
@@ -155,11 +164,16 @@ cnt largest(vector<cnt> v);
 
 /**
  * Returns contours which are very similar, like the double edges of a line.
- * @param  check:  Any vector of cnt's to check.
+ * @param ref: the cnt to compare to.
+ * @param check:  Any vector of cnt's to check.
+ * @param r1: Only used by findSimilar, the starting index for the loop
  * @return distTol: the distance between corners to qualify as "equal".
- * @complexity O(?)
+ * @complexity O(N)
+ * @complexity O(N^2)
  * @tested untested
  */
+cnt findSimilar(cnt ref, vector<cnt> check, double distTol, int r1 = 0);
 vector<cnt> findSimilar(vector<cnt> check, double distTol);
+
 
 #endif
