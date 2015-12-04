@@ -47,6 +47,8 @@ void Capture::setValue(Par param, int value) {
         case K: k = value; break;
         case CTHRESH: cThresh = value; break;
         case METHOD: sel = (Method)value; break;
+        case BSIZE: bSize = toOdd(value); break;
+        case BSIGMA: bSigma = PtoDouble(value); break;
         default: changed = false; break;
 	}
     if (changed) {
@@ -73,6 +75,8 @@ int Capture::getValue(Par param) {
         case K: return k;
         case CTHRESH: return cThresh;
         case METHOD: return sel;
+        case BSIZE: return bSize;
+        case BSIGMA: return bSigma;
         default: return -1;
 	}
 }
@@ -95,7 +99,7 @@ Mat Capture::getEdges() {
 #endif
     if (edges.empty()) {
     	cout << "getEdges: empty..." << endl;
-        edges = edgesCanny(&frame, etol1, etol2, eSize, false);
+        edges = edgesCanny(&frame, etol1, etol2, eSize, bSize, bSigma, false);
     }
     return edges;
 }

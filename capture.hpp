@@ -30,7 +30,7 @@ const double VSCALE = 1000.0;
 enum Method {fpcorners, strongborder, regular, automatic};
 enum PageType {detect, letter};
 enum Par {ANGLETOL, DISTTOL, POLYTOL, ASPECTRATIO, SIZERATIO, RATIOTOL, ETOL1, ETOL2, ESIZE, METHOD,
-			CBLOCK, CSIZE, K, CTHRESH};
+			CBLOCK, CSIZE, K, CTHRESH, BSIZE, BSIGMA};
 };
 
 int PtoInt(double v);
@@ -59,7 +59,7 @@ class Capture {
     double ratioTol;       // The tolerance for two ratios to be considered equal
 
     //Import Parameters
-    int etol1, etol2, eSize;         // Used in edge detection
+    int etol1, etol2, eSize, bSize, bSigma;         // Used in edge detection
     int cBlock, cSize, k, cThresh;   // Used in corner detection
 
     // Preprocessing allows each process to share data,
@@ -103,11 +103,13 @@ class Capture {
     Capture (int angleTol = 20, int distTol = 20, int polyTol = 5,
              PageType aspectRatio = letter, double sizeRatio = .25, double ratioTol = .1,
              int etol1 = 100, int etol2 = 200, int eSize = 3,
-             int cBlock = 2, int cSize = 3, int k = .04, int cThresh = 200, Method sel = fpcorners):
+             int cBlock = 2, int cSize = 3, int k = .04, int cThresh = 200, Method sel = fpcorners,
+             int bSize = 5, double bSigma = 5):
                 angleTol(angleTol), distTol(distTol), polyTol(polyTol),
                 sizeRatio(sizeRatio), ratioTol(ratioTol),
                 etol1(etol1), etol2(etol2), eSize(eSize),
-                cBlock(cBlock), cSize(cSize), k(k), cThresh(cThresh), sel(sel)
+                cBlock(cBlock), cSize(cSize), k(k), cThresh(cThresh), sel(sel),
+                bSize(bSize), bSigma(bSigma)
     {
         setValue(ASPECTRATIO,(int)aspectRatio);
     }

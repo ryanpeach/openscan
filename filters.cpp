@@ -34,13 +34,15 @@ void Color(Mat* img) {
 	if (!isColor(img)) {cvtColor(*img, *img, COLOR_GRAY2RGB);}
 }
 
-Mat edgesCanny(Mat* img, int tol1, int tol2, int wSize, bool l2grad) {
+Mat edgesCanny(Mat* img, int tol1, int tol2, int wSize, int bSize, double bSigma, bool l2grad) {
 #ifdef TEST
     cout << "Running edgesCanny..." << endl;
 #endif
-	Mat edges;
+	Mat edges, blur;
 	Mat gray = toGray(*img);
-	Canny(gray, edges, tol1, tol2, wSize, l2grad);
+	Odd(&bSize);
+	GaussianBlur(gray, blur, Size(bSize,bSize), bSigma, 0);
+	Canny(blur, edges, tol1, tol2, wSize, l2grad);
 	return edges;
 }
 

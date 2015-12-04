@@ -67,6 +67,8 @@ void videoProcess(VideoCapture cap, Capture* c) {
     Slider e1("eTol1", "Canny Edge Detection", ETOL1, c, 255);
     Slider e2("eTol2", "Canny Edge Detection", ETOL2, c, 255);
     Slider es("eSize", "Canny Edge Detection", ESIZE, c, 21);
+    Slider bs("bSize", "Canny Edge Detection", BSIZE, c, 21);
+    Slider bg("bSigma", "Canny Edge Detection", BSIGMA, c, 21);
 
     //Poly Approx
     Slider pt("polyTol", "Data", POLYTOL, c, 200);

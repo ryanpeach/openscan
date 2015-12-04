@@ -93,3 +93,8 @@ Point sum(Points pts) {
 void Odd(int *n){
 	while((*n)%2!=1) {(*n)++;}
 }
+
+int toOdd(int n){
+	while((*n)%2!=1) {(n)++;}
+	return n;
+}

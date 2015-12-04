@@ -140,5 +140,6 @@ T mean(vector<T> nums){
  * @tested untested
  */
 void Odd(int *n);
+int toOdd(int n);
 
 #endif
