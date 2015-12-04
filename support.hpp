@@ -142,4 +142,14 @@ T mean(vector<T> nums){
 void Odd(int *n);
 int toOdd(int n);
 
+/**
+ * Returns whether a == b given a certain tolerance.
+ * @param any two numbers
+ * @return whether abs(a-b)<=tol.
+ * @complexity O(1)
+ * @tested works
+ */
+bool tolEq(double a, double b, double tol);
+bool tolEq(int a, int b, int tol);
+
 #endif

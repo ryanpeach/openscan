@@ -14,6 +14,7 @@
 #include "opencv2/highgui/highgui.hpp"
 #include <ctime>
 #include <array>
+#include <list>
 
 namespace COLORS {
 const auto white = Scalar(255, 255, 255);
@@ -60,11 +61,11 @@ class Capture {
 
     //Import Parameters
     int etol1, etol2, eSize, bSize, bSigma;         // Used in edge detection
-    int cBlock, cSize, k, cThresh;   // Used in corner detection
+    int cBlock, cSize, k, cThresh;   				// Used in corner detection
+    Method sel;
 
     // Preprocessing allows each process to share data,
     // so that nothing is calculated twice for the same image.
-    Method sel;
     Mat getEdges();
     Cnts getPolys();
     Fps getFps();
@@ -77,9 +78,12 @@ class Capture {
     void set(cnt corners);
     void set(Fps corners);
     bool validRect(cnt r);
+    cnt isQR(Point a, Point b, Point c);
 
     void checkChanged();
     void setAspectRatio(PageType type = letter);
+
+    vector<cnt> getQRBorders(list<Fp> fs);
 
  public:
 
@@ -100,16 +104,19 @@ class Capture {
      */
     vector<Mat> process();
 
+    /**
+     * @complexity WARNING: HUGE
+     */
+    vector<Mat> getQr();
+
     Capture (int angleTol = 20, int distTol = 20, int polyTol = 5,
              PageType aspectRatio = letter, double sizeRatio = .25, double ratioTol = .1,
-             int etol1 = 100, int etol2 = 200, int eSize = 3,
-             int cBlock = 2, int cSize = 3, int k = .04, int cThresh = 200, Method sel = fpcorners,
-             int bSize = 5, double bSigma = 5):
+             int etol1 = 100, int etol2 = 200, int eSize = 3, int bSize = 5, double bSigma = 5,
+             int cBlock = 2, int cSize = 3, int k = .04, int cThresh = 200, Method sel = fpcorners):
                 angleTol(angleTol), distTol(distTol), polyTol(polyTol),
                 sizeRatio(sizeRatio), ratioTol(ratioTol),
-                etol1(etol1), etol2(etol2), eSize(eSize),
-                cBlock(cBlock), cSize(cSize), k(k), cThresh(cThresh), sel(sel),
-                bSize(bSize), bSigma(bSigma)
+                etol1(etol1), etol2(etol2), eSize(eSize), bSize(bSize), bSigma(bSigma),
+                cBlock(cBlock), cSize(cSize), k(k), cThresh(cThresh), sel(sel)
     {
         setValue(ASPECTRATIO,(int)aspectRatio);
     }

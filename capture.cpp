@@ -363,6 +363,82 @@ vector<Mat> Capture::process() {
     }
 }
 
+vector<Mat> Capture::getQr() {
+	//Save and change aspect ratio
+	double save = aspectRatio;
+	aspectRatio = 1.0;
+
+	Fps fs = getFps();
+	vector<cnt> borders = getQRBorders(list<Fp>(fs.begin(),fs.end()));
+
+	// Convert Triangular borders to Square and Warp
+	vector<Mat> out;
+	for (unsigned int i = 0; i < borders.size(); i++) {
+		cnt b = borders[i];
+		Point r = b[1];
+
+		//Reflection about a line
+		//Source: http://stackoverflow.com/questions/3306838/algorithm-for-reflecting-a-point-across-a-line
+		double m = ((b[0].y)-(b[2].y))/((b[0].x)-(b[2].x)); // Slope
+		double c = b[0].y-m*b[0].x;                         // Intercept
+
+		double d = (b[1].x + (b[1].y - c)*m)/(1 + pow(m,2));
+		double newX = 2*d - b[1].x;
+		double newY = 2*d*m - b[1].y + 2*c;
+
+		cnt square = cnt{b[0],b[1],b[2],Point((int)newX,(int)newY)};
+		cnt outline = findSimilar(square,getPolys().contours,(double)distTol);
+
+		//Get the matrix
+		Mat temp = frame.clone();
+		fixPerspective(&temp, outline, r);
+		out.push_back(temp);
+	}
+	aspectRatio = save; //Set it back
+	return out;
+}
+
+vector<cnt> Capture::getQRBorders(list<Fp> fs) {
+	vector<cnt> out;
+	bool end = false;
+
+	//While there are 3 fps still availible for calculation
+	while (fs.size() >= 3 or end) {
+		bool reset = false;
+
+		// Iterate through sets of three Fp's
+		for (_List_iterator<Fp> i = fs.begin(); i != fs.end() && !reset; ++i) {
+		for (_List_iterator<Fp> j = fs.begin(); j != fs.end() && !reset; ++j) {
+		for (_List_iterator<Fp> k = fs.begin(); k != fs.end() && !reset; ++k) {
+		if (i!=j && j!=k && k!=i) {
+			Point x = (*i).center; Point y = (*j).center; Point z = (*k).center;
+			cnt b = isQR(x,y,z);
+			if (!b.empty()) {
+				out.push_back(b);
+				fs.erase(i);
+				fs.erase(j);
+				fs.erase(k);
+				reset = true;
+			}
+		}}}}
+
+		if (!reset){end = true;}
+	}
+
+	return out;
+}
+
+cnt Capture::isQR(Point a, Point b, Point c) {
+	cnt a90 = anyAng(a,b,c,90.0,angleTol); //Get the corner that equals 90 degrees
+	if (!a90.empty()) {
+		//Check if the two edges from the angle are the same length.
+		if(tolEq(dist(a90[1],a90[0]),dist(a90[1],a90[2]),(double)distTol)) {
+			return a90;
+		}
+	}
+	return cnt();
+}
+
 bool Capture::validRect(cnt r) {
 #ifdef TEST
     cout << "Capture::getBorder: validRect... " << endl;

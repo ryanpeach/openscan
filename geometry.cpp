@@ -60,6 +60,18 @@ vector<double> angles(cnt poly) {
     return out;
 }
 
+cnt anyAng(Point a, Point b, Point c, double v, double angTol) {
+	double val;
+
+	val = angle(a,b,c); if(tolEq(val,v,angTol)) {return cnt{a,b,c};}
+	val = angle(a,c,b); if(tolEq(val,v,angTol)) {return cnt{a,b,c};}
+	val = angle(b,a,c); if(tolEq(val,v,angTol)) {return cnt{a,b,c};}
+	val = angle(b,c,a); if(tolEq(val,v,angTol)) {return cnt{a,b,c};}
+	val = angle(c,a,b); if(tolEq(val,v,angTol)) {return cnt{a,b,c};}
+	val = angle(c,b,a); if(tolEq(val,v,angTol)) {return cnt{a,b,c};}
+	return cnt();
+}
+
 vector<double> dists(cnt poly) {
 #ifdef TEST
     cout << "Running dists..." << endl;
@@ -234,19 +246,26 @@ cnt largest(vector<cnt> v) {
 }
 
 // Find any two contours who share similar corners
-vector<cnt> findSimilar(vector<cnt> check, double distTol) {
-	vector<cnt> pair; vector<cnt> out;
-	for (unsigned int r1 = 0; r1 < check.size(); r1++) {
-		for (unsigned int r2 = 0; r2 < check.size(); r2++) {
-			bool found = true;
-			for (unsigned int i = 0; i < 4 && r2 > r1; i++) {  //No duplicates
-				if (!(dist(check[r1][i], check[r2][i]) <= distTol)) {
-					found = false;
-				}
-				if (found) {
-					out.push_back(check[r1]);
-				}
+cnt findSimilar(cnt ref, vector<cnt> check, double distTol, int r1) {
+	for (unsigned int r2 = r1; r2 < check.size(); r2++) {
+		bool found = true;
+		for (unsigned int i = 0; i < 4; i++) {  //No duplicates
+			if (!(dist(ref[i], check[r2][i]) <= distTol)) {
+				found = false;
 			}
+			if (found) {
+				return check[r2];
+			}
+		}
+	}
+	return cnt();
+}
+vector<cnt> findSimilar(vector<cnt> check, double distTol) {
+	vector<cnt> out;
+	for (unsigned int r1 = 0; r1 < check.size(); r1++) {
+		cnt temp = findSimilar(check[r1], check, distTol, r1);
+		if (!temp.empty()) {
+			out.push_back(temp);
 		}
 	}
 	return out;
