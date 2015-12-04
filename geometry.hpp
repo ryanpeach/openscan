@@ -156,11 +156,12 @@ vector<double> angs(Point x, cnt fours);
 /**
  * Returns the largest contour in a vector.
  * @param  vector<cnt>:  Any vector of cnt's.
+ * @param  min: allows you to set a minimum size.
  * @return cnt: largest contour
  * @complexity O(?)
  * @tested untested
  */
-cnt largest(vector<cnt> v);
+cnt largest(vector<cnt> v, double min = -1);
 
 /**
  * Returns contours which are very similar, like the double edges of a line.

@@ -61,15 +61,15 @@ vector<double> angles(cnt poly) {
 }
 
 cnt anyAng(Point a, Point b, Point c, double v, double angTol) {
-	double val;
+    double val;
 
-	val = angle(a,b,c); if(tolEq(val,v,angTol)) {return cnt{a,b,c};}
-	val = angle(a,c,b); if(tolEq(val,v,angTol)) {return cnt{a,b,c};}
-	val = angle(b,a,c); if(tolEq(val,v,angTol)) {return cnt{a,b,c};}
-	val = angle(b,c,a); if(tolEq(val,v,angTol)) {return cnt{a,b,c};}
-	val = angle(c,a,b); if(tolEq(val,v,angTol)) {return cnt{a,b,c};}
-	val = angle(c,b,a); if(tolEq(val,v,angTol)) {return cnt{a,b,c};}
-	return cnt();
+    val = angle(a,b,c); if(tolEq(val,v,angTol)) {return cnt{a,b,c};}
+    val = angle(a,c,b); if(tolEq(val,v,angTol)) {return cnt{a,b,c};}
+    val = angle(b,a,c); if(tolEq(val,v,angTol)) {return cnt{a,b,c};}
+    val = angle(b,c,a); if(tolEq(val,v,angTol)) {return cnt{a,b,c};}
+    val = angle(c,a,b); if(tolEq(val,v,angTol)) {return cnt{a,b,c};}
+    val = angle(c,b,a); if(tolEq(val,v,angTol)) {return cnt{a,b,c};}
+    return cnt();
 }
 
 vector<double> dists(cnt poly) {
@@ -94,7 +94,7 @@ Point centroid(vector<Point> c) {
     Point sum = Point(0,0);
 
     for (Point p : c) {
-    	sum += p;
+        sum += p;
     }
 
     int s = c.size();
@@ -208,14 +208,14 @@ vector<cnt> hasRectangles(cnt poly, double angleTol, double distTol, int n) {
     return out;
 }
 vector<cnt> hasRectangles(vector<cnt> poly, double angleTol, double distTol) {
-	vector<cnt> out;
-	bool found;
+    vector<cnt> out;
+    bool found;
 
-	for (cnt c : poly) {
-		found = isRectangle(c, false, angleTol, distTol);
-		if (found) {out.push_back(c);}
-	}
-	return out;
+    for (cnt c : poly) {
+        found = isRectangle(c, false, angleTol, distTol);
+        if (found) {out.push_back(c);}
+    }
+    return out;
 }
 cnt hasRectangle(cnt poly, double angleTol, double distTol) {
     vector<cnt> out = hasRectangles(poly, angleTol, distTol, 1);
@@ -234,11 +234,11 @@ vector<double> angs(Point x, cnt fours) {
     return out;
 }
 
-cnt largest(vector<cnt> v) {
+cnt largest(vector<cnt> v, double min) {
     cnt out; double area, max = 0;
     for (cnt c : v) {
         area = contourArea(c);
-        if (area > max) {
+        if (area > max && (area > min || min < 0)) {
             out = c; max = area;
         }
     }
@@ -247,26 +247,27 @@ cnt largest(vector<cnt> v) {
 
 // Find any two contours who share similar corners
 cnt findSimilar(cnt ref, vector<cnt> check, double distTol, int r1) {
-	for (unsigned int r2 = r1; r2 < check.size(); r2++) {
-		bool found = true;
-		for (unsigned int i = 0; i < 4; i++) {  //No duplicates
-			if (!(dist(ref[i], check[r2][i]) <= distTol)) {
-				found = false;
-			}
-			if (found) {
-				return check[r2];
-			}
-		}
-	}
-	return cnt();
+    for (unsigned int r2 = r1; r2 < check.size(); r2++) {
+        bool found = true;
+        for (unsigned int i = 0; i < 4; i++) {  // No duplicates
+            if (!(dist(ref[i], check[r2][i]) <= distTol)) {
+                found = false;
+            }
+            if (found) {
+                return check[r2];
+            }
+        }
+    }
+    return cnt();
 }
-vector<cnt> findSimilar(vector<cnt> check, double distTol) {
-	vector<cnt> out;
-	for (unsigned int r1 = 0; r1 < check.size(); r1++) {
-		cnt temp = findSimilar(check[r1], check, distTol, r1);
-		if (!temp.empty()) {
-			out.push_back(temp);
-		}
-	}
-	return out;
+vector<vector<cnt>> findSimilar(vector<cnt> check, double distTol) {
+    vector<vector<cnt>> out;
+    for (unsigned int r1 = 0; r1 < check.size(); r1++) {
+        cnt temp = findSimilar(check[r1], check, distTol, r1);
+        if (!temp.empty()) {
+            vector<cnt> pair = vector<cnt>{temp,check[r1]};
+            out.push_back(pair);
+        }
+    }
+    return out;
 }

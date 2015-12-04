@@ -64,6 +64,10 @@ class Capture {
     int cBlock, cSize, k, cThresh;   				// Used in corner detection
     Method sel;
 
+    // Image stats
+    double totalArea;
+    Point cent;
+
     // Preprocessing allows each process to share data,
     // so that nothing is calculated twice for the same image.
     Mat getEdges();
@@ -75,9 +79,11 @@ class Capture {
     cnt getBorder();
     cnt getOutline();
 
-    void set(cnt corners);
-    void set(Fps corners);
-    bool validRect(cnt r);
+    cnt fpsBorder();
+    cnt strongBorder();
+    cnt regBorder();
+    cnt autoBorder();
+
     cnt isQR(Point a, Point b, Point c);
 
     void checkChanged();
