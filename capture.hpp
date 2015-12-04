@@ -31,7 +31,7 @@ const double VSCALE = 1000.0;
 enum Method {fpcorners, strongborder, regular, automatic};
 enum PageType {detect, letter};
 enum Par {ANGLETOL, DISTTOL, POLYTOL, ASPECTRATIO, SIZERATIO, RATIOTOL, ETOL1, ETOL2, ESIZE, METHOD,
-			CBLOCK, CSIZE, K, CTHRESH, BSIZE, BSIGMA};
+            CBLOCK, CSIZE, K, CTHRESH, BSIZE, BSIGMA};
 };
 
 int PtoInt(double v);
@@ -105,9 +105,13 @@ class Capture {
     vector<Mat> process();
 
     /**
-     * @complexity WARNING: HUGE
+     * Returns all QR codes in an image.
+     * @param n: the number of QR codes to return. Restricts the complexity.
+     *           Use n < 0 to return all. WARNING: VERY COMPLEX!
+     * @return: a vector of properly warped images of QR codes. Max size = n if n > 0;
+     * @complexity HUGE O(n^3-5) #approximate
      */
-    vector<Mat> getQr();
+    vector<Mat> getQr(int n = 1);
 
     Capture (int angleTol = 20, int distTol = 20, int polyTol = 5,
              PageType aspectRatio = letter, double sizeRatio = .25, double ratioTol = .1,
@@ -118,7 +122,7 @@ class Capture {
                 etol1(etol1), etol2(etol2), eSize(eSize), bSize(bSize), bSigma(bSigma),
                 cBlock(cBlock), cSize(cSize), k(k), cThresh(cThresh), sel(sel)
     {
-        setValue(ASPECTRATIO,(int)aspectRatio);
+        setValue(ASPECTRATIO, (int)aspectRatio);
     }
 
     void Frame(Mat img);

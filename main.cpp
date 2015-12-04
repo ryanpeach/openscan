@@ -43,16 +43,17 @@ void videoProcess(VideoCapture cap, Capture* c) {
     cout << "Running Capture::webCam..." << endl;
 #endif
     // Variable Declaration
-    Mat drawing, preview, canny, info;
+    Mat drawing, preview, canny, info, qr;
     vector<Mat> proc;
     string filename, filepath;
     bool found = false; bool saved = false;
 
     // Create Windows
-    vector<Mat*> images = vector<Mat*>{&drawing, &preview, &canny, &info};
+    vector<Mat*> images = vector<Mat*>{&drawing, &preview, &qr, &canny, &info};
     vector<string> names = vector<string>{
         "Frame: Press 'q' to exit.",
         "Preview: Press 's' to save.",
+        "QR Code."
         "Canny Edge Detection",
         "Data"};
     WindowManager win = WindowManager(images, names);
@@ -109,6 +110,7 @@ void videoProcess(VideoCapture cap, Capture* c) {
         }
         canny = c->drawEdges();
         info = c->drawInfo();
+        qr = (c->getQr())[0];
 
         // Show frame out and preview
         win.update();
