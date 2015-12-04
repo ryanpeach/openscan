@@ -174,7 +174,7 @@ cnt largest(vector<cnt> v, double min = -1);
  * @tested untested
  */
 cnt findSimilar(cnt ref, vector<cnt> check, double distTol, int r1 = 0);
-vector<cnt> findSimilar(vector<cnt> check, double distTol);
+vector<vector<cnt>> findSimilar(vector<cnt> check, double distTol);
 
 
 #endif

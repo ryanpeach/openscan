@@ -261,10 +261,11 @@ cnt Capture::regBorder() {
     cnt corners;
     vector<cnt> valid;
     bool size, inside, ratio;
-    for (cnt r : (getRects())) {
+    if (fps.empty()) {getFps();}
+    for (cnt r : getRects()) {
         size = contourArea(r) > totalArea*sizeRatio;
-        ratio = aspectRatio != 0 && isAspectRatio(r, aspectRatio, ratioTol);}
-        inside = ((fps).size()==0 || allInside(r, fps));
+        ratio = aspectRatio != 0 && isAspectRatio(r, aspectRatio, ratioTol);
+        inside = (fps.empty() || allInside(r, fps));
         if (size && ratio && inside) {valid.push_back(r);}
     }
     if (!valid.empty()) {
