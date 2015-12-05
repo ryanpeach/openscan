@@ -11,7 +11,7 @@
 
 // -------------- Feature Detection ----------------
 
-Cnts findPolys(Mat* img, double distTol) {
+Cnts findPolys(Mat* img, double distRatio) {
 #ifdef TEST
         cout << "Running findPolys..." << endl;
 #endif
@@ -22,7 +22,7 @@ Cnts findPolys(Mat* img, double distTol) {
     // Return approximate polygons
     for (unsigned int i = 0; i < contours.size(); i++) {
     	//double epsilon = distTol*arcLength(contours[i],true);
-        approxPolyDP(contours[i], temp, distTol, true);
+        approxPolyDP(contours[i], temp, distTol(contours[i],distRatio), true);
         polys.push_back(temp);
     }
 
@@ -30,7 +30,7 @@ Cnts findPolys(Mat* img, double distTol) {
     return Cnts(polys, heirarchy);
 }
 
-Fps findFocusPoints(Cnts polys, double angleTol, double distTol) {
+Fps findFocusPoints(Cnts polys, double angleTol, double distRatio) {
 #ifdef TEST
     cout << "Running findFocusPoints..." << endl;
 #endif
@@ -65,7 +65,7 @@ Fps findFocusPoints(Cnts polys, double angleTol, double distTol) {
 #endif
     // Filter the focus points for their innermost border
     for (unsigned int x = 0; x < cntV.size(); x++) {
-        Fp tempFp = Fp(cntV[x], angleTol, distTol);
+        Fp tempFp = Fp(cntV[x], angleTol, distRatio);
         if (tempFp.depth >= 0) {  // Check that cntV[x] is a valid Fp
             out.push_back(tempFp);
         }
@@ -75,7 +75,7 @@ Fps findFocusPoints(Cnts polys, double angleTol, double distTol) {
     return out;
 }
 
-Fps calcCorners(Fps focusPoints, double angleTol, double distTol) {
+Fps calcCorners(Fps focusPoints, double angleTol, double distRatio) {
 #ifdef TEST
     cout << "Running getCorners..." << endl;
     cout << "getCorners: Getting list of fours..." << endl;
@@ -115,7 +115,7 @@ Fps calcCorners(Fps focusPoints, double angleTol, double distTol) {
     }
 
     // Return their centroids
-    vector<Fp> rect = hasRectangle(out, angleTol, distTol);
+    vector<Fp> rect = hasRectangle(out, angleTol, distRatio);
     if (rect.size() != 4) {return vector<Fp>();}
     else {return out;}
 }

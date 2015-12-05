@@ -21,15 +21,17 @@ using namespace cv;
 typedef vector<Point> cnt;
 typedef vector<Point> Points; //This is an unordered cnt.
 
-struct Cnts { 
+struct Cnts {
     vector<cnt> contours;
     vector<Vec4i> heirarchy;
-    
+
     Cnts(vector<cnt> polys, vector<Vec4i> heir);
     Cnts();
     bool empty();
     int size();
 };
+
+double distTol(cnt poly, double distRatio);
 
 bool matEq(Mat m1, Mat m2);
 

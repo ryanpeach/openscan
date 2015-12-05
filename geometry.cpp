@@ -9,6 +9,10 @@
 #include "geometry.hpp"
 //#define TEST
 
+double distTol(cnt poly, double distRatio) {
+    return arcLength(poly,true)*distRatio;
+}
+
 double dist(Point a, Point b){
 #ifdef TEST
     cout << "Running dist..." << endl;
@@ -121,7 +125,7 @@ Point centroid(vector<cnt> vec) {
 
 Point centroid(Cnts c){return centroid(c.contours);}
 
-bool allSameLength(cnt poly, double distTol){
+bool allSameLength(cnt poly, double distRatio){
 #ifdef TEST
     cout << "Running allSameLength" << endl;
 #endif
@@ -139,7 +143,7 @@ bool allSameLength(cnt poly, double distTol){
 
     //Get error from mean and test if it is within tolerance
     for (i = 0; i < poly.size(); i++) {error.push_back(abs(lengths[i]-mean));}               //Get the error from the mean of each length
-    for (i = 0; i < poly.size(); i++) {test.push_back(error[i] <= distTol);}                 //Check if the error is within tolerance
+    for (i = 0; i < poly.size(); i++) {test.push_back(error[i] <= lengths[i]*distRatio);}                 //Check if the error is within tolerance
     bool out = !(find(test.begin(), test.end(), false)!=test.end());                         //Test and return to see if there is a false within the test vector
     cout << "Result is " << out << endl;
     return out;
@@ -171,22 +175,22 @@ bool isAspectRatio(cnt border, double aspectRatio, double ratioTol) {
     return test1 <= ratioTol || test2 <= ratioTol || test3 <= ratioTol || test4 <= ratioTol;
 }
 
-bool isPoly(cnt poly, int size, bool regularA, bool regularL, double angleTol, double distTol) {
+bool isPoly(cnt poly, int size, bool regularA, bool regularL, double angleTol, double distRatio) {
 #ifdef TEST
     cout << "Running isPoly..." << endl;
 #endif
     if (poly.size() == (unsigned int)size && isContourConvex(poly)) {
         if (regularA || regularL) {
-            return (!regularL || allSameLength(poly, distTol)) && (!regularA || regularAngles(poly, angleTol));
+            return (!regularL || allSameLength(poly, distRatio)) && (!regularA || regularAngles(poly, angleTol));
         }
         else {return true;}
     }
     else {return false;}
 }
-bool isRectangle(cnt poly, bool square, double angleTol, double distTol) {return isPoly(poly,4,true,square,angleTol,distTol);}
-bool isSquare(cnt poly, double angleTol, double distTol) {return isPoly(poly,4,true,true,angleTol,distTol);}
+bool isRectangle(cnt poly, bool square, double angleTol, double distRatio) {return isPoly(poly,4,true,square,angleTol,distRatio);}
+bool isSquare(cnt poly, double angleTol, double distRatio) {return isPoly(poly,4,true,true,angleTol,distRatio);}
 
-vector<cnt> hasRectangles(cnt poly, double angleTol, double distTol, int n) {
+vector<cnt> hasRectangles(cnt poly, double angleTol, double distRatio, int n) {
 #ifdef TEST
     cout << "Running hasRectangles..." << endl;
     cout << "Warning! High complexity!" << endl;
@@ -201,24 +205,24 @@ vector<cnt> hasRectangles(cnt poly, double angleTol, double distTol, int n) {
     for (Point a4 : poly) {
     if (a1 != a2 && a1 != a3 && a1 != a4 && a2 != a3 && a2 != a4 && a3 != a4) {
             cnt found = cnt{a1, a2, a3, a4};
-            if (isRectangle(found, false, angleTol, distTol)) {
+            if (isRectangle(found, false, angleTol, distRatio)) {
                     out.push_back(found); n--;
                     if (n == 0) {return out;}
     }}}}}}
     return out;
 }
-vector<cnt> hasRectangles(vector<cnt> poly, double angleTol, double distTol) {
+vector<cnt> hasRectangles(vector<cnt> poly, double angleTol, double distRatio) {
     vector<cnt> out;
     bool found;
 
     for (cnt c : poly) {
-        found = isRectangle(c, false, angleTol, distTol);
+        found = isRectangle(c, false, angleTol, distRatio);
         if (found) {out.push_back(c);}
     }
     return out;
 }
-cnt hasRectangle(cnt poly, double angleTol, double distTol) {
-    vector<cnt> out = hasRectangles(poly, angleTol, distTol, 1);
+cnt hasRectangle(cnt poly, double angleTol, double distRatio) {
+    vector<cnt> out = hasRectangles(poly, angleTol, distRatio, 1);
     return out[0];
 }
 
@@ -246,11 +250,11 @@ cnt largest(vector<cnt> v, double min) {
 }
 
 // Find any two contours who share similar corners
-cnt findSimilar(cnt ref, vector<cnt> check, double distTol, int r1) {
+cnt findSimilar(cnt ref, vector<cnt> check, double distRatio, int r1) {
     for (unsigned int r2 = r1; r2 < check.size(); r2++) {
         bool found = true;
         for (unsigned int i = 0; i < 4; i++) {  // No duplicates
-            if (!(dist(ref[i], check[r2][i]) <= distTol)) {
+            if (!(dist(ref[i], check[r2][i]) <= distTol(ref,distRatio))) {
                 found = false;
             }
             if (found) {
@@ -260,10 +264,10 @@ cnt findSimilar(cnt ref, vector<cnt> check, double distTol, int r1) {
     }
     return cnt();
 }
-vector<vector<cnt>> findSimilar(vector<cnt> check, double distTol) {
+vector<vector<cnt>> findSimilar(vector<cnt> check, double distRatio) {
     vector<vector<cnt>> out;
     for (unsigned int r1 = 0; r1 < check.size(); r1++) {
-        cnt temp = findSimilar(check[r1], check, distTol, r1);
+        cnt temp = findSimilar(check[r1], check, distRatio, r1);
         if (!temp.empty()) {
             vector<cnt> pair = vector<cnt>{temp,check[r1]};
             out.push_back(pair);

@@ -26,7 +26,6 @@ void Capture::Frame(Mat img) {
     rects.clear();
     border.clear();
     outline.clear();
-    corners.clear();
     polys = Cnts();
     ref = Point();
     edges = Mat();
@@ -39,18 +38,14 @@ void Capture::setValue(Par param, int value) {
     bool changed = true;
     switch(param) {
         case ANGLETOL: angleTol = value; break;
-        case DISTTOL: distTol = value; break;
+        case DISTRATIO: distRatio = PtoDouble(value); break;
         case POLYTOL: polyTol = value; break;
         case ASPECTRATIO: setAspectRatio((PageType)value); break;
         case SIZERATIO: sizeRatio = PtoDouble(value); break;
         case RATIOTOL: ratioTol = PtoDouble(value); break;
         case ETOL1: etol1 = value; break;
         case ETOL2: etol2 = value; break;
-        case ESIZE: eSize = value; break;
-        case CBLOCK: cBlock = value; break;
-        case CSIZE: cSize = value; break;
-        case K: k = value; break;
-        case CTHRESH: cThresh = value; break;
+        case ESIZE: eSize = toOdd(value); break;
         case METHOD: sel = (Method)value; break;
         case BSIZE: bSize = toOdd(value); break;
         case BSIGMA: bSigma = PtoDouble(value); break;
@@ -79,7 +74,7 @@ int Capture::getValue(Par param) {
 #endif
     switch(param) {
         case ANGLETOL: return angleTol;
-        case DISTTOL: return distTol;
+        case DISTRATIO: return PtoInt(distRatio);
         case POLYTOL: return polyTol;
         case ASPECTRATIO: return aspectRatio;
         case SIZERATIO: return PtoInt(sizeRatio);
@@ -87,10 +82,6 @@ int Capture::getValue(Par param) {
         case ETOL1: return etol1;
         case ETOL2: return etol2;
         case ESIZE: return eSize;
-        case CBLOCK: return cBlock;
-        case CSIZE: return cSize;
-        case K: return k;
-        case CTHRESH: return cThresh;
         case METHOD: return sel;
         case BSIZE: return bSize;
         case BSIGMA: return bSigma;
@@ -115,34 +106,9 @@ Cnts Capture::getPolys() {
 #endif
     if(edges.empty()) {getEdges();}
     if (polys.empty() && !edges.empty()) {
-        polys = findPolys(&edges, polyTol);
+        polys = findPolys(&edges, distRatio);
     }
     return polys;
-}
-
-//Source: http://docs.opencv.org/2.4/doc/tutorials/features2d/trackingmotion/harris_detector/harris_detector.html
-Points Capture::getCorners() {
-    if (corners.empty()) {
-        Mat gray = toGray(frame);
-        Mat dst, dst_norm, dst_norm_scaled;
-
-        // Detecting corners
-        cornerHarris(gray, dst, cBlock, cSize, k, BORDER_DEFAULT );
-
-        // Normalizing
-        normalize( dst, dst_norm, 0, 255, NORM_MINMAX, CV_32FC1, Mat() );
-        convertScaleAbs( dst_norm, dst_norm_scaled );
-
-        // Convert to Points
-        for (int j = 0; j < dst_norm.rows; j++) {
-            for (int i = 0; i < dst_norm.cols; i++) {
-                if((int) dst_norm.at<float>(j,i) >= cThresh) {
-                    corners.push_back(Point(j,i));
-                }
-            }
-        }
-    }
-    return corners;
 }
 
 Fps Capture::getFps() {
@@ -151,7 +117,7 @@ Fps Capture::getFps() {
 #endif
     if (polys.empty()) {getPolys();}
     if (fps.empty() && !polys.empty()) {
-        fps = findFocusPoints(polys, angleTol, distTol);
+        fps = findFocusPoints(polys, angleTol, distRatio);
     }
 
 #ifdef TEST
@@ -167,7 +133,7 @@ vector<cnt> Capture::getRects() {
 #endif
     if (polys.empty()) {getPolys();}
     if (rects.empty() && !polys.empty()) {
-        rects = hasRectangles(polys.contours, angleTol, distTol);
+        rects = hasRectangles(polys.contours, angleTol, distRatio);
     }
     return rects;
 }
@@ -180,6 +146,8 @@ cnt Capture::getOutline() {
         // Aspect Ratio assumed < 1
         double W = sqrt(outlineArea / aspectRatio);
         double L = W*aspectRatio;
+
+	if (frame.rows > frame.cols) {double temp = W; W = L; L = temp;}
 
         outline.push_back(Point(cent.x+W/2, cent.y-L/2));
         outline.push_back(Point(cent.x+W/2, cent.y+L/2));
@@ -216,7 +184,7 @@ cnt Capture::fpsBorder() {
     cnt corners;
     if (fps.empty()) {getFps();}
     if (border.empty() && !fps.empty()) {
-        vector<Fp> t = calcCorners(fps, angleTol, distTol);
+        vector<Fp> t = calcCorners(fps, angleTol, distRatio);
         corners = centroids(t);
     }
     return corners;
@@ -240,7 +208,7 @@ cnt Capture::strongBorder() {
     }
 
     // Get pairs
-    vector<vector<cnt>> pairs = findSimilar(check, distTol);
+    vector<vector<cnt>> pairs = findSimilar(check, distRatio);
     if (!pairs.empty()) {
         // represents each pair by its largest member
         vector<cnt> rep;
@@ -292,7 +260,6 @@ Mat Capture::drawInfo() {
     drawPolys(out, white);  // Print all polys
     drawRects(out, red);    // Print Rectangles
     drawFps(out, green);    // Print Fps
-    drawCorners(out, blue); // Print all corners
 
     return out;
 }
@@ -328,16 +295,6 @@ Mat Capture::drawFps(Mat img, Scalar color) {
     return out;
 }
 
-Mat Capture::drawCorners(Mat img, Scalar color) {
-    Mat out = img;
-    if (corners.empty()) {getCorners();}
-    /// Drawing a circle around corners
-    for(unsigned int j = 0; j < corners.size(); j++ ) {
-        circle(out, corners[j], 5, color, 2, 8, 0);
-    }
-    return out;
-}
-
 Mat Capture::drawBorder(Mat img, Scalar color) {
     Mat out = img;
     vector<cnt> conts{getBorder()};
@@ -353,7 +310,6 @@ Mat Capture::drawOutline(Mat img, Scalar color) {
 }
 
 
-// Uses polyTol, angleTol, distTol, wSize, C;
 vector<Mat> Capture::process() {
 #ifdef TEST
     cout << "Running Capture::process..." << endl;
@@ -364,7 +320,6 @@ vector<Mat> Capture::process() {
 
     if (border.empty()) {getBorder();}
     drawFps(drawing,blue);
-    drawRects(drawing,green);
     drawOutline(drawing,yellow);
     if (!border.empty() && ref != Point()) {
         // Get border from focus points and warp
@@ -405,7 +360,7 @@ vector<Mat> Capture::getQr() {
         double newY = 2*d*m - b[1].y + 2*c;
 
         cnt square = cnt{b[0],b[1],b[2],Point((int)newX,(int)newY)};
-        cnt outline = findSimilar(square,getPolys().contours,(double)distTol);
+        cnt outline = findSimilar(square,getPolys().contours,distRatio);
 
         //Get the matrix
         Mat temp = frame.clone();
@@ -450,7 +405,7 @@ cnt Capture::isQR(Point a, Point b, Point c) {
     cnt a90 = anyAng(a,b,c,90.0,angleTol); //Get the corner that equals 90 degrees
     if (!a90.empty()) {
         //Check if the two edges from the angle are the same length.
-        if(tolEq(dist(a90[1],a90[0]),dist(a90[1],a90[2]),(double)distTol)) {
+        if(tolEq(dist(a90[1],a90[0]),dist(a90[1],a90[2]),distRatio)) {
             return a90;
         }
     }
