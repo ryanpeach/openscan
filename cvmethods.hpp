@@ -28,9 +28,7 @@ Fps calcCorners(Fps focusPoints, double angleTol, double distRatio);
 // Sort edges by distance.
 // Corners must be a rectangle
 // Null-Condition: Returns corners
-cnt sortCorners(cnt corners, Point ref);
-Fps sortCorners(Fps corners, Fp ref);
-cnt sortCorners(cnt corners, cnt ref);
+cnt sortCorners(cnt corners, Point ref, double distRatio = 0);
 cnt sortCorners(cnt corners);
 
 // Null-Condition: Returns fps[0]

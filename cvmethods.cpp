@@ -56,7 +56,7 @@ Fps findFocusPoints(Cnts polys, double angleTol, double distRatio) {
             if (polys.heirarchy[k][2] != -1) {contours.push_back(polys.contours[k]);} //Add the last element
 
             // Check if there are enough polys to count as a potential focus point, append them to fp
-            if (contours.size() >= 3) {cntV.push_back(contours);}
+            if (contours.size() >= 2) {cntV.push_back(contours);}
         }
     }
 
@@ -121,20 +121,16 @@ Fps calcCorners(Fps focusPoints, double angleTol, double distRatio) {
 }
 
 //This might have a large complexity due to toFps
-cnt sortCorners(cnt corners, Point ref) {
+cnt sortCorners(cnt corners, Point ref, double distRatio) {
 #ifdef TEST
-    cout << "Running sortCorners(vector<Fp>,Fp)..." << endl;
+    cout << "Running sortCorners(cnt, Point, double)..." << endl;
 #endif
     cnt sort = sortCorners(corners);
 
-    for (int i = 0; i < 4 && sort[0] != ref; i++) {
+    for (int i = 0; i < 4 && dist(sort[0],ref) > distTol(sort,distRatio); i++) {
         sort = rotateVec(sort);
     }
     return sort;
-}
-
-Fps sortCorners(vector<Fp> corners, Fp ref) {
-    return toFps(sortCorners(centroids(corners),ref.center), corners);
 }
 
 cnt sortCorners(cnt corners) {
@@ -207,8 +203,7 @@ Mat fixPerspective(Mat * img, cnt border, Point ref) {
     Point tl, tr, bl, br;
     Mat out;
 
-    // Rotate the array until the reference is first
-    border = sortCorners(border,ref);
+    // Print Data
     cout << vtostr(border) << endl;
 
     tr = border[0]; tl = border[1]; br = border[2]; bl = border[3];

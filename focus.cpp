@@ -13,10 +13,8 @@ int Fp::findInnerBorder(vector<cnt> cnts, double angleTol, double distRatio) {
 #ifdef TEST
     cout << "Running Fp::findInnerBorder" << endl;
 #endif
-    cnt c;
     for (int x = cnts.size()-1; x > 0; x--) {
-        c = cnts[x];
-        if (isPoly(c, 4, true, true, angleTol, distRatio)) {return x;}
+        if (isSquare(cnts[x], angleTol, distRatio)) {return x;}
     }
 
     return -1;

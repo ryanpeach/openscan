@@ -72,6 +72,7 @@ class Capture {
     Cnts getPolys();
     Fps getFps();
     vector<cnt> getRects();
+		Point getRef();
 
     cnt getBorder();
     cnt getOutline();

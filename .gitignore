@@ -1,6 +1,6 @@
 ./saves/*
 ./.lib/*
-!./.lib/dependencies.sh
+!./.lib/opencv.sh
 *.jpg
 *~
 *.swp

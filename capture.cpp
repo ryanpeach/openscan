@@ -138,6 +138,14 @@ vector<cnt> Capture::getRects() {
     return rects;
 }
 
+Point Capture::getRef() {
+#ifdef TEST
+    cout << "Running Capture::getRef..." << endl;
+#endif
+    if (ref == Point()) {getBorder();}
+    return ref;
+}
+
 cnt Capture::getOutline() {
     if (outline.empty()) {
         double outlineArea = sizeRatio*totalArea;
@@ -171,8 +179,8 @@ cnt Capture::getBorder() {
     }
     if (corners.size() == 4) {
         Points center = corners;
-        ref = calcRef(corners);
-        border = sortCorners(center, ref);
+        if (ref==Point()) {ref = calcRef(corners);};
+        border = sortCorners(center, ref, distRatio);
     }
     return border;
 }
@@ -186,6 +194,7 @@ cnt Capture::fpsBorder() {
     if (border.empty() && !fps.empty()) {
         vector<Fp> t = calcCorners(fps, angleTol, distRatio);
         corners = centroids(t);
+        ref = calcRef(t).center;
     }
     return corners;
 }
@@ -218,7 +227,9 @@ cnt Capture::strongBorder() {
 
         // the largest pair is our border.
         corners = largest(rep);
+        ref = calcRef(fps).center;
     }
+
     return corners;
 }
 
