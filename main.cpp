@@ -71,13 +71,9 @@ void videoProcess(VideoCapture cap, Capture* c) {
     Slider bg("bSigma", "Canny Edge Detection", BSIGMA, c, 21);
 
     //Poly Approx
-    Slider pt("polyTol", "Data", POLYTOL, c, 200);
-
-    //Corners
-    Slider cb("cBlock", "Data", CBLOCK, c, 21);
-    Slider cs("cSize", "Data", CSIZE, c, 21);
-    Slider kk("k", "Data", K, c, 21);
-    Slider ct("cThresh", "Data", CTHRESH, c, 255);
+    Slider pt("polyTol", "Data", POLYTOL, c, 50);
+    Slider at("angleTol", "Data", ANGLETOL, c, 50);
+    Slider dt("distRatio", "Data", DISTRATIO, c, PtoInt(0.2));
 
     // SizeRatio
     Slider sr("sizeRatio", "Frame: Press 'q' to exit.", SIZERATIO, c, PtoInt(1.0));

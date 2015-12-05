@@ -13,3 +13,5 @@ sudo
 .project
 .cproject
 ./.settings/*
+.directory
+/bin/*
