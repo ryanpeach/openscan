@@ -16,7 +16,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="PageTemplate.svg">
+   sodipodi:docname="PageTemplateAlt.svg">
   <defs
      id="defs4">
     <linearGradient
@@ -36,7 +36,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.80319294"
-     inkscape:cx="588.09831"
+     inkscape:cx="398.85362"
      inkscape:cy="509.09811"
      inkscape:document-units="in"
      inkscape:current-layer="layer1"
@@ -55,7 +55,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -72,7 +72,7 @@
        x="89.64222"
        y="152.20488" />
     <g
-       transform="translate(697.5,-922.49992)"
+       transform="translate(13.5,-922.49992)"
        id="layer1-9"
        inkscape:label="Layer 1">
       <rect
@@ -87,55 +87,12 @@
        transform="translate(701.34305,-11.595873)"
        id="layer1-6-2"
        inkscape:label="Layer 1" />
-    <g
-       transform="translate(13.5,-13.499916)"
-       id="layer1-9-1"
-       inkscape:label="Layer 1">
-      <rect
-         y="1005.1255"
-         x="6.7633729"
-         height="40.473255"
-         width="40.473255"
-         id="rect3336-6-2"
-         style="fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:13.5267458;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-    </g>
-    <g
-       transform="translate(697.5,-13.499916)"
-       id="layer1-9-8"
-       inkscape:label="Layer 1">
-      <rect
-         y="1005.1255"
-         x="6.7633729"
-         height="40.473255"
-         width="40.473255"
-         id="rect3336-6-68"
-         style="fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:13.5267458;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-    </g>
-    <g
-       transform="matrix(0.66666664,0,0,0.66666664,13.5,-571.71259)"
-       id="layer1-2"
-       inkscape:label="Layer 1">
-      <rect
-         y="978.09961"
-         x="6.73739"
-         height="67.525223"
-         width="67.525223"
-         id="rect3336"
-         style="fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:13.47478008;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-      <rect
-         y="1000.6083"
-         x="29.246098"
-         height="22.507805"
-         width="22.507807"
-         id="rect3336-6-0"
-         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:4.49219418;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-      <rect
-         y="991.59009"
-         x="20.25"
-         height="40.522091"
-         width="40.522095"
-         id="rect4137"
-         style="fill:none;fill-opacity:1;stroke:none;stroke-width:13.5;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-    </g>
+    <rect
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:13.50718021;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4147"
+       width="724.4928"
+       height="949.4928"
+       x="20.25359"
+       y="82.615814" />
   </g>
 </svg>

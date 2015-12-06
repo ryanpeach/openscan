@@ -93,3 +93,15 @@ Point sum(Points pts) {
 void Odd(int *n){
 	while((*n)%2!=1) {(*n)++;}
 }
+
+int toOdd(int n){
+	while((n)%2!=1) {(n)++;}
+	return n;
+}
+
+bool tolEq(double a, double b, double tol) {
+	return abs(a-b)<=tol;
+}
+bool tolEq(int a, int b, int tol) {
+	return abs(a-b)<=tol;
+}

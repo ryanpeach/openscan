@@ -21,15 +21,17 @@ using namespace cv;
 typedef vector<Point> cnt;
 typedef vector<Point> Points; //This is an unordered cnt.
 
-struct Cnts { 
+struct Cnts {
     vector<cnt> contours;
     vector<Vec4i> heirarchy;
-    
+
     Cnts(vector<cnt> polys, vector<Vec4i> heir);
     Cnts();
     bool empty();
     int size();
 };
+
+double distTol(cnt poly, double distRatio);
 
 bool matEq(Mat m1, Mat m2);
 
@@ -140,5 +142,16 @@ T mean(vector<T> nums){
  * @tested untested
  */
 void Odd(int *n);
+int toOdd(int n);
+
+/**
+ * Returns whether a == b given a certain tolerance.
+ * @param any two numbers
+ * @return whether abs(a-b)<=tol.
+ * @complexity O(1)
+ * @tested works
+ */
+bool tolEq(double a, double b, double tol);
+bool tolEq(int a, int b, int tol);
 
 #endif

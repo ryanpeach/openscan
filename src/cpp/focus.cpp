@@ -9,14 +9,12 @@
 #include "focus.hpp"
 //#define TEST
 
-int Fp::findInnerBorder(vector<cnt> cnts, double angleTol, double distTol) {
+int Fp::findInnerBorder(vector<cnt> cnts, double angleTol, double distRatio) {
 #ifdef TEST
     cout << "Running Fp::findInnerBorder" << endl;
 #endif
-    cnt c;
     for (int x = cnts.size()-1; x > 0; x--) {
-        c = cnts[x];
-        if (isPoly(c, 4, true, true, angleTol, distTol)) {return x;}
+        if (isSquare(cnts[x], angleTol, distRatio)) {return x;}
     }
 
     return -1;
@@ -32,13 +30,13 @@ Fp::Fp() {
     shape = 0;
 }
 
-Fp::Fp(vector<cnt> conts, double angleTol, double distTol) : contours(conts)
+Fp::Fp(vector<cnt> conts, double angleTol, double distRatio) : contours(conts)
 {
 #ifdef TEST
     cout << "Initializing Fp..." << endl;
 #endif
     center = centroid(contours);
-    depth = Fp::findInnerBorder(contours,angleTol,distTol);
+    depth = Fp::findInnerBorder(contours,angleTol,distRatio);
     if (depth!=-1) {
         contour = contours[depth];
         shape = contour.size();
@@ -111,7 +109,7 @@ bool allInside(cnt poly, vector<Fp> fps) {
 }
 
 //Could be a template
-vector<vector<Fp>> hasRectangles(vector<Fp> fps, double angleTol, double distTol, int n) {
+vector<vector<Fp>> hasRectangles(vector<Fp> fps, double angleTol, double distRatio, int n) {
 #ifdef TEST
     cout << "Running hasRectangles(vector<Fp>...) ..." << endl;
 #endif
@@ -127,15 +125,15 @@ vector<vector<Fp>> hasRectangles(vector<Fp> fps, double angleTol, double distTol
     if (a1 != a2 && a1 != a3 && a1 != a4 && a2 != a3 && a2 != a4 && a3 != a4) {
             cout << "hasRectangles: " << n << endl;
             vector<Fp> found = vector<Fp>{a1, a2, a3, a4};
-            if (isRectangle(centroids(found), false, angleTol, distTol)) {
+            if (isRectangle(centroids(found), false, angleTol, distRatio)) {
                     out.push_back(found); n--;
                     if (n <= 0) {return out;}
     }}}}}}
     return out;
 }
 
-vector<Fp> hasRectangle(vector<Fp> fps, double angleTol, double distTol) {
-    return hasRectangles(fps, angleTol, distTol, 1)[0];
+vector<Fp> hasRectangle(vector<Fp> fps, double angleTol, double distRatio) {
+    return hasRectangles(fps, angleTol, distRatio, 1)[0];
 }
 
 vector<double> angs(Point x, vector<Fp> fours) {
@@ -157,4 +155,3 @@ vector<Fp> toFps(cnt cents, vector<Fp> set){
     if (out.size() != cents.size()) {cout<<"ERROR toFps"<<endl;}
     return out;
 }
-

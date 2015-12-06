@@ -41,6 +41,15 @@ double angle(Point origin, Point a);
  */
 double angle(Point origin, Point c2, Point c3);
 
+/*
+ * Finds if any of the three points can form the given angle.
+ * @param Any three points.
+ * @return the existing contour with the angle in the middle
+ * @return empty contour if none exists
+ * @complexity WARNING: O(1), O(N^3)
+ */
+cnt anyAng(Point a, Point b, Point c, double v, double angTol);
+
 /**
  * Returns the angles line-angle-line between all neighboring triplets in poly.
  * @param  cnt poly: Any contour.
@@ -74,12 +83,12 @@ Point centroid(Cnts c);
 /**
  * Test that all Points inside poly are the same distance from their neighbors as all others.
  * @param  cnt poly:       Any cnt you wish to test.
- * @param  double distTol: The distance tolerance for calculation of equality.
+ * @param  double distRatio: The distance tolerance for calculation of equality.
  * @return True / False
  * @complexity O(?)
  * @tested works
  */
-bool allSameLength(cnt poly, double distTol);
+bool allSameLength(cnt poly, double distRatio);
 
 /**
  * Test that all Points inside poly have the same angle to their neighbors as all others.
@@ -106,15 +115,15 @@ bool isAspectRatio(cnt border, double aspectRatio, double ratioTol);
  * @param  cnt poly, the size of the poly (4 if rect or square)
  * @param  bool regular: whether or not all sides are the same length.
  * @param  double angleTol: the angle tolerance of the angle equality.
- * @param  double distTol: the distance tolerance of the length equality.
+ * @param  double distRatio: the distance tolerance of the length equality.
  * @return The angle by line-angle-line of line c2-origin-c3 in degrees.
  * @issues isPoly should have consistent angle-testing if regular among all sizes of polys.
  * @complexity O(?)
  * @tested works
  */
-bool isPoly(cnt poly, int size, bool regularA, bool regularL, double angleTol, double distTol);
-bool isRectangle(cnt poly, bool square, double angleTol, double distTol);
-bool isSquare(cnt poly, double angleTol, double distTol);
+bool isPoly(cnt poly, int size, bool regularA, bool regularL, double angleTol, double distRatio);
+bool isRectangle(cnt poly, bool square, double angleTol, double distRatio);
+bool isSquare(cnt poly, double angleTol, double distRatio);
 
 /**
  * Iterates through all points given to see if some set of 4 points
@@ -122,16 +131,16 @@ bool isSquare(cnt poly, double angleTol, double distTol);
  * @param  cnt poly: A list of unordered, potentially connected points which
  *                       might contain a rectangle.
  * @param  double angleTol: the angle tolerance of the angle equality.
- * @param  double distTol: the distance tolerance of the length equality.
+ * @param  double distRatio: the distance tolerance of the length equality.
  * @param  int n: the max number of desired returns.
  * @return Returns a found rectangle as a cnt.
  * @return Returns an empty contour if none was found or if n < 1.
  * @tested untested
  * @complexity O(n*len(poly)), O(n*len(poly)^4)
  */
-vector<cnt> hasRectangles(cnt poly, double angleTol, double distTol, int n = 1);
-vector<cnt> hasRectangles(vector<cnt> poly, double angleTol, double distTol);
-cnt hasRectangle(cnt poly, double angleTol, double distTol);
+vector<cnt> hasRectangles(cnt poly, double angleTol, double distRatio, int n = 1);
+vector<cnt> hasRectangles(vector<cnt> poly, double angleTol, double distRatio);
+cnt hasRectangle(cnt poly, double angleTol, double distRatio);
 
 /**
  * Returns all angles between x and each Point in "fours."
@@ -147,19 +156,25 @@ vector<double> angs(Point x, cnt fours);
 /**
  * Returns the largest contour in a vector.
  * @param  vector<cnt>:  Any vector of cnt's.
+ * @param  min: allows you to set a minimum size.
  * @return cnt: largest contour
  * @complexity O(?)
  * @tested untested
  */
-cnt largest(vector<cnt> v);
+cnt largest(vector<cnt> v, double min = -1);
 
 /**
  * Returns contours which are very similar, like the double edges of a line.
- * @param  check:  Any vector of cnt's to check.
- * @return distTol: the distance between corners to qualify as "equal".
- * @complexity O(?)
+ * @param ref: the cnt to compare to.
+ * @param check:  Any vector of cnt's to check.
+ * @param r1: Only used by findSimilar, the starting index for the loop
+ * @return distRatio: the distance between corners to qualify as "equal".
+ * @complexity O(N)
+ * @complexity O(N^2)
  * @tested untested
  */
-vector<cnt> findSimilar(vector<cnt> check, double distTol);
+cnt findSimilar(cnt ref, vector<cnt> check, double distRatio, int r1 = 0);
+vector<vector<cnt>> findSimilar(vector<cnt> check, double distRatio);
+
 
 #endif

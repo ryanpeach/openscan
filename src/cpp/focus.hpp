@@ -19,10 +19,10 @@ struct Fp {
     Point center;
     int depth, shape;
 
-    int findInnerBorder(vector<cnt> cnts, double angleTol, double distTol);
+    int findInnerBorder(vector<cnt> cnts, double angleTol, double distRatio);
 
     Fp (vector<cnt> conts, cnt cont, Point cent, int d, int s);
-    Fp (vector<cnt> conts, double angleTol, double distTol);
+    Fp (vector<cnt> conts, double angleTol, double distRatio);
     Fp (vector<cnt> conts);
     Fp ();
 
@@ -53,8 +53,8 @@ string tostr(Fp fp);
 bool allInside(cnt poly, vector<Fp> fps);
 
 // Extended from geometry.cpp for easy Fp processing
-vector<vector<Fp>> hasRectangles(vector<Fp> fps, double angleTol, double distTol, int n = 1);
-vector<Fp> hasRectangle(vector<Fp> fps, double angleTol, double distTol);
+vector<vector<Fp>> hasRectangles(vector<Fp> fps, double angleTol, double distRatio, int n = 1);
+vector<Fp> hasRectangle(vector<Fp> fps, double angleTol, double distRatio);
 vector<double> angs(Point x, vector<Fp> fours);
 vector<Fp> toFps(cnt,vector<Fp>);
 #endif

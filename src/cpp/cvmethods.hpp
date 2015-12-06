@@ -16,21 +16,19 @@
 
 // -------------- Feature Detection ----------------
 // Filters the img, finds the contours, and returns the Cnts.
-Cnts findPolys(Mat * img, double distTol);
+Cnts findPolys(Mat * img, double distRatio);
 
 // Find all the focus points within an image.
-Fps findFocusPoints(Cnts polys, double angleTol, double distTol);
+Fps findFocusPoints(Cnts polys, double angleTol, double distRatio);
 
 // Classifies squares and selects the four most likely to be corners
 // Null-Condition: Returns null
-Fps calcCorners(Fps focusPoints, double angleTol, double distTol);
+Fps calcCorners(Fps focusPoints, double angleTol, double distRatio);
 
 // Sort edges by distance.
 // Corners must be a rectangle
 // Null-Condition: Returns corners
-cnt sortCorners(cnt corners, Point ref);
-Fps sortCorners(Fps corners, Fp ref);
-cnt sortCorners(cnt corners, cnt ref);
+cnt sortCorners(cnt corners, Point ref, double distRatio = 0);
 cnt sortCorners(cnt corners);
 
 // Null-Condition: Returns fps[0]
