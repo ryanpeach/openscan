@@ -18,7 +18,17 @@ public class Capture {
     }
     
     public enum Param {
-    	ANGLETOL, DISTTOL, POLYTOL, ASPECTRATIO, SIZERATIO, RATIOTOL, ETOL1, ETOL2, ESIZE, METHOD;
+    	ANGLETOL(0), DISTTOL(1), POLYTOL(2), ASPECTRATIO(3),
+    	SIZERATIO(4), RATIOTOL(5), ETOL1(6), ETOL2(7), ESIZE(8), METHOD(9);
+    
+    	private final int value;
+    	private Param(int value){
+    		this.value = value;
+    	}
+    	
+    	public int getValue() {
+    		return value;
+    	}
     }
     
     public Capture() {
@@ -35,12 +45,12 @@ public class Capture {
     
     public Mat[] process() {
     	long matptr = runProcess(ptr_);
-        if (matprt == -1) {return [null,null];}
-    	Mat[] out = [getMat(matptr),getMat(matptr+1)];
+        if (matptr == -1) {return new Mat[2];}
+    	Mat[] out = {getMat(matptr),getMat(matptr+1)};
     	return out;
     }
     
     public void setValue(Param param, double value) {
-    	setValue(ptr_, (int)param, value);
+    	setValue(ptr_, param.getValue(), value);
     }
 }
