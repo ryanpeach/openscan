@@ -7,14 +7,19 @@
  */
 
 #include "capture.hpp"
+#include "defines.hpp"
+
 #define TEST
 
 int PtoInt(double v) {return (int)(v*VSCALE);}
 double PtoDouble(int v) {return ((double)v)/VSCALE;}
 
 void Capture::Frame(Mat img) {
+
+LOG_PROG_FLOW.info("Running Capture::Frame..."); 
 #ifdef TEST
     cout << "Running Capture::Frame..." << endl;
+
 #endif
     // Set frame and stats
     frame = img;
