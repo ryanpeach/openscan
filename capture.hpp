@@ -115,16 +115,18 @@ class Capture {
     Capture (int angleTol = 20, double distRatio = .02, int polyTol = 5,
              PageType aspectRatio = letter, double sizeRatio = .25, double ratioTol = .1,
              int etol1 = 100, int etol2 = 200, int eSize = 3, int bSize = 5, double bSigma = 5,
-             int cBlock = 2, int cSize = 3, int k = .04, int cThresh = 200, Method sel = regular):
+             int cBlock = 2, int cSize = 3, int k = .04, int cThresh = 200):
                 angleTol(angleTol), distRatio(distRatio), polyTol(polyTol),
                 sizeRatio(sizeRatio), ratioTol(ratioTol),
-                etol1(etol1), etol2(etol2), eSize(eSize), bSize(bSize), bSigma(bSigma), sel(sel)
+                etol1(etol1), etol2(etol2), eSize(eSize), bSize(bSize), bSigma(bSigma)
     {
         setValue(ASPECTRATIO,(int)aspectRatio);
+        selectMethod(regular);
     }
 
     void Frame(Mat img);
 
+    void selectMethod(Method m) {sel = m;}
     void setValue(Par param, int value);
     int getValue(Par param);
 
