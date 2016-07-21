@@ -7,6 +7,8 @@
 
 #include "tests.hpp"
 #include "sliders.hpp"
+#include "logger.hpp"
+
 
 #define DESKTOP
 #define TEST
@@ -146,14 +148,25 @@ void videoFile (char* filepath, Capture* c) {
     videoProcess(cap, c);
 }
 
+
 // ------------------ Main Method --------------
 
 int main(int argc,char *argv[]) {
+
+	initializeLogger();
+
+// This is intended for newcomers to this project to play around with the logger 
+// and understand the logging practices followed in this project.Uncomment and 
+// compile to invoke the tests. 
+
+//    testlogger(); 
+
 #ifdef TEST
     cout << "Running main..." << endl;
     testGeometry();
 #endif
     Capture *C = new Capture();
+
     if (argc == 1) {
         webCam(C);
     } else if (argc == 2 && *argv[1] == '-' && *argv[2] == 'h') {
@@ -170,6 +183,9 @@ int main(int argc,char *argv[]) {
         cout << "If no argument is specified the input is taken from the webcam"<<endl;
     }
     delete C;
+
+// Logger cleanup.
+     log4cpp::Category::shutdown();
 }
 
 #endif
